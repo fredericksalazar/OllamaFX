@@ -1,6 +1,7 @@
 plugins {
+    id 'java'
     id 'application'
-    id 'org.openjfx.javafxplugin' version '0.1.0'
+    id 'org.openjfx.javafxplugin' version '0.0.14'
 }
 
 group = 'com.org.ollamafx'
@@ -10,24 +11,21 @@ repositories {
     mavenCentral()
 }
 
+dependencies {
+    implementation "io.github.ollama4j:ollama4j:1.0.100"
+}
+
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
     }
 }
 
-dependencies {
-    implementation 'io.github.ollama4j:ollama4j:1.0.100'
-    testImplementation platform('org.junit:junit-bom:5.10.0')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
+javafx {
+    version = "21" // JavaFX 17 es compatible con JDK 17 [2]
+    modules = [ 'javafx.controls', 'javafx.fxml']
 }
 
 application {
-    // Cambia esto según el nombre de tu clase principal
-    mainClass = 'com.org.ollamafx.MainApp'
-}
-
-javafx {
-    version = '17'
-    modules = [ 'javafx.controls', 'javafx.fxml' ]
+    mainClass = 'com.org.ollamafx.App'
 }
