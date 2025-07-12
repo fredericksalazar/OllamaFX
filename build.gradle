@@ -1,0 +1,33 @@
+plugins {
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
+}
+
+group = 'com.org.ollamafx'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+dependencies {
+    implementation 'io.github.ollama4j:ollama4j:1.0.100'
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+application {
+    // Cambia esto según el nombre de tu clase principal
+    mainClass = 'com.org.ollamafx.MainApp'
+}
+
+javafx {
+    version = '17'
+    modules = [ 'javafx.controls', 'javafx.fxml' ]
+}
