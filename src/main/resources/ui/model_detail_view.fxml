@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<VBox fx:id="rootVBox" spacing="10.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.org.ollamafx.controller.ModelDetailController">
+    <padding>
+        <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+    </padding>
+    <children>
+        <Label fx:id="modelNameLabel" text="Nombre del Modelo">
+            <font>
+                <Font name="System Bold" size="24.0" />
+            </font>
+        </Label>
+        <Text fx:id="modelDescriptionText" strokeType="OUTSIDE" strokeWidth="0.0" text="Aquí va una descripción larga y detallada del modelo, explicando sus capacidades, su tamaño, y para qué tipo de tareas es más adecuado." wrappingWidth="400.0" />
+        <Label text="Tags Disponibles:">
+            <font>
+                <Font name="System Bold" size="16.0" />
+            </font>
+            <VBox.margin>
+                <Insets top="15.0" />
+            </VBox.margin>
+        </Label>
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER">
+            <content>
+                <VBox fx:id="tagsContainer" spacing="8.0" />
+            </content>
+        </ScrollPane>
+    </children>
+</VBox>

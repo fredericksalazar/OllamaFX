@@ -1,32 +1,29 @@
-// App.java
+// src/main/java/com/org/ollamafx/App.java
 package com.org.ollamafx;
 
 import com.org.ollamafx.controller.MainController;
+import com.org.ollamafx.manager.ModelManager; // <-- AÑADE ESTE IMPORT
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-import java.net.URL;
-
 public class App extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        // 1. Crear la instancia ÚNICA de nuestro gestor de modelos.
+        ModelManager modelManager = new ModelManager();
+        // 2. Iniciar la carga de datos en segundo plano INMEDIATAMENTE.
+        modelManager.loadAllModels();
 
-        URL fxmlLocation = getClass().getResource("/ui/main_view.fxml");
-
-        System.out.println("Intentando cargar FXML desde: " + fxmlLocation);
-
-        if (fxmlLocation == null) {
-            throw new IllegalStateException("Recurso FXML no encontrado. Verifique la ruta y el empaquetado.");
-        }
-
-        FXMLLoader loader = new FXMLLoader(fxmlLocation); // Usar la URL resuelta
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/main_view.fxml"));
         Scene scene = new Scene(loader.load());
 
-        MainController controller = loader.getController();
-        controller.setHostServices(getHostServices());
+        // 3. Obtener el controlador principal que se acaba de crear.
+        MainController mainController = loader.getController();
+        // 4. "Inyectar" nuestro gestor de modelos en el controlador principal.
+        mainController.initModelManager(modelManager);
 
         primaryStage.setTitle("OllamaFX");
         primaryStage.setScene(scene);

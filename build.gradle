@@ -13,6 +13,7 @@ repositories {
 
 dependencies {
     implementation "io.github.ollama4j:ollama4j:1.0.100"
+    implementation 'org.jsoup:jsoup:1.17.2'
 }
 
 java {
@@ -22,7 +23,7 @@ java {
 }
 
 javafx {
-    version = "21" // JavaFX 17 es compatible con JDK 17 [2]
+    version = "21"
     modules = [ 'javafx.controls', 'javafx.fxml']
 }
 
