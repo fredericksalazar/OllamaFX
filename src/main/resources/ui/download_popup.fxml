@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="200.0" prefWidth="400.0" spacing="15.0" styleClass="dialog" stylesheets="@../css/gnome.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.org.ollamafx.controller.DownloadPopupController">
+   <children>
+      <Label fx:id="titleLabel" text="Downloading Model...">
+         <font>
+            <Font name="System Bold" size="18.0" />
+         </font>
+      </Label>
+      <VBox alignment="CENTER" spacing="5.0">
+         <children>
+            <ProgressBar fx:id="progressBar" prefWidth="350.0" progress="0.0" />
+            <HBox alignment="CENTER_RIGHT" prefWidth="350.0">
+               <children>
+                  <Label fx:id="percentageLabel" text="0%" textFill="#8a8a8a">
+                     <font>
+                        <Font size="12.0" />
+                     </font>
+                  </Label>
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+      <Label fx:id="statusLabel" text="Starting..." textFill="#666666" wrapText="true" />
+      <Button fx:id="cancelButton" mnemonicParsing="false" onAction="#onCancel" styleClass="danger" text="Cancel" />
+   </children>
+   <padding>
+      <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+   </padding>
+</VBox>

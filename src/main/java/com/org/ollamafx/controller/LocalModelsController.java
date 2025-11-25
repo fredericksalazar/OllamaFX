@@ -28,7 +28,8 @@ public class LocalModelsController implements Initializable {
 
     private ModelManager modelManager;
 
-    // Este método se llama DESPUÉS de initialize. Es el lugar perfecto para vincular los datos.
+    // Este método se llama DESPUÉS de initialize. Es el lugar perfecto para
+    // vincular los datos.
     public void setModelManager(ModelManager modelManager) {
         this.modelManager = modelManager;
 
@@ -38,9 +39,13 @@ public class LocalModelsController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // 1. Configuramos las columnas para que coincidan con las propiedades de OllamaModel.
+        // 1. Configuramos las columnas para que coincidan con las propiedades de
+        // OllamaModel.
         modelNameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
         modelSizeColumn.setCellValueFactory(new PropertyValueFactory<>("size"));
+        modelSizeColumn.setComparator((size1, size2) -> {
+            return parseSize(size1).compareTo(parseSize(size2));
+        });
         modelLastModifiedColumn.setCellValueFactory(new PropertyValueFactory<>("lastUpdated"));
         modelDigestColumn.setCellValueFactory(new PropertyValueFactory<>("tag")); // Apuntamos al 'tag'.
 
@@ -54,5 +59,39 @@ public class LocalModelsController implements Initializable {
     @FXML
     private void deleteSelectedModel() {
         // Aquí irá tu futura lógica para borrar un modelo.
+    }
+
+    private Long parseSize(String sizeStr) {
+        if (sizeStr == null || sizeStr.isEmpty() || sizeStr.equals("N/A")) {
+            return -1L;
+        }
+        try {
+            String[] parts = sizeStr.trim().split("\\s+");
+            if (parts.length < 2)
+                return 0L;
+
+            double value = Double.parseDouble(parts[0]);
+            String unit = parts[1].toUpperCase();
+
+            long multiplier = 1;
+            switch (unit) {
+                case "KB":
+                    multiplier = 1024;
+                    break;
+                case "MB":
+                    multiplier = 1024 * 1024;
+                    break;
+                case "GB":
+                    multiplier = 1024 * 1024 * 1024;
+                    break;
+                case "TB":
+                    multiplier = 1024L * 1024 * 1024 * 1024;
+                    break;
+            }
+
+            return (long) (value * multiplier);
+        } catch (Exception e) {
+            return 0L;
+        }
     }
 }

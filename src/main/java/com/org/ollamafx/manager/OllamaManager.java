@@ -173,4 +173,73 @@ public class OllamaManager {
         int digitGroups = (int) (Math.log10(size) / Math.log10(1024));
         return new DecimalFormat("#,##0.#").format(size / Math.pow(1024, digitGroups)) + " " + units[digitGroups];
     }
+
+    public interface ProgressCallback {
+        void onProgress(double progress, String status);
+    }
+
+    /**
+     * Descarga un modelo desde Ollama.
+     * Nota: La librería ollama4j tiene soporte limitado para callbacks de progreso
+     * en algunas versiones.
+     * Si no soporta callbacks granulares, simularemos o usaremos lo que haya.
+     * 
+     * @param modelName Nombre del modelo
+     * @param tag       Tag del modelo
+     * @param callback  Callback para actualizar la UI
+     */
+    public void pullModel(String modelName, String tag, ProgressCallback callback) throws Exception {
+        String fullName = modelName + ":" + tag;
+
+        // Usamos ProcessBuilder para ejecutar "ollama pull" y leer la salida
+        ProcessBuilder builder = new ProcessBuilder("ollama", "pull", fullName);
+        builder.redirectErrorStream(true); // Combinar stderr y stdout
+
+        Process process = builder.start();
+
+        try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                new java.io.InputStreamReader(process.getInputStream()))) {
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                // Parsear la línea para extraer progreso
+                // Formatos típicos de Ollama:
+                // "pulling manifest"
+                // "pulling <hash>... 100%"
+                // "verifying sha256 digest"
+                // "success"
+
+                String status = line;
+                double progress = -1; // Indeterminado por defecto
+
+                if (line.contains("%")) {
+                    // Intentar extraer el porcentaje
+                    try {
+                        // Buscar el último número antes del %
+                        int percentIndex = line.lastIndexOf('%');
+                        // Retroceder para encontrar el inicio del número
+                        int start = percentIndex - 1;
+                        while (start >= 0 && (Character.isDigit(line.charAt(start)) || line.charAt(start) == '.')) {
+                            start--;
+                        }
+                        String numStr = line.substring(start + 1, percentIndex).trim();
+                        progress = Double.parseDouble(numStr);
+                    } catch (Exception e) {
+                        // Ignorar errores de parsing, mantener progreso actual o indeterminado
+                    }
+                } else if (line.contains("success")) {
+                    progress = 100;
+                }
+
+                if (callback != null) {
+                    callback.onProgress(progress, status);
+                }
+            }
+        }
+
+        int exitCode = process.waitFor();
+        if (exitCode != 0) {
+            throw new Exception("Ollama pull failed with exit code: " + exitCode);
+        }
+    }
 }

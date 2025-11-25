@@ -106,4 +106,14 @@ public class AvailableModelsController {
         errorBox.getChildren().addAll(titleLabel, messageLabel);
         detailViewContainer.getChildren().setAll(errorBox);
     }
+
+    @FXML
+    private void sortByNameAsc() {
+        modelListView.getItems().sort((m1, m2) -> m1.getName().compareToIgnoreCase(m2.getName()));
+    }
+
+    @FXML
+    private void sortByNameDesc() {
+        modelListView.getItems().sort((m1, m2) -> m2.getName().compareToIgnoreCase(m1.getName()));
+    }
 }

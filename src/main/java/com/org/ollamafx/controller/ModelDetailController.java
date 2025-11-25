@@ -3,6 +3,7 @@ package com.org.ollamafx.controller;
 import com.org.ollamafx.manager.ModelManager;
 import com.org.ollamafx.model.OllamaModel;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -42,7 +43,12 @@ public class ModelDetailController {
     @FXML
     public void initialize() {
         tagNameColumn.setCellValueFactory(cellData -> cellData.getValue().tagProperty());
+
         tagSizeColumn.setCellValueFactory(cellData -> cellData.getValue().sizeProperty());
+        tagSizeColumn.setComparator((size1, size2) -> {
+            return parseSize(size1).compareTo(parseSize(size2));
+        });
+
         tagContextColumn.setCellValueFactory(cellData -> cellData.getValue().contextLengthProperty());
         tagInputColumn.setCellValueFactory(cellData -> cellData.getValue().inputTypeProperty());
 
@@ -60,15 +66,12 @@ public class ModelDetailController {
                             && modelManager.isModelInstalled(model.getName(), model.getTag());
 
                     if (isInstalled) {
+                        // Lógica de desinstalación (Simulada por ahora)
                         System.out.println("Uninstalling: " + model.getName() + ":" + model.getTag());
-                        btn.setText("Uninstalling...");
                         btn.setDisable(true);
-                        // Lógica de desinstalación aquí
                     } else {
-                        System.out.println("Installing: " + model.getName() + ":" + model.getTag());
-                        btn.setText("Installing...");
-                        btn.setDisable(true);
-                        // Lógica de instalación aquí
+                        // Lógica de instalación con Popup
+                        showDownloadPopup(model);
                     }
                 });
             }
@@ -99,6 +102,66 @@ public class ModelDetailController {
     }
 
     /**
+     * Muestra el popup de descarga e inicia la tarea.
+     */
+    private void showDownloadPopup(OllamaModel model) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/download_popup.fxml"));
+            javafx.scene.Parent root = loader.load();
+            DownloadPopupController controller = loader.getController();
+            controller.setModelName(model.getName() + ":" + model.getTag());
+
+            javafx.stage.Stage stage = new javafx.stage.Stage();
+            stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+            stage.setTitle("Downloading Model");
+            stage.setScene(new javafx.scene.Scene(root));
+            stage.setResizable(false);
+
+            // Crear la tarea de descarga
+            javafx.concurrent.Task<Void> task = new javafx.concurrent.Task<>() {
+                @Override
+                protected Void call() throws Exception {
+                    updateMessage("Starting download process...");
+                    updateProgress(0, 100);
+
+                    com.org.ollamafx.manager.OllamaManager.getInstance().pullModel(model.getName(), model.getTag(),
+                            (progress, status) -> {
+                                updateMessage(status);
+                                if (progress >= 0) {
+                                    updateProgress(progress, 100);
+                                } else {
+                                    updateProgress(-1, 100); // Indeterminado
+                                }
+                            });
+
+                    return null;
+                }
+            };
+
+            task.setOnSucceeded(e -> {
+                System.out.println("Download complete!");
+                // Refrescar la tabla o notificar
+                tagsTable.refresh();
+            });
+
+            task.setOnFailed(e -> {
+                System.err.println("Download failed: " + task.getException().getMessage());
+                // Mostrar error
+            });
+
+            controller.setDownloadTask(task);
+
+            // Iniciar la tarea en un hilo
+            new Thread(task).start();
+
+            stage.showAndWait();
+
+        } catch (java.io.IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
      * Puebla la vista con la lista de tags del modelo seleccionado.
      */
     public void populateDetails(List<OllamaModel> modelTags) {
@@ -115,5 +178,39 @@ public class ModelDetailController {
         modelDescriptionText.setText(firstTag.descriptionProperty().get());
 
         tagsTable.setItems(javafx.collections.FXCollections.observableArrayList(modelTags));
+    }
+
+    private Long parseSize(String sizeStr) {
+        if (sizeStr == null || sizeStr.isEmpty() || sizeStr.equals("N/A")) {
+            return -1L;
+        }
+        try {
+            String[] parts = sizeStr.trim().split("\\s+");
+            if (parts.length < 2)
+                return 0L;
+
+            double value = Double.parseDouble(parts[0]);
+            String unit = parts[1].toUpperCase();
+
+            long multiplier = 1;
+            switch (unit) {
+                case "KB":
+                    multiplier = 1024;
+                    break;
+                case "MB":
+                    multiplier = 1024 * 1024;
+                    break;
+                case "GB":
+                    multiplier = 1024 * 1024 * 1024;
+                    break;
+                case "TB":
+                    multiplier = 1024L * 1024 * 1024 * 1024;
+                    break;
+            }
+
+            return (long) (value * multiplier);
+        } catch (Exception e) {
+            return 0L;
+        }
     }
 }
