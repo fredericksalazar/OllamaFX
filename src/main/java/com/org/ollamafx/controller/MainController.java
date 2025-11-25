@@ -1,6 +1,8 @@
 package com.org.ollamafx.controller;
 
+import com.org.ollamafx.manager.ChatManager;
 import com.org.ollamafx.manager.ModelManager;
+import com.org.ollamafx.model.ChatSession;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -23,38 +25,101 @@ public class MainController implements Initializable {
     @FXML
     private BorderPane mainBorderPane;
     @FXML
-    private ListView<String> chatListView;
+    private ListView<ChatSession> chatListView;
 
-    private ObservableList<String> chatItems;
-    private ModelManager modelManager; // Referencia al gestor de estado central.
+    private ChatManager chatManager;
+    private ModelManager modelManager;
 
     public MainController() {
         System.out.println("MainController instantiated!");
+        this.chatManager = ChatManager.getInstance();
     }
 
-    /**
-     * Método para recibir el gestor desde App.java y cargar la vista inicial.
-     * Se ejecuta DESPUÉS de initialize().
-     */
     public void initModelManager(ModelManager modelManager) {
         this.modelManager = modelManager;
         showAvailableModels();
     }
 
-    /**
-     * Se ejecuta automáticamente después de que el FXML es cargado,
-     * pero ANTES de que initModelManager sea llamado.
-     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         System.out.println("MainController initialized!");
 
-        chatItems = FXCollections.observableArrayList();
-        chatListView.setItems(chatItems);
+        chatListView.setItems(chatManager.getChatSessions());
+
+        chatListView.setCellFactory(lv -> new javafx.scene.control.ListCell<>() {
+            @Override
+            protected void updateItem(ChatSession item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setGraphic(null);
+                    setContextMenu(null);
+                } else {
+                    // Layout Container (HBox for better alignment)
+                    javafx.scene.layout.HBox container = new javafx.scene.layout.HBox();
+                    container.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+                    container.setSpacing(10);
+
+                    // Chat Name Label
+                    String displayText = item.getName();
+                    if (item.isPinned()) {
+                        displayText = "📌 " + displayText;
+                        getStyleClass().add("pinned-chat");
+                    } else {
+                        getStyleClass().remove("pinned-chat");
+                    }
+                    Label nameLabel = new Label(displayText);
+                    nameLabel.setMaxWidth(Double.MAX_VALUE);
+                    javafx.scene.layout.HBox.setHgrow(nameLabel, javafx.scene.layout.Priority.ALWAYS);
+
+                    // Menu Button (SVG Icon)
+                    javafx.scene.shape.SVGPath icon = new javafx.scene.shape.SVGPath();
+                    icon.setContent(
+                            "M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z");
+                    icon.getStyleClass().add("chat-menu-icon");
+
+                    javafx.scene.control.MenuButton menuButton = new javafx.scene.control.MenuButton();
+                    menuButton.setGraphic(icon);
+                    menuButton.getStyleClass().add("chat-menu-button");
+
+                    // Menu Items
+                    javafx.scene.control.MenuItem renameItem = new javafx.scene.control.MenuItem("Rename");
+                    renameItem.setOnAction(e -> {
+                        javafx.scene.control.TextInputDialog dialog = new javafx.scene.control.TextInputDialog(
+                                item.getName());
+                        dialog.setTitle("Rename Chat");
+                        dialog.setHeaderText("Enter new name:");
+                        dialog.showAndWait().ifPresent(newName -> {
+                            chatManager.renameChat(item, newName);
+                            getListView().refresh();
+                        });
+                    });
+
+                    javafx.scene.control.MenuItem pinItem = new javafx.scene.control.MenuItem(
+                            item.isPinned() ? "Unpin" : "Pin");
+                    pinItem.setOnAction(e -> {
+                        chatManager.togglePin(item);
+                        getListView().refresh();
+                    });
+
+                    javafx.scene.control.MenuItem deleteItem = new javafx.scene.control.MenuItem("Delete");
+                    deleteItem.setStyle("-fx-text-fill: red;");
+                    deleteItem.setOnAction(e -> chatManager.deleteChat(item));
+
+                    menuButton.getItems().addAll(renameItem, pinItem, new javafx.scene.control.SeparatorMenuItem(),
+                            deleteItem);
+
+                    container.getChildren().addAll(nameLabel, menuButton);
+
+                    setText(null); // Clear default text
+                    setGraphic(container);
+                }
+            }
+        });
 
         chatListView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
-                loadChatView(newVal);
+                loadChatView(newVal.getName());
             }
         });
     }
@@ -91,16 +156,12 @@ public class MainController implements Initializable {
         }
     }
 
-    /**
-     * Lógica para crear un nuevo chat.
-     */
     @FXML
     private void createNewChat() {
         System.out.println("Creating new chat...");
-        String newChatName = "Chat " + (chatItems.size() + 1);
-        chatItems.add(newChatName);
-        chatListView.getSelectionModel().select(newChatName);
-        loadChatView(newChatName);
+        ChatSession newSession = chatManager.createChat("New Chat");
+        chatListView.getSelectionModel().select(newSession);
+        // loadChatView is triggered by listener
     }
 
     /**
@@ -108,11 +169,14 @@ public class MainController implements Initializable {
      */
     private void loadChatView(String chatName) {
         try {
-            System.out.println("Loading Chat View for: " + chatName);
-            StackPane placeholder = new StackPane(new Label("Chat con: " + chatName));
-            mainBorderPane.setCenter(placeholder);
-        } catch (Exception e) {
-            System.err.println("Error loading chat view: " + e.getMessage());
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/chat_view.fxml"));
+            Parent view = loader.load();
+
+            ChatController controller = loader.getController();
+            controller.setModelName(chatName); // For now, chat name is the model name/title
+
+            mainBorderPane.setCenter(view);
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
