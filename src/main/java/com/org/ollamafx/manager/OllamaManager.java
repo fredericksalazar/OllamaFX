@@ -10,7 +10,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
-import java.text.DecimalFormat;
+// import java.text.DecimalFormat; // Unused
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -46,7 +46,7 @@ public class OllamaManager {
                 OffsetDateTime modifiedAt = model.getModifiedAt();
                 String formattedDate = (modifiedAt != null) ? modifiedAt.format(formatter) : "N/A";
                 OllamaModel localModel = new OllamaModel(baseName, "Installed locally", "N/A", tag,
-                        formatSize(model.getSize()), formattedDate);
+                        com.org.ollamafx.util.Utils.formatSize(model.getSize()), formattedDate);
                 localModelsList.add(localModel);
             }
         } catch (Exception e) {
@@ -76,102 +76,89 @@ public class OllamaManager {
      * @throws IOException Si la conexión a la página web falla.
      */
     public List<OllamaModel> scrapeModelDetails(String modelName) throws IOException {
-        List<OllamaModel> modelTags = new ArrayList<>();
         String url = "https://ollama.com/library/" + modelName;
 
         Document doc = Jsoup.connect(url).get();
 
-        // Selector para la descripción principal del modelo
         String description = doc.selectFirst("#summary-content") != null ? doc.selectFirst("#summary-content").text()
                 : "No description available.";
 
-        // Selector para el contador de descargas (pulls)
         String pullCount = doc.selectFirst("span[x-test-pull-count]") != null
                 ? doc.selectFirst("span[x-test-pull-count]").text() + " downloads"
                 : "N/A";
 
-        // Selector para la fecha de última actualización del modelo
         String lastUpdatedGlobal = doc.selectFirst("span[x-test-updated]") != null
                 ? doc.selectFirst("span[x-test-updated]").text()
                 : "N/A";
 
-        // Selector para el contenedor de la lista de tags
+        List<String> badges = extractBadges(doc);
+        String readmeContent = extractReadme(doc);
+
+        return extractTags(doc, modelName, description, pullCount, lastUpdatedGlobal, badges, readmeContent);
+    }
+
+    private List<String> extractBadges(Document doc) {
+        List<String> badges = new ArrayList<>();
+        Element badgesContainer = doc.selectFirst("div.flex.flex-wrap.space-x-2");
+
+        if (badgesContainer != null) {
+            Elements badgeElements = badgesContainer.select("span");
+            for (Element badge : badgeElements) {
+                String badgeText = badge.text().trim();
+                if (!badgeText.isEmpty() && !badges.contains(badgeText)) {
+                    badges.add(badgeText);
+                }
+            }
+        }
+        return badges;
+    }
+
+    private String extractReadme(Document doc) {
+        Element readmeElement = doc.selectFirst("#readme");
+        if (readmeElement == null) {
+            readmeElement = doc.selectFirst(".prose");
+        }
+        return (readmeElement != null) ? readmeElement.html() : "No README available.";
+    }
+
+    private List<OllamaModel> extractTags(Document doc, String modelName, String description, String pullCount,
+            String lastUpdatedGlobal, List<String> badges, String readmeContent) {
+        List<OllamaModel> modelTags = new ArrayList<>();
         Element tagsContainer = doc.selectFirst("div.min-w-full.divide-y");
+
         if (tagsContainer == null) {
-            return modelTags; // No se encontró el contenedor, devolvemos la lista vacía.
+            modelTags.add(new OllamaModel(modelName, description, pullCount, "latest", "N/A", lastUpdatedGlobal,
+                    "Unknown", "Text", badges, readmeContent));
+            return modelTags;
         }
 
-        // Selector para cada fila de tag (solo las de escritorio, que están más
-        // estructuradas)
         Elements tagRows = tagsContainer.select("div.hidden.sm\\:grid");
 
         for (Element row : tagRows) {
-            // Extraemos los datos de cada columna de la fila
-            // La estructura parece ser: Name | Size | Context | Input (según el usuario)
-            // Vamos a intentar extraerlos por índice de columna si es posible, o por
-            // selectores específicos.
-            // Asumiremos que son elementos <p> o <div> dentro del grid.
-
-            // El nombre suele estar en un <a>
             String fullTagName = row.select("a").first().text();
+            Elements columns = row.select("> *");
 
-            // Los otros datos suelen estar en elementos hermanos.
-            // En la web de Ollama, el layout es un grid.
-            // Col 1: Name (span-2)
-            // Col 2: Size
-            // Col 3: Hash (a veces) -> Ahora parece que es Context?
-            // Col 4: Update time
-
-            // Basado en el request del usuario, parece que la web ha cambiado o él ve otra
-            // cosa.
-            // "Name, Size, Context, Input"
-
-            // Vamos a intentar coger todos los textos de la fila y asignarlos.
-            Elements columns = row.select("> *"); // Hijos directos del grid row
-
-            // Fallback defaults
             String size = "N/A";
             String context = "Unknown";
             String input = "Text";
 
-            // Intentamos parsear basado en la observación del usuario
-            // Si hay suficientes columnas, las mapeamos.
-            // Nota: El scraping es frágil.
-
-            // Estrategia actual: Mantener lo que funcionaba y añadir placeholders o
-            // intentar extraer si vemos patrones claros.
-            // En la implementación anterior:
-            // String size = row.select("p.col-span-2").get(0).text();
-
-            // Vamos a intentar ser más robustos.
-            // Buscamos elementos que parezcan el tamaño (contienen B, GB, MB).
             for (Element col : columns) {
                 String text = col.text();
                 if (text.matches(".*\\d+(\\.\\d+)?[GMK]B.*")) {
                     size = text;
-                } else if (text.contains("K") && text.length() < 10) { // Posible context length (e.g. 128K)
+                } else if (text.contains("K") && text.length() < 10) {
                     context = text;
                 } else if (text.equals("Text") || text.equals("Image") || text.equals("Multimodal")) {
                     input = text;
                 }
             }
 
-            // El nombre del tag es la parte después de los dos puntos
             String tagName = fullTagName.contains(":") ? fullTagName.split(":")[1] : fullTagName;
 
             modelTags.add(new OllamaModel(modelName, description, pullCount, tagName, size, lastUpdatedGlobal, context,
-                    input));
+                    input, badges, readmeContent));
         }
-
         return modelTags;
-    }
-
-    private String formatSize(long size) {
-        if (size <= 0)
-            return "0 B";
-        final String[] units = new String[] { "B", "KB", "MB", "GB", "TB" };
-        int digitGroups = (int) (Math.log10(size) / Math.log10(1024));
-        return new DecimalFormat("#,##0.#").format(size / Math.pow(1024, digitGroups)) + " " + units[digitGroups];
     }
 
     public interface ProgressCallback {
@@ -189,6 +176,10 @@ public class OllamaManager {
      * @param callback  Callback para actualizar la UI
      */
     public void pullModel(String modelName, String tag, ProgressCallback callback) throws Exception {
+        if (!com.org.ollamafx.util.SecurityUtils.isValidModelName(modelName) ||
+                !com.org.ollamafx.util.SecurityUtils.isValidModelName(tag)) {
+            throw new IllegalArgumentException("Invalid model name or tag.");
+        }
         String fullName = modelName + ":" + tag;
 
         // Usamos ProcessBuilder para ejecutar "ollama pull" y leer la salida
@@ -244,8 +235,13 @@ public class OllamaManager {
     }
 
     public void deleteModel(String modelName, String tag) throws Exception {
+        if (!com.org.ollamafx.util.SecurityUtils.isValidModelName(modelName) ||
+                !com.org.ollamafx.util.SecurityUtils.isValidModelName(tag)) {
+            throw new IllegalArgumentException("Invalid model name or tag.");
+        }
         String fullName = modelName + ":" + tag;
-        System.out.println("OllamaManager: Executing 'ollama rm " + fullName + "'");
+        System.out.println("OllamaManager: Executing 'ollama rm "
+                + com.org.ollamafx.util.SecurityUtils.sanitizeForLog(fullName) + "'");
         ProcessBuilder builder = new ProcessBuilder("ollama", "rm", fullName);
         builder.redirectErrorStream(true);
         Process process = builder.start();
@@ -294,7 +290,8 @@ public class OllamaManager {
     public void askModelStream(String modelName, String prompt,
             io.github.ollama4j.models.generate.OllamaStreamHandler handler)
             throws Exception {
-        System.out.println("OllamaManager: Asking (Stream) " + modelName + ": " + prompt);
+        System.out.println(
+                "OllamaManager: Asking (Stream) " + com.org.ollamafx.util.SecurityUtils.sanitizeForLog(modelName));
 
         java.util.List<io.github.ollama4j.models.chat.OllamaChatMessage> messages = new java.util.ArrayList<>();
         messages.add(new io.github.ollama4j.models.chat.OllamaChatMessage(
@@ -303,6 +300,14 @@ public class OllamaManager {
         io.github.ollama4j.models.chat.OllamaChatRequest request = io.github.ollama4j.models.chat.OllamaChatRequestBuilder
                 .getInstance(modelName).withMessages(messages).build();
 
-        client.chat(request, handler);
+        // Execute in the global executor service
+        com.org.ollamafx.App.getExecutorService().submit(() -> {
+            try {
+                client.chat(request, handler);
+            } catch (Exception e) {
+                e.printStackTrace();
+                // We might want to notify the handler of the error if possible
+            }
+        });
     }
 }
