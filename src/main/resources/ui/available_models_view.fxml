@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+
+<HBox xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.org.ollamafx.controller.AvailableModelsController">
+    <children>
+        <VBox spacing="10.0" HBox.hgrow="NEVER" minWidth="250.0" prefWidth="300.0">
+            <children>
+                <HBox alignment="CENTER_LEFT" spacing="5.0">
+                    <children>
+                        <Label text="Library" styleClass="h4" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <MenuButton text="Sort" styleClass="flat">
+                            <items>
+                                <MenuItem text="Name (A-Z)" onAction="#sortByNameAsc" />
+                                <MenuItem text="Name (Z-A)" onAction="#sortByNameDesc" />
+                            </items>
+                        </MenuButton>
+                    </children>
+                </HBox>
+                <ListView fx:id="modelListView" VBox.vgrow="ALWAYS" />
+            </children>
+        </VBox>
+        <StackPane fx:id="detailViewContainer" HBox.hgrow="ALWAYS" />
+    </children>
+</HBox>
