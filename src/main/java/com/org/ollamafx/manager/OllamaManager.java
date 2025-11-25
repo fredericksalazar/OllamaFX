@@ -95,10 +95,66 @@ public class OllamaManager {
                 ? doc.selectFirst("span[x-test-updated]").text()
                 : "N/A";
 
+        // Selector para badges (etiquetas de capacidad como "Vision", "Tools", "Code")
+        // Suelen ser enlaces que llevan a una búsqueda, con clases de estilo
+        // específicas.
+        // Buscamos en la cabecera principal.
+        List<String> badges = new ArrayList<>();
+        Elements badgeElements = doc.select("a[href^='/search?q=']");
+        for (Element badge : badgeElements) {
+            String badgeText = badge.text().trim();
+            // Filtramos etiquetas irrelevantes o muy largas si es necesario
+            if (!badgeText.isEmpty() && !badges.contains(badgeText)) {
+                badges.add(badgeText);
+            }
+        }
+
+        // Selector para el README
+        // El contenido del README suele estar en un div con id "readme" o clase "prose"
+        String readmeContent = "";
+        Element readmeElement = doc.selectFirst("#readme"); // Intento 1: ID específico
+        if (readmeElement == null) {
+            readmeElement = doc.selectFirst(".prose"); // Intento 2: Clase de Tailwind typography
+        }
+
+        if (readmeElement != null) {
+            // Convertimos a Markdown (o mantenemos HTML si preferimos, pero Markdown es
+            // mejor para nuestra app)
+            // Jsoup nos da HTML. Para obtener Markdown "limpio" sería ideal usar una
+            // librería conversora,
+            // pero por ahora extraeremos el texto o el HTML simplificado.
+            // Dado que vamos a usar un renderizador de Markdown, lo ideal sería obtener el
+            // source markdown,
+            // pero eso no está disponible en el HTML renderizado.
+            // Opción B: Guardar el HTML del README y renderizarlo como tal (WebView) o
+            // intentar parsearlo.
+            // Para este MVP, guardaremos el HTML inner del README.
+            // OJO: El usuario pidió "Markdown Rendering". Si guardamos HTML, el renderer de
+            // Markdown no servirá.
+            // Sin embargo, convertir HTML renderizado a Markdown es complejo.
+            // Vamos a intentar obtener el texto preservando saltos de línea para bloques de
+            // código.
+            // O mejor: Usar una librería como `flexmark-html2md` si fuera necesario.
+            // Por simplicidad y dado que el requerimiento es "Visualizar ficha técnica",
+            // vamos a guardar el HTML y luego decidiremos cómo mostrarlo (o intentamos
+            // limpiar un poco).
+            // UPDATE: El plan dice "Integrar un visor de Markdown".
+            // Si la web ya nos da HTML, ¿por qué convertir a MD para volver a convertir a
+            // JavaFX Nodes?
+            // Quizás sea mejor renderizar el HTML directamente o usar un parser simple.
+            // Vamos a guardar el HTML por ahora, ya que es lo que tenemos.
+            readmeContent = readmeElement.html();
+        } else {
+            readmeContent = "No README available.";
+        }
+
         // Selector para el contenedor de la lista de tags
         Element tagsContainer = doc.selectFirst("div.min-w-full.divide-y");
         if (tagsContainer == null) {
-            return modelTags; // No se encontró el contenedor, devolvemos la lista vacía.
+            // Si no hay tags, devolvemos al menos un modelo con la info general
+            modelTags.add(new OllamaModel(modelName, description, pullCount, "latest", "N/A", lastUpdatedGlobal,
+                    "Unknown", "Text", badges, readmeContent));
+            return modelTags;
         }
 
         // Selector para cada fila de tag (solo las de escritorio, que están más
@@ -160,7 +216,7 @@ public class OllamaManager {
             String tagName = fullTagName.contains(":") ? fullTagName.split(":")[1] : fullTagName;
 
             modelTags.add(new OllamaModel(modelName, description, pullCount, tagName, size, lastUpdatedGlobal, context,
-                    input));
+                    input, badges, readmeContent));
         }
 
         return modelTags;
