@@ -9,10 +9,15 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+import java.io.IOException; // Added for IOException
+import com.org.ollamafx.manager.ChatManager;
+
 public class App extends Application {
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
+    public void start(Stage primaryStage) throws IOException { // Changed Exception to IOException
+        // Load chats
+        ChatManager.getInstance().loadChats();
 
         Application.setUserAgentStylesheet(new atlantafx.base.theme.PrimerLight().getUserAgentStylesheet());
 
@@ -31,6 +36,12 @@ public class App extends Application {
         primaryStage.setTitle("OllamaFX");
         primaryStage.setScene(scene);
         primaryStage.show();
+    }
+
+    @Override
+    public void stop() throws Exception {
+        ChatManager.getInstance().saveChats();
+        super.stop();
     }
 
     public static void main(String[] args) {

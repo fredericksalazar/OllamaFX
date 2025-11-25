@@ -290,4 +290,19 @@ public class OllamaManager {
         io.github.ollama4j.models.chat.OllamaChatResult result = client.chat(request);
         return result.getResponse();
     }
+
+    public void askModelStream(String modelName, String prompt,
+            io.github.ollama4j.models.generate.OllamaStreamHandler handler)
+            throws Exception {
+        System.out.println("OllamaManager: Asking (Stream) " + modelName + ": " + prompt);
+
+        java.util.List<io.github.ollama4j.models.chat.OllamaChatMessage> messages = new java.util.ArrayList<>();
+        messages.add(new io.github.ollama4j.models.chat.OllamaChatMessage(
+                io.github.ollama4j.models.chat.OllamaChatMessageRole.USER, prompt));
+
+        io.github.ollama4j.models.chat.OllamaChatRequest request = io.github.ollama4j.models.chat.OllamaChatRequestBuilder
+                .getInstance(modelName).withMessages(messages).build();
+
+        client.chat(request, handler);
+    }
 }
