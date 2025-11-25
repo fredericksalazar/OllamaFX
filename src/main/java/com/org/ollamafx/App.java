@@ -19,6 +19,10 @@ public class App extends Application {
         // Load chats
         ChatManager.getInstance().loadChats();
 
+        // Load Fonts
+        javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/fonts/Ubuntu-Regular.ttf"), 12);
+        javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/fonts/Ubuntu-Bold.ttf"), 12);
+
         Application.setUserAgentStylesheet(new atlantafx.base.theme.PrimerLight().getUserAgentStylesheet());
 
         ModelManager modelManager = new ModelManager();

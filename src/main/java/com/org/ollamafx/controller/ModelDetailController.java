@@ -49,6 +49,9 @@ public class ModelDetailController {
     }
 
     @FXML
+    private Label parameterSizeLabel;
+
+    @FXML
     public void initialize() {
         tagNameColumn.setCellValueFactory(cellData -> cellData.getValue().tagProperty());
 
@@ -60,13 +63,16 @@ public class ModelDetailController {
         tagContextColumn.setCellValueFactory(cellData -> cellData.getValue().contextLengthProperty());
         tagInputColumn.setCellValueFactory(cellData -> cellData.getValue().inputTypeProperty());
 
-        // Configurar la columna de acción con un botón
+        // Configurar la columna de acción con un botón de icono
         tagActionColumn.setCellFactory(param -> new javafx.scene.control.TableCell<>() {
             private final Button btn = new Button();
+            private final javafx.scene.layout.Region icon = new javafx.scene.layout.Region();
 
             {
-                // Centrar el botón en la celda
                 setAlignment(Pos.CENTER);
+                btn.getStyleClass().add("icon-button");
+                btn.setGraphic(icon);
+                icon.getStyleClass().add("icon-region");
 
                 btn.setOnAction(event -> {
                     OllamaModel model = getTableView().getItems().get(getIndex());
@@ -74,16 +80,14 @@ public class ModelDetailController {
                             && modelManager.isModelInstalled(model.getName(), model.getTag());
 
                     if (isInstalled) {
-                        // Lógica de desinstalación real
-                        System.out.println("Uninstalling: " + model.getName() + ":" + model.getTag());
-                        btn.setDisable(true); // Disable while deleting
+                        // Uninstall
+                        btn.setDisable(true);
                         if (modelManager != null) {
                             modelManager.deleteModel(model.getName(), model.getTag());
-                            // Table refresh is now handled by the listener on localModels
                         }
                     } else {
-                        // Lógica de instalación con Popup
-                        showDownloadPopup(model);
+                        // Install
+                        ModelDetailController.this.showDownloadPopup(model);
                     }
                 });
             }
@@ -99,15 +103,20 @@ public class ModelDetailController {
                             && modelManager.isModelInstalled(model.getName(), model.getTag());
 
                     if (isInstalled) {
-                        btn.setText("Uninstall");
-                        btn.getStyleClass().removeAll("success");
+                        // Trash Icon
+                        icon.getStyleClass().removeAll("icon-download");
+                        icon.getStyleClass().add("icon-trash");
                         btn.getStyleClass().add("danger");
+                        javafx.scene.control.Tooltip.install(btn, new javafx.scene.control.Tooltip("Uninstall"));
                     } else {
-                        btn.setText("Install");
+                        // Download Icon
+                        icon.getStyleClass().removeAll("icon-trash");
+                        icon.getStyleClass().add("icon-download");
                         btn.getStyleClass().removeAll("danger");
-                        btn.getStyleClass().add("success");
+                        javafx.scene.control.Tooltip.install(btn, new javafx.scene.control.Tooltip("Install"));
                     }
                     setGraphic(btn);
+                    btn.setDisable(false);
                 }
             }
         });
@@ -164,9 +173,6 @@ public class ModelDetailController {
                 System.out.println("Download complete!");
                 if (modelManager != null) {
                     // Create the new model object with the info we have
-                    // We might not have exact size/date yet, but we can update those later or use
-                    // placeholders
-                    // For now, use "Installed" and current date or "Just now"
                     String date = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
                             .format(java.time.LocalDateTime.now());
                     OllamaModel newModel = new OllamaModel(
@@ -174,21 +180,17 @@ public class ModelDetailController {
                             "Installed locally",
                             "N/A",
                             model.getTag(),
-                            model.sizeProperty().get(), // Use the size from the available model info
+                            model.sizeProperty().get(),
                             date,
                             model.getContextLength(),
                             model.getInputType());
 
                     modelManager.addLocalModel(newModel);
-
-                    // Optional: Trigger a background refresh to get exact metadata eventually
-                    // modelManager.refreshLocalModels();
                 }
             });
 
             task.setOnFailed(e -> {
                 System.err.println("Download failed: " + task.getException().getMessage());
-                // Mostrar error
             });
 
             controller.setDownloadTask(task);
@@ -202,6 +204,17 @@ public class ModelDetailController {
             e.printStackTrace();
         }
     }
+
+    @FXML
+    private javafx.scene.layout.FlowPane badgesContainer;
+    @FXML
+    private Label pullCountLabel;
+    @FXML
+    private Label lastUpdatedLabel;
+    @FXML
+    private Label commandLabel;
+    @FXML
+    private Button copyButton;
 
     /**
      * Puebla la vista con la lista de tags del modelo seleccionado.
@@ -218,6 +231,62 @@ public class ModelDetailController {
         OllamaModel firstTag = modelTags.get(0);
         modelNameLabel.setText(firstTag.getName());
         modelDescriptionText.setText(firstTag.descriptionProperty().get());
+
+        // Set Command Text
+        commandLabel.setText("ollama run " + firstTag.getName());
+
+        // Setup Copy Button
+        copyButton.setOnAction(e -> {
+            javafx.scene.input.Clipboard clipboard = javafx.scene.input.Clipboard.getSystemClipboard();
+            javafx.scene.input.ClipboardContent content = new javafx.scene.input.ClipboardContent();
+            content.putString(commandLabel.getText());
+            clipboard.setContent(content);
+
+            // Visual feedback (optional)
+            copyButton.getStyleClass().add("success");
+            javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(
+                    javafx.util.Duration.seconds(1));
+            pause.setOnFinished(ev -> copyButton.getStyleClass().remove("success"));
+            pause.play();
+        });
+
+        // Populate Metrics
+        pullCountLabel.setText(firstTag.pullCountProperty().get());
+        lastUpdatedLabel.setText(firstTag.lastUpdatedProperty().get());
+
+        // Extract Parameter Size from Tag (e.g., "llama3:8b" -> "8B")
+        // This is a heuristic.
+        String tag = firstTag.getTag();
+        if (tag.contains(":")) {
+            String[] parts = tag.split(":");
+            if (parts.length > 1) {
+                parameterSizeLabel.setText(parts[1].toUpperCase());
+            } else {
+                parameterSizeLabel.setText("-");
+            }
+        } else {
+            parameterSizeLabel.setText("-");
+        }
+
+        // Populate Badges
+        badgesContainer.getChildren().clear();
+        for (String badge : firstTag.getBadges()) {
+            Label badgeLabel = new Label(badge);
+            badgeLabel.getStyleClass().add("badge-chip");
+
+            String lowerBadge = badge.toLowerCase();
+            if (lowerBadge.contains("tool") || lowerBadge.contains("think") || lowerBadge.contains("vision")) {
+                badgeLabel.getStyleClass().add("badge-purple");
+            } else if (lowerBadge.contains("cloud") || lowerBadge.matches(".*\\d+b.*")) {
+                badgeLabel.getStyleClass().add("badge-blue");
+            } else if (lowerBadge.contains("code") || lowerBadge.contains("math")) {
+                badgeLabel.getStyleClass().add("badge-green");
+            } else {
+                badgeLabel.getStyleClass().add("badge-blue"); // Default
+            }
+
+            badgesContainer.getChildren().add(badgeLabel);
+        }
 
         tagsTable.setItems(javafx.collections.FXCollections.observableArrayList(modelTags));
     }

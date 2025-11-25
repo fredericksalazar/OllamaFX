@@ -96,16 +96,23 @@ public class OllamaManager {
                 : "N/A";
 
         // Selector para badges (etiquetas de capacidad como "Vision", "Tools", "Code")
-        // Suelen ser enlaces que llevan a una búsqueda, con clases de estilo
-        // específicas.
-        // Buscamos en la cabecera principal.
+        // En la nueva versión de la web, son spans dentro de un div flex.
         List<String> badges = new ArrayList<>();
-        Elements badgeElements = doc.select("a[href^='/search?q=']");
-        for (Element badge : badgeElements) {
-            String badgeText = badge.text().trim();
-            // Filtramos etiquetas irrelevantes o muy largas si es necesario
-            if (!badgeText.isEmpty() && !badges.contains(badgeText)) {
-                badges.add(badgeText);
+
+        // Buscamos el contenedor de badges.
+        // Usamos las clases del contenedor que parecen ser únicas para esta sección:
+        // "flex flex-wrap space-x-2"
+        Element badgesContainer = doc.selectFirst("div.flex.flex-wrap.space-x-2");
+
+        if (badgesContainer != null) {
+            Elements badgeElements = badgesContainer.select("span");
+            for (Element badge : badgeElements) {
+                String badgeText = badge.text().trim();
+                // Filtramos etiquetas irrelevantes o muy largas si es necesario
+                // Evitamos duplicados
+                if (!badgeText.isEmpty() && !badges.contains(badgeText)) {
+                    badges.add(badgeText);
+                }
             }
         }
 
