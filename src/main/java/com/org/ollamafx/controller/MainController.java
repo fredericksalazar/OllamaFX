@@ -14,17 +14,17 @@ import javafx.scene.layout.StackPane;
 
 import java.io.IOException;
 import java.net.URL;
+import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.application.Application; // <-- Added import
 
 public class MainController implements Initializable {
 
-    // --- Componentes FXML ---
     @FXML
     private BorderPane mainBorderPane;
     @FXML
     private ListView<String> chatListView;
 
-    // --- Campos de la clase ---
     private ObservableList<String> chatItems;
     private ModelManager modelManager; // Referencia al gestor de estado central.
 
@@ -38,7 +38,6 @@ public class MainController implements Initializable {
      */
     public void initModelManager(ModelManager modelManager) {
         this.modelManager = modelManager;
-        // Una vez que tenemos el gestor, es seguro cargar la vista por defecto.
         showAvailableModels();
     }
 
@@ -52,8 +51,6 @@ public class MainController implements Initializable {
 
         chatItems = FXCollections.observableArrayList();
         chatListView.setItems(chatItems);
-
-        // La carga de la vista inicial se movió a initModelManager() para evitar errores.
 
         chatListView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
@@ -117,6 +114,20 @@ public class MainController implements Initializable {
         } catch (Exception e) {
             System.err.println("Error loading chat view: " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void toggleTheme() {
+        if (Application.getUserAgentStylesheet()
+                .equals(new atlantafx.base.theme.PrimerDark().getUserAgentStylesheet())) {
+            // Switch to Light
+            Application.setUserAgentStylesheet(new atlantafx.base.theme.PrimerLight().getUserAgentStylesheet());
+            mainBorderPane.getScene().getRoot().getStyleClass().add("light");
+        } else {
+            // Switch to Dark
+            Application.setUserAgentStylesheet(new atlantafx.base.theme.PrimerDark().getUserAgentStylesheet());
+            mainBorderPane.getScene().getRoot().getStyleClass().remove("light");
         }
     }
 }

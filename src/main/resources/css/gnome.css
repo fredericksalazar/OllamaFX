@@ -1,0 +1,155 @@
+/* GNOME Adwaita Theme overrides for AtlantaFX */
+
+.root {
+    /* Common Radius */
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+}
+
+/* Dark Theme (Default) */
+.root {
+    -color-bg-default: #242424;
+    -color-bg-overlay: #303030;
+    -color-bg-subtle: #1e1e1e;
+
+    -color-fg-default: #ffffff;
+    -color-fg-muted: #9a9996;
+
+    -color-accent-fg: #ffffff;
+    -color-accent-emphasis: #3584e4;
+    -color-accent-muted: #1c71d8;
+    -color-accent-subtle: #1a5fb4;
+
+    -color-border-default: #454545;
+    -color-border-muted: #383838;
+}
+
+/* Light Theme */
+.root.light {
+    -color-bg-default: #fafafa;
+    -color-bg-overlay: #ffffff;
+    -color-bg-subtle: #f6f5f4;
+
+    -color-fg-default: #2e3436;
+    -color-fg-muted: #5e5c64;
+
+    -color-accent-fg: #ffffff;
+    -color-accent-emphasis: #3584e4;
+    -color-accent-muted: #1c71d8;
+    -color-accent-subtle: #1a5fb4;
+
+    -color-border-default: #dcdcda;
+    -color-border-muted: #cfcfcd;
+}
+
+/* Header Bar */
+.header-bar {
+    -fx-background-color: -color-bg-default;
+    -fx-border-color: -color-border-default;
+    -fx-border-width: 0 0 1 0;
+}
+
+.app-title {
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-text-fill: -color-fg-default;
+}
+
+/* Sidebar */
+.sidebar {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-default;
+    -fx-border-width: 0 1 0 0;
+}
+
+.sidebar-section-label {
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.sidebar-item {
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-fg-default;
+    -fx-background-radius: 6px;
+    -fx-padding: 8 12 8 12;
+    -fx-font-size: 13px;
+    -fx-cursor: hand;
+}
+
+.sidebar-item:hover {
+    -fx-background-color: -color-bg-overlay;
+}
+
+.sidebar-item:pressed {
+    -fx-background-color: -color-accent-emphasis;
+    -fx-text-fill: -color-accent-fg;
+}
+
+.sidebar-list-view {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.sidebar-list-view .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-fg-default;
+    -fx-padding: 8 12 8 12;
+}
+
+.sidebar-list-view .list-cell:filled:selected,
+.sidebar-list-view .list-cell:filled:selected:hover {
+    -fx-background-color: -color-bg-overlay;
+    -fx-text-fill: -color-fg-default;
+    -fx-background-radius: 6px;
+}
+
+.sidebar-list-view .list-cell:filled:hover {
+    -fx-background-color: -color-bg-overlay;
+    -fx-background-radius: 6px;
+}
+
+/* Toolbar */
+.toolbar {
+    -fx-background-color: transparent;
+}
+
+/* Buttons */
+.button {
+    -fx-background-radius: 6px;
+}
+
+.button.accent {
+    -fx-background-color: -color-accent-emphasis;
+    -fx-text-fill: -color-accent-fg;
+}
+
+.button.danger {
+    -fx-background-color: #e01b24;
+    -fx-text-fill: white;
+}
+
+/* Table View */
+.table-view {
+    -fx-background-color: transparent;
+    -fx-border-color: -color-border-muted;
+    -fx-border-radius: 6px;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: -color-bg-default;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: -color-border-muted;
+}
+
+.table-view .column-header {
+    -fx-background-color: transparent;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: -color-fg-default;
+}
+
+.table-view .table-cell {
+    -fx-text-fill: -color-fg-default;
+}

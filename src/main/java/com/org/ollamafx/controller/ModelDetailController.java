@@ -1,10 +1,13 @@
 package com.org.ollamafx.controller;
 
+import com.org.ollamafx.manager.ModelManager;
 import com.org.ollamafx.model.OllamaModel;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -18,7 +21,82 @@ public class ModelDetailController {
     @FXML
     private Text modelDescriptionText;
     @FXML
-    private VBox tagsContainer;
+    private TableView<OllamaModel> tagsTable;
+    @FXML
+    private TableColumn<OllamaModel, String> tagNameColumn;
+    @FXML
+    private TableColumn<OllamaModel, String> tagSizeColumn;
+    @FXML
+    private TableColumn<OllamaModel, String> tagContextColumn;
+    @FXML
+    private TableColumn<OllamaModel, String> tagInputColumn;
+    @FXML
+    private TableColumn<OllamaModel, Void> tagActionColumn;
+
+    private ModelManager modelManager;
+
+    public void setModelManager(ModelManager modelManager) {
+        this.modelManager = modelManager;
+    }
+
+    @FXML
+    public void initialize() {
+        tagNameColumn.setCellValueFactory(cellData -> cellData.getValue().tagProperty());
+        tagSizeColumn.setCellValueFactory(cellData -> cellData.getValue().sizeProperty());
+        tagContextColumn.setCellValueFactory(cellData -> cellData.getValue().contextLengthProperty());
+        tagInputColumn.setCellValueFactory(cellData -> cellData.getValue().inputTypeProperty());
+
+        // Configurar la columna de acción con un botón
+        tagActionColumn.setCellFactory(param -> new javafx.scene.control.TableCell<>() {
+            private final Button btn = new Button();
+
+            {
+                // Centrar el botón en la celda
+                setAlignment(Pos.CENTER);
+
+                btn.setOnAction(event -> {
+                    OllamaModel model = getTableView().getItems().get(getIndex());
+                    boolean isInstalled = modelManager != null
+                            && modelManager.isModelInstalled(model.getName(), model.getTag());
+
+                    if (isInstalled) {
+                        System.out.println("Uninstalling: " + model.getName() + ":" + model.getTag());
+                        btn.setText("Uninstalling...");
+                        btn.setDisable(true);
+                        // Lógica de desinstalación aquí
+                    } else {
+                        System.out.println("Installing: " + model.getName() + ":" + model.getTag());
+                        btn.setText("Installing...");
+                        btn.setDisable(true);
+                        // Lógica de instalación aquí
+                    }
+                });
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    OllamaModel model = getTableView().getItems().get(getIndex());
+                    boolean isInstalled = modelManager != null
+                            && modelManager.isModelInstalled(model.getName(), model.getTag());
+
+                    if (isInstalled) {
+                        btn.setText("Uninstall");
+                        btn.getStyleClass().removeAll("success");
+                        btn.getStyleClass().add("danger");
+                    } else {
+                        btn.setText("Install");
+                        btn.getStyleClass().removeAll("danger");
+                        btn.getStyleClass().add("success");
+                    }
+                    setGraphic(btn);
+                }
+            }
+        });
+    }
 
     /**
      * Puebla la vista con la lista de tags del modelo seleccionado.
@@ -26,8 +104,9 @@ public class ModelDetailController {
     public void populateDetails(List<OllamaModel> modelTags) {
         if (modelTags == null || modelTags.isEmpty()) {
             modelNameLabel.setText("Error");
-            modelDescriptionText.setText("Could not retrieve model details. The library's web scraping might be outdated.");
-            tagsContainer.getChildren().clear();
+            modelDescriptionText
+                    .setText("Could not retrieve model details. The library's web scraping might be outdated.");
+            tagsTable.getItems().clear();
             return;
         }
 
@@ -35,41 +114,6 @@ public class ModelDetailController {
         modelNameLabel.setText(firstTag.getName());
         modelDescriptionText.setText(firstTag.descriptionProperty().get());
 
-        tagsContainer.getChildren().clear();
-
-        for (OllamaModel tagModel : modelTags) {
-            HBox tagRow = createTagRow(tagModel);
-            tagsContainer.getChildren().add(tagRow);
-        }
-    }
-
-    /**
-     * Crea un nodo de UI (HBox) para un tag individual.
-     * Este método ahora está completo y es funcional.
-     */
-    private HBox createTagRow(OllamaModel tagModel) {
-        // 1. Creamos el contenedor para esta fila.
-        HBox hbox = new HBox(10);
-        hbox.setAlignment(Pos.CENTER_LEFT);
-
-        // 2. Creamos la etiqueta con la información del tag.
-        Label tagLabel = new Label(String.format("Tag: %s  •  Size: %s",
-                tagModel.getTag(), tagModel.sizeProperty().get()));
-        HBox.setHgrow(tagLabel, Priority.ALWAYS); // Para que ocupe el espacio disponible.
-
-        // 3. Creamos el botón de instalar para ESTE tag específico.
-        Button installButton = new Button("Install");
-        installButton.setOnAction(event -> {
-            System.out.println("Installing: " + tagModel.getName() + ":" + tagModel.getTag());
-            // Aquí irá la lógica de instalación...
-            installButton.setText("Installing...");
-            installButton.setDisable(true);
-        });
-
-        // 4. Añadimos la etiqueta y el botón a la fila.
-        hbox.getChildren().addAll(tagLabel, installButton);
-
-        // 5. Devolvemos la fila completa.
-        return hbox;
+        tagsTable.setItems(javafx.collections.FXCollections.observableArrayList(modelTags));
     }
 }

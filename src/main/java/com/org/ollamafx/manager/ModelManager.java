@@ -36,7 +36,8 @@ public class ModelManager {
 
                 // Carga de modelos disponibles (la versión rápida)
                 System.out.println("ModelManager: Iniciando carga de modelos base disponibles...");
-                final List<OllamaModel> fetchedAvailableModels = ollamaManager.getAvailableBaseModels(); // <-- LÍNEA CORREGIDA
+                final List<OllamaModel> fetchedAvailableModels = ollamaManager.getAvailableBaseModels(); // <-- LÍNEA
+                                                                                                         // CORREGIDA
                 Platform.runLater(() -> availableModels.setAll(fetchedAvailableModels));
                 System.out.println("ModelManager: Carga de modelos base disponibles finalizada.");
 
@@ -52,5 +53,20 @@ public class ModelManager {
         });
 
         new Thread(loadTask).start();
+    }
+
+    /**
+     * Verifica si un modelo específico (nombre y tag) está instalado localmente.
+     */
+    public boolean isModelInstalled(String name, String tag) {
+        for (OllamaModel model : localModels) {
+            // La comparación debe ser robusta. Ollama suele normalizar nombres.
+            // Asumimos que 'name' es el base name (e.g. "llama3") y 'tag' es la versión
+            // (e.g. "latest").
+            if (model.getName().equalsIgnoreCase(name) && model.getTag().equalsIgnoreCase(tag)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

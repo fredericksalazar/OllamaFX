@@ -80,6 +80,7 @@ public class AvailableModelsController {
             Parent detailView = loader.load();
 
             ModelDetailController controller = loader.getController();
+            controller.setModelManager(this.modelManager); // Inyectamos el manager
             controller.populateDetails(modelTags); // Le pasamos la lista
 
             detailViewContainer.getChildren().setAll(detailView);

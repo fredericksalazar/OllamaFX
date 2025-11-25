@@ -6,9 +6,8 @@
 
 
 <HBox xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.org.ollamafx.controller.AvailableModelsController">
-   <children>
-
-              <ListView fx:id="modelListView" />
-        <StackPane fx:id="detailViewContainer" />
-   </children>
+    <children>
+        <ListView fx:id="modelListView" prefWidth="250.0" />
+        <StackPane fx:id="detailViewContainer" HBox.hgrow="ALWAYS" />
+    </children>
 </HBox>
