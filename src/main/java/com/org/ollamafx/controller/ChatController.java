@@ -10,8 +10,6 @@ import javafx.scene.control.TextArea;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextFlow;
 
 public class ChatController {
 
@@ -28,7 +26,8 @@ public class ChatController {
     @FXML
     private Button sendButton;
 
-    private com.org.ollamafx.manager.ModelManager modelManager;
+    // private com.org.ollamafx.manager.ModelManager modelManager; // Removed unused
+    // field
 
     @FXML
     public void initialize() {
@@ -73,7 +72,7 @@ public class ChatController {
     }
 
     public void setModelManager(com.org.ollamafx.manager.ModelManager modelManager) {
-        this.modelManager = modelManager;
+        // this.modelManager = modelManager; // Unused field
         if (modelManager != null) {
             modelSelector.setItems(modelManager.getLocalModels());
         }
@@ -115,7 +114,9 @@ public class ChatController {
         addMessage(text, true);
         if (currentSession != null) {
             currentSession.addMessage(new com.org.ollamafx.model.ChatMessage("user", text));
-            currentSession.setModelName(modelName); // Update model name
+            currentSession.setModelName(modelName); // Update
+                                                    // model
+                                                    // name
             com.org.ollamafx.manager.ChatManager.getInstance().saveChats(); // Save state
         }
         inputField.clear();
@@ -164,7 +165,8 @@ public class ChatController {
                     String fullResponse = responseBuilder.toString();
                     if (currentSession != null) {
                         currentSession.addMessage(new com.org.ollamafx.model.ChatMessage("assistant", fullResponse));
-                        com.org.ollamafx.manager.ChatManager.getInstance().saveChats(); // Save state
+                        com.org.ollamafx.manager.ChatManager.getInstance().saveChats(); // Save
+                                                                                        // state
                     }
                     statusLabel.setText("Ready");
                 });

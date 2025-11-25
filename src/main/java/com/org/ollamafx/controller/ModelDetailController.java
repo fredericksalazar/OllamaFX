@@ -9,9 +9,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
+// import javafx.scene.layout.HBox; // Unused
+// import javafx.scene.layout.Priority; // Unused
+// import javafx.scene.layout.VBox; // Unused
 import javafx.scene.text.Text;
 import java.util.List;
 
@@ -57,7 +57,7 @@ public class ModelDetailController {
 
         tagSizeColumn.setCellValueFactory(cellData -> cellData.getValue().sizeProperty());
         tagSizeColumn.setComparator((size1, size2) -> {
-            return parseSize(size1).compareTo(parseSize(size2));
+            return com.org.ollamafx.util.Utils.parseSize(size1).compareTo(com.org.ollamafx.util.Utils.parseSize(size2));
         });
 
         tagContextColumn.setCellValueFactory(cellData -> cellData.getValue().contextLengthProperty());
@@ -291,37 +291,4 @@ public class ModelDetailController {
         tagsTable.setItems(javafx.collections.FXCollections.observableArrayList(modelTags));
     }
 
-    private Long parseSize(String sizeStr) {
-        if (sizeStr == null || sizeStr.isEmpty() || sizeStr.equals("N/A")) {
-            return -1L;
-        }
-        try {
-            String[] parts = sizeStr.trim().split("\\s+");
-            if (parts.length < 2)
-                return 0L;
-
-            double value = Double.parseDouble(parts[0]);
-            String unit = parts[1].toUpperCase();
-
-            long multiplier = 1;
-            switch (unit) {
-                case "KB":
-                    multiplier = 1024;
-                    break;
-                case "MB":
-                    multiplier = 1024 * 1024;
-                    break;
-                case "GB":
-                    multiplier = 1024 * 1024 * 1024;
-                    break;
-                case "TB":
-                    multiplier = 1024L * 1024 * 1024 * 1024;
-                    break;
-            }
-
-            return (long) (value * multiplier);
-        } catch (Exception e) {
-            return 0L;
-        }
-    }
 }
