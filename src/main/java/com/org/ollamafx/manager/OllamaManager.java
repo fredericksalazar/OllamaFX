@@ -264,4 +264,30 @@ public class OllamaManager {
         }
         System.out.println("OllamaManager: Model " + fullName + " deleted successfully.");
     }
+
+    /**
+     * Sends a prompt to the specified model and returns the response.
+     * This is a synchronous blocking call.
+     *
+     * @param modelName The name of the model (e.g., "llama3:latest")
+     * @param prompt    The user's message
+     * @return The AI's response text
+     * @throws Exception If the request fails
+     */
+    public String askModel(String modelName, String prompt) throws Exception {
+        System.out.println("OllamaManager: Asking " + modelName + ": " + prompt);
+
+        // Create a chat message object
+        // We need to use the Chat API, not Generate, for better compatibility and
+        // future history support.
+        java.util.List<io.github.ollama4j.models.chat.OllamaChatMessage> messages = new java.util.ArrayList<>();
+        messages.add(new io.github.ollama4j.models.chat.OllamaChatMessage(
+                io.github.ollama4j.models.chat.OllamaChatMessageRole.USER, prompt));
+
+        io.github.ollama4j.models.chat.OllamaChatRequest request = io.github.ollama4j.models.chat.OllamaChatRequestBuilder
+                .getInstance(modelName).withMessages(messages).build();
+
+        io.github.ollama4j.models.chat.OllamaChatResult result = client.chat(request);
+        return result.getResponse();
+    }
 }

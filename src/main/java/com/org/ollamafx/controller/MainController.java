@@ -173,6 +173,7 @@ public class MainController implements Initializable {
             Parent view = loader.load();
 
             ChatController controller = loader.getController();
+            controller.setModelManager(this.modelManager); // Inject ModelManager
             controller.setModelName(chatName); // For now, chat name is the model name/title
 
             mainBorderPane.setCenter(view);

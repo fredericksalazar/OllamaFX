@@ -16,7 +16,7 @@ import javafx.scene.text.TextFlow;
 public class ChatController {
 
     @FXML
-    private Label modelNameLabel;
+    private javafx.scene.control.ComboBox<com.org.ollamafx.model.OllamaModel> modelSelector;
     @FXML
     private Label statusLabel;
     @FXML
@@ -27,6 +27,8 @@ public class ChatController {
     private TextArea inputField;
     @FXML
     private Button sendButton;
+
+    private com.org.ollamafx.manager.ModelManager modelManager;
 
     @FXML
     public void initialize() {
@@ -46,6 +48,26 @@ public class ChatController {
         messagesContainer.heightProperty().addListener((observable, oldValue, newValue) -> {
             scrollPane.setVvalue(1.0);
         });
+
+        // Configure ComboBox to display model names nicely
+        modelSelector.setConverter(new javafx.util.StringConverter<>() {
+            @Override
+            public String toString(com.org.ollamafx.model.OllamaModel object) {
+                return object == null ? "" : object.getName() + ":" + object.getTag();
+            }
+
+            @Override
+            public com.org.ollamafx.model.OllamaModel fromString(String string) {
+                return null; // Not needed for read-only combo
+            }
+        });
+    }
+
+    public void setModelManager(com.org.ollamafx.manager.ModelManager modelManager) {
+        this.modelManager = modelManager;
+        if (modelManager != null) {
+            modelSelector.setItems(modelManager.getLocalModels());
+        }
     }
 
     @FXML
@@ -58,18 +80,33 @@ public class ChatController {
         addMessage(text, true);
         inputField.clear();
 
-        // Simulate AI response (Echo)
+        // Call Ollama API
         statusLabel.setText("Thinking...");
+
+        com.org.ollamafx.model.OllamaModel selectedModel = modelSelector.getValue();
+
+        if (selectedModel == null) {
+            addMessage("Error: No model selected. Please select a model from the dropdown.", false);
+            statusLabel.setText("Ready");
+            return;
+        }
+
+        String modelName = selectedModel.getName() + ":" + selectedModel.getTag();
+
         new Thread(() -> {
             try {
-                Thread.sleep(1000); // Simulate network delay
-            } catch (InterruptedException e) {
+                String response = com.org.ollamafx.manager.OllamaManager.getInstance().askModel(modelName, text);
+                Platform.runLater(() -> {
+                    addMessage(response, false);
+                    statusLabel.setText("Ready");
+                });
+            } catch (Exception e) {
                 e.printStackTrace();
+                Platform.runLater(() -> {
+                    addMessage("Error: " + e.getMessage(), false);
+                    statusLabel.setText("Error");
+                });
             }
-            Platform.runLater(() -> {
-                addMessage("Echo: " + text, false);
-                statusLabel.setText("Ready");
-            });
         }).start();
     }
 
@@ -96,6 +133,15 @@ public class ChatController {
     }
 
     public void setModelName(String name) {
-        modelNameLabel.setText(name);
+        // Try to select the model in the combo box if it matches
+        if (modelSelector.getItems() != null) {
+            for (com.org.ollamafx.model.OllamaModel model : modelSelector.getItems()) {
+                String fullName = model.getName() + ":" + model.getTag();
+                if (fullName.equals(name) || model.getName().equals(name)) {
+                    modelSelector.getSelectionModel().select(model);
+                    return;
+                }
+            }
+        }
     }
 }
