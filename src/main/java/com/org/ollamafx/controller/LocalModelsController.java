@@ -35,6 +35,16 @@ public class LocalModelsController implements Initializable {
 
         // 3. ¡La vinculación! La tabla ahora "observa" la lista del gestor.
         localModelsTable.setItems(this.modelManager.getLocalModels());
+
+        // Debug: Listen for changes in the table's items
+        localModelsTable.getItems()
+                .addListener((javafx.collections.ListChangeListener.Change<? extends OllamaModel> c) -> {
+                    while (c.next()) {
+                        if (c.wasAdded()) {
+                            System.out.println("LocalModelsController: Items added to table: " + c.getAddedSize());
+                        }
+                    }
+                });
     }
 
     @Override
@@ -58,7 +68,26 @@ public class LocalModelsController implements Initializable {
 
     @FXML
     private void deleteSelectedModel() {
-        // Aquí irá tu futura lógica para borrar un modelo.
+        OllamaModel selectedModel = localModelsTable.getSelectionModel().getSelectedItem();
+        if (selectedModel != null) {
+            System.out.println("Delete button clicked for: " + selectedModel.getName() + ":" + selectedModel.getTag());
+
+            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
+                    javafx.scene.control.Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Delete Model");
+            alert.setHeaderText("Are you sure you want to delete this model?");
+            alert.setContentText("Model: " + selectedModel.getName() + ":" + selectedModel.getTag());
+
+            java.util.Optional<javafx.scene.control.ButtonType> result = alert.showAndWait();
+            if (result.isPresent() && result.get() == javafx.scene.control.ButtonType.OK) {
+                System.out.println("User confirmed deletion.");
+                if (modelManager != null) {
+                    modelManager.deleteModel(selectedModel.getName(), selectedModel.getTag());
+                }
+            } else {
+                System.out.println("Deletion cancelled by user.");
+            }
+        }
     }
 
     private Long parseSize(String sizeStr) {

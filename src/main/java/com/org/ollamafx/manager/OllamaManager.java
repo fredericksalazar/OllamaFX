@@ -242,4 +242,26 @@ public class OllamaManager {
             throw new Exception("Ollama pull failed with exit code: " + exitCode);
         }
     }
+
+    public void deleteModel(String modelName, String tag) throws Exception {
+        String fullName = modelName + ":" + tag;
+        System.out.println("OllamaManager: Executing 'ollama rm " + fullName + "'");
+        ProcessBuilder builder = new ProcessBuilder("ollama", "rm", fullName);
+        builder.redirectErrorStream(true);
+        Process process = builder.start();
+
+        try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                new java.io.InputStreamReader(process.getInputStream()))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                System.out.println("Ollama rm output: " + line);
+            }
+        }
+
+        int exitCode = process.waitFor();
+        if (exitCode != 0) {
+            throw new Exception("Ollama rm failed with exit code: " + exitCode);
+        }
+        System.out.println("OllamaManager: Model " + fullName + " deleted successfully.");
+    }
 }

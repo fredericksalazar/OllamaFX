@@ -38,6 +38,14 @@ public class ModelDetailController {
 
     public void setModelManager(ModelManager modelManager) {
         this.modelManager = modelManager;
+
+        // Listen for changes in local models to refresh the table automatically
+        if (this.modelManager != null) {
+            this.modelManager.getLocalModels()
+                    .addListener((javafx.collections.ListChangeListener.Change<? extends OllamaModel> c) -> {
+                        tagsTable.refresh();
+                    });
+        }
     }
 
     @FXML
@@ -66,9 +74,13 @@ public class ModelDetailController {
                             && modelManager.isModelInstalled(model.getName(), model.getTag());
 
                     if (isInstalled) {
-                        // Lógica de desinstalación (Simulada por ahora)
+                        // Lógica de desinstalación real
                         System.out.println("Uninstalling: " + model.getName() + ":" + model.getTag());
-                        btn.setDisable(true);
+                        btn.setDisable(true); // Disable while deleting
+                        if (modelManager != null) {
+                            modelManager.deleteModel(model.getName(), model.getTag());
+                            // Table refresh is now handled by the listener on localModels
+                        }
                     } else {
                         // Lógica de instalación con Popup
                         showDownloadPopup(model);
@@ -111,10 +123,20 @@ public class ModelDetailController {
             DownloadPopupController controller = loader.getController();
             controller.setModelName(model.getName() + ":" + model.getTag());
 
+            // Fix: Apply theme to popup
+            String userAgentStylesheet = javafx.application.Application.getUserAgentStylesheet();
+            if (userAgentStylesheet != null && userAgentStylesheet.toLowerCase().contains("light")) {
+                root.getStyleClass().add("light");
+            }
+
             javafx.stage.Stage stage = new javafx.stage.Stage();
             stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+            stage.initStyle(javafx.stage.StageStyle.TRANSPARENT); // Transparent window
             stage.setTitle("Downloading Model");
-            stage.setScene(new javafx.scene.Scene(root));
+
+            javafx.scene.Scene scene = new javafx.scene.Scene(root);
+            scene.setFill(javafx.scene.paint.Color.TRANSPARENT); // Transparent scene background
+            stage.setScene(scene);
             stage.setResizable(false);
 
             // Crear la tarea de descarga
@@ -140,8 +162,28 @@ public class ModelDetailController {
 
             task.setOnSucceeded(e -> {
                 System.out.println("Download complete!");
-                // Refrescar la tabla o notificar
-                tagsTable.refresh();
+                if (modelManager != null) {
+                    // Create the new model object with the info we have
+                    // We might not have exact size/date yet, but we can update those later or use
+                    // placeholders
+                    // For now, use "Installed" and current date or "Just now"
+                    String date = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+                            .format(java.time.LocalDateTime.now());
+                    OllamaModel newModel = new OllamaModel(
+                            model.getName(),
+                            "Installed locally",
+                            "N/A",
+                            model.getTag(),
+                            model.sizeProperty().get(), // Use the size from the available model info
+                            date,
+                            model.getContextLength(),
+                            model.getInputType());
+
+                    modelManager.addLocalModel(newModel);
+
+                    // Optional: Trigger a background refresh to get exact metadata eventually
+                    // modelManager.refreshLocalModels();
+                }
             });
 
             task.setOnFailed(e -> {

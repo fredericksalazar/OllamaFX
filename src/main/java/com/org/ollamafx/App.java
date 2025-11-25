@@ -14,13 +14,15 @@ public class App extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
 
-        Application.setUserAgentStylesheet(new PrimerDark().getUserAgentStylesheet());
+        Application.setUserAgentStylesheet(new atlantafx.base.theme.PrimerLight().getUserAgentStylesheet());
 
         ModelManager modelManager = new ModelManager();
         modelManager.loadAllModels();
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/main_view.fxml"));
-        Scene scene = new Scene(loader.load());
+        javafx.scene.Parent root = loader.load();
+        root.getStyleClass().add("light"); // Force light mode CSS overrides
+        Scene scene = new Scene(root);
         scene.getStylesheets().add(getClass().getResource("/css/gnome.css").toExternalForm());
 
         MainController mainController = loader.getController();

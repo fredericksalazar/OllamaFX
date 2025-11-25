@@ -69,4 +69,73 @@ public class ModelManager {
         }
         return false;
     }
+
+    public void deleteModel(String name, String tag) {
+        Task<Void> deleteTask = new Task<>() {
+            @Override
+            protected Void call() throws Exception {
+                ollamaManager.deleteModel(name, tag);
+                return null;
+            }
+        };
+
+        deleteTask.setOnSucceeded(e -> {
+            System.out.println("Model deleted successfully: " + name + ":" + tag);
+            refreshLocalModels();
+        });
+
+        deleteTask.setOnFailed(e -> {
+            System.err.println("Failed to delete model: " + name + ":" + tag);
+            if (deleteTask.getException() != null) {
+                deleteTask.getException().printStackTrace();
+            }
+        });
+
+        new Thread(deleteTask).start();
+    }
+
+    public void refreshLocalModels() {
+        System.out.println("ModelManager: Refreshing local models...");
+        Task<List<OllamaModel>> refreshTask = new Task<>() {
+            @Override
+            protected List<OllamaModel> call() throws Exception {
+                return ollamaManager.getLocalModels();
+            }
+        };
+
+        refreshTask.setOnSucceeded(e -> {
+            List<OllamaModel> models = refreshTask.getValue();
+            System.out.println("ModelManager: Local models refreshed. Count: " + models.size());
+            for (OllamaModel m : models) {
+                System.out.println(" - Found: " + m.getName() + ":" + m.getTag());
+            }
+            Platform.runLater(() -> localModels.setAll(models));
+        });
+
+        refreshTask.setOnFailed(e -> {
+            System.err.println("ModelManager: Failed to refresh local models.");
+            if (refreshTask.getException() != null) {
+                refreshTask.getException().printStackTrace();
+            }
+        });
+
+        new Thread(refreshTask).start();
+    }
+
+    public void addLocalModel(OllamaModel model) {
+        Platform.runLater(() -> {
+            System.out.println("ModelManager: Attempting to add model: " + model.getName() + ":" + model.getTag());
+            // Check if it already exists to avoid duplicates
+            boolean exists = localModels.stream()
+                    .anyMatch(m -> m.getName().equalsIgnoreCase(model.getName())
+                            && m.getTag().equalsIgnoreCase(model.getTag()));
+
+            if (!exists) {
+                localModels.add(model);
+                System.out.println("ModelManager: Added new model directly. List size now: " + localModels.size());
+            } else {
+                System.out.println("ModelManager: Model already exists in list. Not adding.");
+            }
+        });
+    }
 }
