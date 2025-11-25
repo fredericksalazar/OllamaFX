@@ -94,7 +94,7 @@
 }
 
 .input-area TextArea:focused {
-    -fx-border-color: -color-accent-bg;
+    -fx-border-color: -color-accent-emphasis;
 }
 
 /* Header Bar */

@@ -15,6 +15,7 @@ dependencies {
     implementation "io.github.ollama4j:ollama4j:1.0.100"
     implementation 'org.jsoup:jsoup:1.17.2'
     implementation 'io.github.mkpaz:atlantafx-base:2.0.1'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
 }
 
 java {

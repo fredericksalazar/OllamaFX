@@ -6,17 +6,29 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ChatSession {
-    private final UUID id;
-    private final StringProperty name;
-    private final BooleanProperty pinned;
-    private final LocalDateTime creationDate;
+    private UUID id; // Not final for Jackson
+    private final StringProperty name = new SimpleStringProperty();
+    private final StringProperty modelName = new SimpleStringProperty();
+    private final BooleanProperty pinned = new SimpleBooleanProperty();
+    private LocalDateTime creationDate; // Not final for Jackson
+    private List<ChatMessage> messages = new ArrayList<>();
+
+    public ChatSession() {
+        // Default constructor for Jackson
+        this.id = UUID.randomUUID();
+        this.creationDate = LocalDateTime.now();
+    }
 
     public ChatSession(String name) {
         this.id = UUID.randomUUID();
-        this.name = new SimpleStringProperty(name);
-        this.pinned = new SimpleBooleanProperty(false);
+        this.name.set(name);
+        this.pinned.set(false);
         this.creationDate = LocalDateTime.now();
     }
 
@@ -24,10 +36,16 @@ public class ChatSession {
         return id;
     }
 
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    @JsonProperty("name")
     public String getName() {
         return name.get();
     }
 
+    @JsonIgnore
     public StringProperty nameProperty() {
         return name;
     }
@@ -36,10 +54,26 @@ public class ChatSession {
         this.name.set(name);
     }
 
+    @JsonProperty("modelName")
+    public String getModelName() {
+        return modelName.get();
+    }
+
+    @JsonIgnore
+    public StringProperty modelNameProperty() {
+        return modelName;
+    }
+
+    public void setModelName(String modelName) {
+        this.modelName.set(modelName);
+    }
+
+    @JsonProperty("pinned")
     public boolean isPinned() {
         return pinned.get();
     }
 
+    @JsonIgnore
     public BooleanProperty pinnedProperty() {
         return pinned;
     }
@@ -50,6 +84,22 @@ public class ChatSession {
 
     public LocalDateTime getCreationDate() {
         return creationDate;
+    }
+
+    public void setCreationDate(LocalDateTime creationDate) {
+        this.creationDate = creationDate;
+    }
+
+    public List<ChatMessage> getMessages() {
+        return messages;
+    }
+
+    public void setMessages(List<ChatMessage> messages) {
+        this.messages = messages;
+    }
+
+    public void addMessage(ChatMessage message) {
+        this.messages.add(message);
     }
 
     @Override

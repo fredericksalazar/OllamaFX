@@ -15,11 +15,7 @@
    <top>
       <HBox alignment="CENTER_LEFT" prefHeight="50.0" spacing="10.0" styleClass="header-bar" BorderPane.alignment="CENTER">
          <children>
-            <Label fx:id="modelNameLabel" text="Select a Model" styleClass="h4">
-               <font>
-                  <Font name="System Bold" size="14.0" />
-               </font>
-            </Label>
+            <javafx.scene.control.ComboBox fx:id="modelSelector" promptText="Select a Model" styleClass="combo-box" prefWidth="200.0" />
             <Region HBox.hgrow="ALWAYS" />
             <Label fx:id="statusLabel" text="Ready" textFill="#8a8a8a" />
          </children>

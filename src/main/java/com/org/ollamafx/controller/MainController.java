@@ -119,7 +119,7 @@ public class MainController implements Initializable {
 
         chatListView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
-                loadChatView(newVal.getName());
+                loadChatView(newVal);
             }
         });
     }
@@ -167,13 +167,14 @@ public class MainController implements Initializable {
     /**
      * Carga la vista de un chat específico.
      */
-    private void loadChatView(String chatName) {
+    private void loadChatView(ChatSession session) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/chat_view.fxml"));
             Parent view = loader.load();
 
             ChatController controller = loader.getController();
-            controller.setModelName(chatName); // For now, chat name is the model name/title
+            controller.setModelManager(this.modelManager); // Inject ModelManager
+            controller.setChatSession(session); // Inject Session
 
             mainBorderPane.setCenter(view);
         } catch (IOException e) {
