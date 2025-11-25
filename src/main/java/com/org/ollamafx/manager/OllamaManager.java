@@ -176,6 +176,10 @@ public class OllamaManager {
      * @param callback  Callback para actualizar la UI
      */
     public void pullModel(String modelName, String tag, ProgressCallback callback) throws Exception {
+        if (!com.org.ollamafx.util.SecurityUtils.isValidModelName(modelName) ||
+                !com.org.ollamafx.util.SecurityUtils.isValidModelName(tag)) {
+            throw new IllegalArgumentException("Invalid model name or tag.");
+        }
         String fullName = modelName + ":" + tag;
 
         // Usamos ProcessBuilder para ejecutar "ollama pull" y leer la salida
@@ -231,8 +235,13 @@ public class OllamaManager {
     }
 
     public void deleteModel(String modelName, String tag) throws Exception {
+        if (!com.org.ollamafx.util.SecurityUtils.isValidModelName(modelName) ||
+                !com.org.ollamafx.util.SecurityUtils.isValidModelName(tag)) {
+            throw new IllegalArgumentException("Invalid model name or tag.");
+        }
         String fullName = modelName + ":" + tag;
-        System.out.println("OllamaManager: Executing 'ollama rm " + fullName + "'");
+        System.out.println("OllamaManager: Executing 'ollama rm "
+                + com.org.ollamafx.util.SecurityUtils.sanitizeForLog(fullName) + "'");
         ProcessBuilder builder = new ProcessBuilder("ollama", "rm", fullName);
         builder.redirectErrorStream(true);
         Process process = builder.start();
@@ -281,7 +290,8 @@ public class OllamaManager {
     public void askModelStream(String modelName, String prompt,
             io.github.ollama4j.models.generate.OllamaStreamHandler handler)
             throws Exception {
-        System.out.println("OllamaManager: Asking (Stream) " + modelName + ": " + prompt);
+        System.out.println(
+                "OllamaManager: Asking (Stream) " + com.org.ollamafx.util.SecurityUtils.sanitizeForLog(modelName));
 
         java.util.List<io.github.ollama4j.models.chat.OllamaChatMessage> messages = new java.util.ArrayList<>();
         messages.add(new io.github.ollama4j.models.chat.OllamaChatMessage(
@@ -290,6 +300,14 @@ public class OllamaManager {
         io.github.ollama4j.models.chat.OllamaChatRequest request = io.github.ollama4j.models.chat.OllamaChatRequestBuilder
                 .getInstance(modelName).withMessages(messages).build();
 
-        client.chat(request, handler);
+        // Execute in the global executor service
+        com.org.ollamafx.App.getExecutorService().submit(() -> {
+            try {
+                client.chat(request, handler);
+            } catch (Exception e) {
+                e.printStackTrace();
+                // We might want to notify the handler of the error if possible
+            }
+        });
     }
 }

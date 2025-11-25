@@ -124,7 +124,7 @@ public class ChatController {
         // Call Ollama API
         statusLabel.setText("Thinking...");
 
-        new Thread(() -> {
+        com.org.ollamafx.App.getExecutorService().submit(() -> {
             try {
                 // Create assistant message placeholder
                 Platform.runLater(() -> {
@@ -178,7 +178,7 @@ public class ChatController {
                     statusLabel.setText("Error");
                 });
             }
-        }).start();
+        });
     }
 
     private void addMessage(String text, boolean isUser) {

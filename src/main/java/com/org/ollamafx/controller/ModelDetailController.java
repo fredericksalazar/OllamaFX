@@ -195,8 +195,8 @@ public class ModelDetailController {
 
             controller.setDownloadTask(task);
 
-            // Iniciar la tarea en un hilo
-            new Thread(task).start();
+            // Iniciar la tarea en el executor service global
+            com.org.ollamafx.App.getExecutorService().submit(task);
 
             stage.showAndWait();
 
