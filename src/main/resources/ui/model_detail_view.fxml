@@ -78,7 +78,7 @@
                 </HBox>
 
                 <!-- Description -->
-                <Text fx:id="modelDescriptionText" fill="#e6e6e6" strokeType="OUTSIDE" strokeWidth="0.0" text="Description..." wrappingWidth="800.0" styleClass="body-large" />
+                <Text fx:id="modelDescriptionText" strokeType="OUTSIDE" strokeWidth="0.0" text="Description..." wrappingWidth="800.0" styleClass="body-large" />
 
                 <!-- Badges -->
                 <FlowPane fx:id="badgesContainer" hgap="8.0" vgap="8.0" />

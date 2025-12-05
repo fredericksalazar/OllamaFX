@@ -1,0 +1,473 @@
+/* ollama-custom.css */
+
+/* --- Estilos para la Barra Lateral estilo macOS --- */
+.sidebar {
+    -fx-background-color: -color-bg-subtle;
+    -fx-padding: 15px 10px;
+    /* More top padding for traffic lights alignment */
+    -fx-alignment: top-center;
+    -fx-spacing: 4px;
+    /* Tighter spacing for cohesive feel */
+    -fx-border-width: 0 1px 0 0;
+    -fx-border-color: -color-border-subtle;
+}
+
+/* --- SIDEBAR LIST VIEW (Finder Style) --- */
+/* Target the ListView specifically within the Sidebar */
+.sidebar .list-view {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 10px;
+    /* More padding like Finder */
+    -fx-border-width: 0;
+}
+
+.sidebar .list-view .virtual-flow .clipped-container .sheet .cell {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.sidebar .list-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 8px 20px;
+    /* Compact but comfortable */
+    -fx-text-fill: -color-fg-default;
+    -fx-font-size: 13px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-background-radius: 6px;
+    -fx-border-width: 0;
+}
+
+.sidebar .list-cell:empty {
+    -fx-background-color: transparent;
+    -fx-mouse-transparent: true;
+}
+
+.sidebar .list-cell:hover {
+    -fx-background-color: rgba(0, 0, 0, 0.04);
+    /* Subtle hover */
+}
+
+/* FINDER STYLE SELECTION: Light Grey Background, Blue Text */
+.sidebar .list-cell:selected {
+    -fx-background-color: rgba(0, 0, 0, 0.05) !important;
+    /* Visual Grey Selection */
+    -fx-text-fill: #007AFF !important;
+    /* Blue Text */
+    -fx-font-weight: normal;
+    /* WAS BOLD - NOW NORMAL */
+}
+
+/* Ensure Label inside inherits the Blue Text */
+.sidebar .list-cell:selected .label {
+    -fx-text-fill: #007AFF !important;
+    -fx-font-weight: normal;
+}
+
+/* ... content omitted ... */
+
+/* Sidebar Buttons (General) - No Bold */
+.sidebar .button {
+    -fx-font-weight: normal;
+}
+
+.sidebar .app-title {
+    -fx-font-weight: normal;
+}
+
+.sidebar-section-label {
+    -fx-font-weight: normal;
+    /* Even headers should be normal/thin */
+    -fx-opacity: 0.7;
+}
+
+/* --- CONTEXT MENU FIX --- */
+/* Ensure context menus (popups) have readable text regardless of sidebar state */
+.context-menu {
+    -fx-background-color: -color-bg-default;
+    /* Standard background */
+}
+
+.context-menu .menu-item .label {
+    -fx-text-fill: -color-fg-default !important;
+    /* Force Standard Text Color (Black/Dark) */
+}
+
+.context-menu .menu-item:focused {
+    -fx-background-color: -color-accent-emphasis;
+}
+
+.context-menu .menu-item:focused .label {
+    -fx-text-fill: white !important;
+}
+
+
+/* Hide Scrollbar tracks */
+.sidebar .list-view .scroll-bar:vertical {
+    -fx-background-color: transparent;
+}
+
+.sidebar .list-view .scroll-bar:vertical .track {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+}
+
+.sidebar .list-view .scroll-bar:vertical .thumb {
+    -fx-background-color: rgba(128, 128, 128, 0.3);
+}
+
+/* Fix MenuButton - Clean & Auto-hide */
+.sidebar .list-cell .menu-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-opacity: 0;
+    /* HIDDEN BY DEFAULT (Cleaner Look) */
+    -fx-cursor: hand;
+}
+
+/* Show Menu on Hover or Selection */
+.sidebar .list-cell:hover .menu-button,
+.sidebar .list-cell:selected .menu-button {
+    -fx-opacity: 1;
+}
+
+.sidebar .list-cell .menu-button .arrow-button {
+    -fx-padding: 0;
+}
+
+.sidebar .list-cell .menu-button .arrow {
+    -fx-padding: 0;
+    -fx-shape: null;
+    -fx-background-color: transparent;
+    -fx-mark-visible: false;
+    -fx-pref-width: 0;
+    -fx-pref-height: 0;
+}
+
+/* Icon Colors */
+.sidebar .list-cell .menu-button .icon {
+    -fx-fill: -color-fg-subtle;
+    /* Subtle grey icon by default */
+}
+
+.sidebar .list-cell:hover .menu-button .icon {
+    -fx-fill: -color-fg-default;
+    /* Darker on hover */
+}
+
+/* When selected, Icon matches Text (Blue) */
+.sidebar .list-cell:selected .menu-button .icon {
+    -fx-fill: #007AFF !important;
+    -fx-stroke: #007AFF !important;
+}
+
+
+/* --- SIDEBAR BUTTONS (Navigation) --- */
+/* --- SIDEBAR BUTTONS (Navigation) --- */
+/* --- SIDEBAR BUTTONS (Navigation) --- */
+/* Native AtlantaFX buttons are used now. No custom overrides for .button */
+
+/* Separator styling */
+.sidebar-separator .line {
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1px 0 0 0;
+}
+
+/* Chat Area Background - Subtly darker than sidebar or different */
+.chat-area {
+    -fx-background-color: transparent;
+    /* Let stackpane bg show */
+}
+
+/* Main Content Area (StackPane behind chat) */
+.stack-pane-content {
+    -fx-background-color: -color-bg-default;
+}
+
+/* Darker Sidebar/Chat differentiation */
+.root.light .sidebar {
+    -fx-background-color: #f2f2f7;
+    /* iOS System Gray 6 */
+}
+
+.root.light .stack-pane-content {
+    -fx-background-color: #f5f5f7;
+    /* Light grey chat bg */
+}
+
+.root.dark .sidebar {
+    -fx-background-color: #1c1c1e;
+    /* iOS Dark System Gray 6 */
+}
+
+.root.dark .stack-pane-content {
+    -fx-background-color: #1c1c1e;
+    /* Pure black/dark chat */
+}
+
+.root.dark .sidebar .list-cell:selected {
+    -fx-background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Typography Enhancements */
+.welcome-label {
+    -fx-font-size: 54px;
+    /* HUGE! */
+    -fx-font-weight: 700;
+    /* Bold */
+    -fx-text-fill: -color-fg-default;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 2, 0, 0, 1);
+    -fx-text-alignment: CENTER;
+    -fx-wrap-text: true;
+}
+
+/* Suggestion Chips */
+.suggestion-chip {
+    -fx-background-color: -color-bg-subtle;
+    -fx-text-fill: -color-fg-default;
+    -fx-background-radius: 20px;
+    -fx-padding: 8 16;
+    -fx-font-size: 13px;
+    -fx-cursor: hand;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-radius: 20px;
+    -fx-border-width: 1px;
+}
+
+.suggestion-chip:hover {
+    -fx-background-color: -color-neutral-muted;
+}
+
+/* --- CHAT PREMIUM INPUT CARD --- */
+
+/* Contenedor Flotante Grande (Card) */
+.input-card {
+    -fx-background-color: #ffffff;
+    /* Blanco puro para contraste */
+    -fx-background-radius: 30px;
+    /* Bordes muy redondeados */
+    -fx-border-width: 0;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.12), 15, 0, 0, 4);
+    -fx-min-height: 120px;
+    /* Altura minima considerable */
+    -fx-alignment: TOP_LEFT;
+}
+
+/* Modo oscuro override (si aplica) */
+.root.dark .input-card {
+    -fx-background-color: #000000;
+    /* Match chat background in dark mode */
+}
+
+/* --- CHAT PREMIUM INPUT CAPSULE --- */
+
+/* Contenedor Flotante (Capsule) */
+.input-capsule {
+    -fx-background-color: -color-bg-default;
+    -fx-background-radius: 200px;
+    /* Pill shape */
+    -fx-border-color: -color-border-subtle;
+    -fx-border-radius: 200px;
+    -fx-border-width: 1px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 15, 0, 0, 4);
+    /* Sombra suave */
+    -fx-min-height: 50px;
+    -fx-alignment: BOTTOM_CENTER;
+}
+
+/* Ajustes para modo oscuro (opcional, si el tema lo soporta nativamente) */
+/* .root.dark .input-capsule { ... } */
+
+/* Botón Mágico (Sparkle) */
+.magic-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-accent-emphasis;
+    /* Color primario vibrante */
+    -fx-font-size: 16px;
+    -fx-cursor: hand;
+    -fx-background-radius: 50%;
+    -fx-min-width: 36px;
+    -fx-min-height: 36px;
+    -fx-alignment: CENTER;
+}
+
+.magic-button:hover {
+    -fx-background-color: -color-bg-subtle;
+    -fx-scale-x: 1.1;
+    -fx-scale-y: 1.1;
+}
+
+/* Botón de Enviar (Icono) */
+.send-button-icon {
+    -fx-background-color: -color-accent-emphasis;
+    -fx-text-fill: white;
+    -fx-background-radius: 50%;
+    -fx-min-width: 36px;
+    -fx-min-height: 36px;
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+    -fx-alignment: CENTER;
+    -fx-content-display: TEXT_ONLY;
+}
+
+.send-button-icon:hover {
+    -fx-background-color: #005bb5;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 5, 0, 0, 2);
+}
+
+/* TextArea Transparente */
+.transparent-area {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-font-size: 16px;
+    /* Texto grande como en Gemini */
+    -fx-prompt-text-fill: #a0a0a0;
+    -fx-padding: 0;
+    /* Sin padding extra */
+}
+
+.transparent-area .content {
+    -fx-background-color: transparent;
+}
+
+.transparent-area:focused {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+}
+
+/* --- CREATIVITY PANEL --- */
+.creativity-panel {
+    -fx-background-color: -color-bg-default;
+    -fx-background-radius: 12px;
+    -fx-border-radius: 12px;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1px;
+    -fx-padding: 15px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 20, 0, 0, 5);
+    -fx-min-width: 300px;
+}
+
+.creativity-label {
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+    -fx-text-fill: -color-fg-default;
+}
+
+.creativity-value-label {
+    -fx-font-family: "System";
+    /* O la fuente que uses */
+    -fx-font-weight: 800;
+    -fx-text-fill: -color-accent-emphasis;
+}
+
+.creativity-numeric-subtle {
+    -fx-font-size: 10px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.creativity-mark-label {
+    -fx-font-size: 10px;
+    -fx-text-fill: -color-fg-subtle;
+    -fx-font-weight: 600;
+    -fx-text-transform: uppercase;
+    -fx-letter-spacing: 1px;
+}
+
+/* --- MIGRATED CHAT BUBBLES (From gnome.css) --- */
+.chat-bubble {
+    -fx-background-radius: 18px;
+    -fx-padding: 10px 15px;
+    -fx-font-size: 14px;
+    -fx-max-width: 600px;
+    /* Fixed max width to prevent super wide bubbles */
+    -fx-effect: null;
+    /* Reset any shadow if necessary */
+}
+
+.chat-bubble-user {
+    -fx-background-color: -color-accent-emphasis;
+    /* Blue background */
+    -fx-text-fill: white;
+    /* Always white text on blue */
+    -fx-background-radius: 18px 18px 0 18px;
+}
+
+.chat-bubble-assistant {
+    -fx-background-color: -color-bg-subtle;
+    -fx-text-fill: -color-fg-default;
+    -fx-background-radius: 18px 18px 18px 0;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-radius: 18px 18px 18px 0;
+}
+
+/* --- MIGRATED ICONS (From gnome.css) --- */
+.icon-region {
+    -fx-background-color: -color-fg-muted;
+    -fx-min-width: 18px;
+    -fx-min-height: 18px;
+    -fx-max-width: 18px;
+    -fx-max-height: 18px;
+    -fx-scale-shape: true;
+}
+
+.icon-download {
+    -fx-shape: "M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z";
+}
+
+.icon-time {
+    -fx-shape: "M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z";
+}
+
+.icon-cube {
+    -fx-shape: "M21 16.5c0 .38-.21.71-.53.88l-7.9 4.44c-.16.12-.36.18-.57.18-.21 0-.41-.06-.57-.18l-7.9-4.44A.991.991 0 0 1 3 16.5v-9c0-.38.21-.71.53-.88l7.9-4.44c.16-.12.36-.18.57-.18.21 0 .41.06.57.18l7.9 4.44c.32.17.53.5.53.88v9zM12 4.15L6.04 7.5 12 10.85l5.96-3.35L12 4.15zM5 15.91l6 3.38v-6.71L5 9.21v6.7zM13 19.29l6-3.38v-6.7l-6 3.38v6.7z";
+}
+
+.icon-trash {
+    -fx-shape: "M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z";
+}
+
+.icon-copy {
+    -fx-shape: "M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z";
+}
+
+/* --- MIGRATED BADGES (From gnome.css) --- */
+.badge-chip {
+    -fx-background-color: #ddf4ff;
+    -fx-background-radius: 12px;
+    -fx-padding: 5px 14px;
+    -fx-text-fill: #0969da;
+    -fx-font-weight: normal;
+    -fx-font-size: 13px;
+    -fx-border-color: transparent;
+    -fx-border-radius: 12px;
+    -fx-border-width: 1px;
+}
+
+.badge-blue {
+    -fx-background-color: #ddf4ff;
+    -fx-text-fill: #0969da;
+}
+
+.badge-purple {
+    -fx-background-color: #fbefff;
+    -fx-text-fill: #8250df;
+}
+
+.badge-green {
+    -fx-background-color: #dafbe1;
+    -fx-text-fill: #1a7f37;
+}
+
+.badge-orange {
+    -fx-background-color: #fff8c5;
+    -fx-text-fill: #9a6700;
+}
+
+.input-container-wrapper {
+    -fx-background-color: transparent;
+}
+
+.body-large {
+    -fx-fill: -color-fg-default;
+    -fx-font-size: 14px;
+}
