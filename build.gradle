@@ -14,6 +14,8 @@ repositories {
 dependencies {
     implementation "io.github.ollama4j:ollama4j:1.0.100"
     implementation 'org.jsoup:jsoup:1.17.2'
+    implementation 'io.github.mkpaz:atlantafx-base:2.0.1'
+    implementation 'com.github.oshi:oshi-core-java11:6.4.0'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
     implementation 'org.commonmark:commonmark:0.21.0'
     implementation 'io.github.mkpaz:atlantafx-base:2.0.1'

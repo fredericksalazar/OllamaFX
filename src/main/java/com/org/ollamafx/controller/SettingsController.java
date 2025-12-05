@@ -1,6 +1,7 @@
 package com.org.ollamafx.controller;
 
 import com.org.ollamafx.manager.ConfigManager;
+import com.org.ollamafx.manager.HardwareManager;
 import javafx.application.Application;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -18,11 +19,25 @@ public class SettingsController {
     @FXML
     private Label statusLabel;
 
+    @FXML
+    private Label ramLabel;
+
+    @FXML
+    private Label cpuLabel;
+
+    @FXML
+    private Label osLabel;
+
     private final ConfigManager configManager = ConfigManager.getInstance();
 
     @FXML
     public void initialize() {
         hostTextField.setText(configManager.getOllamaHost());
+
+        // Populate Hardware Info
+        ramLabel.setText(HardwareManager.getRamDetails());
+        cpuLabel.setText(HardwareManager.getCpuDetails());
+        osLabel.setText(HardwareManager.getOsDetails());
         // Initial theme text update if needed, though we might not know current state
         // easily without checking CSS
     }

@@ -33,6 +33,20 @@
     </VBox>
     
     <Separator />
+
+    <VBox spacing="10.0">
+        <Label styleClass="title-4" text="System Capabilities" />
+        <VBox spacing="5.0" style="-fx-background-color: -color-bg-subtle; -fx-padding: 10; -fx-background-radius: 5;">
+            <Label text="RAM" style="-fx-font-weight: bold;" />
+            <Label fx:id="ramLabel" text="Loading..." textFill="#888888" />
+            
+            <Label text="CPU" style="-fx-font-weight: bold;" />
+            <Label fx:id="cpuLabel" text="Loading..." textFill="#888888" />
+            
+            <Label text="OS" style="-fx-font-weight: bold;" />
+            <Label fx:id="osLabel" text="Loading..." textFill="#888888" />
+        </VBox>
+    </VBox>
     
     <Label fx:id="statusLabel" text="" textFill="green" />
 

@@ -42,6 +42,9 @@ public class App extends Application {
         // Load chats
         ChatManager.getInstance().loadChats();
 
+        // Log Hardware Details
+        System.out.println(com.org.ollamafx.manager.HardwareManager.getHardwareDetails());
+
         // Load Fonts
         javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/fonts/Ubuntu-Regular.ttf"), 12);
         javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/fonts/Ubuntu-Bold.ttf"), 12);
