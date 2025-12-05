@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'application'
     id 'org.openjfx.javafxplugin' version '0.0.14'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 group = 'com.org.ollamafx'
@@ -19,6 +20,35 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
     implementation 'org.commonmark:commonmark:0.21.0'
 
+    // Cross-platform natives for Shadow JAR
+    runtimeOnly "org.openjfx:javafx-graphics:21:linux"
+    runtimeOnly "org.openjfx:javafx-graphics:21:win"
+    runtimeOnly "org.openjfx:javafx-base:21:linux"
+    runtimeOnly "org.openjfx:javafx-base:21:win"
+    runtimeOnly "org.openjfx:javafx-controls:21:linux"
+    runtimeOnly "org.openjfx:javafx-controls:21:win"
+    runtimeOnly "org.openjfx:javafx-fxml:21:linux"
+    runtimeOnly "org.openjfx:javafx-fxml:21:win"
+    runtimeOnly "org.openjfx:javafx-fxml:21:linux"
+    runtimeOnly "org.openjfx:javafx-fxml:21:win"
+    runtimeOnly "org.openjfx:javafx-web:21:linux"
+    runtimeOnly "org.openjfx:javafx-web:21:win"
+    runtimeOnly "org.openjfx:javafx-media:21:linux"
+    runtimeOnly "org.openjfx:javafx-media:21:win"
+
+    // Mac & Apple Silicon Support
+    runtimeOnly "org.openjfx:javafx-graphics:21:mac"
+    runtimeOnly "org.openjfx:javafx-graphics:21:mac-aarch64"
+    runtimeOnly "org.openjfx:javafx-base:21:mac"
+    runtimeOnly "org.openjfx:javafx-base:21:mac-aarch64"
+    runtimeOnly "org.openjfx:javafx-controls:21:mac"
+    runtimeOnly "org.openjfx:javafx-controls:21:mac-aarch64"
+    runtimeOnly "org.openjfx:javafx-fxml:21:mac"
+    runtimeOnly "org.openjfx:javafx-fxml:21:mac-aarch64"
+    runtimeOnly "org.openjfx:javafx-web:21:mac"
+    runtimeOnly "org.openjfx:javafx-web:21:mac-aarch64"
+    runtimeOnly "org.openjfx:javafx-media:21:mac"
+    runtimeOnly "org.openjfx:javafx-media:21:mac-aarch64"
 }
 
 java {
@@ -33,11 +63,44 @@ javafx {
 }
 
 application {
-    mainClass = 'com.org.ollamafx.App'
+    mainClass = 'com.org.ollamafx.Launcher'
 }
 
 processResources {
     filesMatching('**/*.properties') {
         expand(project.properties)
+    }
+}
+
+shadowJar {
+    archiveBaseName.set('OllamaFX')
+    archiveClassifier.set('')
+    archiveVersion.set(version)
+    mergeServiceFiles()
+    exclude 'module-info.class'
+    manifest {
+        attributes 'Main-Class': 'com.org.ollamafx.Launcher'
+    }
+}
+
+task packageDistribution(type: Zip) {
+    dependsOn shadowJar
+    archiveFileName = "OllamaFX-${version}-Dist.zip"
+    destinationDirectory = file("$buildDir/distributions")
+
+    from(shadowJar.archiveFile) {
+        into "."
+    }
+    from("scripts") {
+        into "."
+    }
+
+    doLast {
+        copy {
+            from destinationDirectory
+            into "${project.rootDir}/releases"
+            include archiveFileName.get()
+        }
+        println "Release copied to ${project.rootDir}/releases/${archiveFileName.get()}"
     }
 }
