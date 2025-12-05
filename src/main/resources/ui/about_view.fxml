@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.SVGPath?>
+<?import javafx.scene.text.Font?>
+
+<VBox alignment="CENTER" spacing="20.0" style="-fx-background-color: transparent;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.org.ollamafx.controller.AboutController">
+    <padding>
+        <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+    </padding>
+
+    <!-- App Logo / Icon Placeholder -->
+    <!-- Using a simple code/terminal icon for now -->
+    <SVGPath content="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z" 
+             style="-fx-fill: -color-accent-emphasis;" scaleX="3.0" scaleY="3.0" />
+    
+    <!-- Spacing -->
+    <VBox prefHeight="20.0" />
+
+    <!-- App Name -->
+    <Label styleClass="h1" text="OllamaFX">
+        <font>
+            <Font name="System Bold" size="36.0" />
+        </font>
+    </Label>
+    
+    <!-- Version -->
+    <Label fx:id="versionLabel" style="-fx-text-fill: -color-fg-subtle; -fx-font-size: 14px;" text="Version ..." />
+
+    <!-- Description -->
+    <Label text="Professional Open Source Client for Ollama." styleClass="body-large" wrapText="true" textAlignment="CENTER" />
+    
+    <!-- Credits -->
+    <VBox alignment="CENTER" spacing="5.0">
+        <Label text="Created by Frederick Salazar" style="-fx-text-fill: -color-fg-subtle;" />
+        <Label text="Powered by JavaFX &amp; AtlantaFX" style="-fx-text-fill: -color-fg-subtle; -fx-font-size: 11px;" />
+    </VBox>
+
+    <!-- Links -->
+    <Hyperlink onAction="#openGitHub" text="GitHub Repository" style="-fx-font-size: 14px;" />
+    
+    <Label text="Released under MIT License" style="-fx-text-fill: -color-fg-subtle; -fx-font-size: 10px;" />
+
+</VBox>

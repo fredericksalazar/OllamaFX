@@ -35,3 +35,9 @@ javafx {
 application {
     mainClass = 'com.org.ollamafx.App'
 }
+
+processResources {
+    filesMatching('**/*.properties') {
+        expand(project.properties)
+    }
+}

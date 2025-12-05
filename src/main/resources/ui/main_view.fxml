@@ -69,6 +69,11 @@
                             <Insets left="20.0" top="10.0" bottom="10.0"/>
                         </padding>
                     </Button>
+                    <Button fx:id="btnAbout" alignment="BASELINE_LEFT" maxWidth="Infinity" mnemonicParsing="false" onAction="#showAbout" styleClass="button" text="Acerca de">
+                        <padding>
+                            <Insets left="20.0" top="10.0" bottom="10.0"/>
+                        </padding>
+                    </Button>
                     <padding>
                         <Insets bottom="10.0" left="5.0" right="5.0" top="5.0" />
                     </padding>
