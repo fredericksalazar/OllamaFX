@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- SEO Principal Optimizado -->
+    <title>OllamaFX | Cliente Nativo para Ollama en macOS por Frederick Salazar</title>
+    <meta name="description" content="Descarga OllamaFX, el cliente de escritorio definitivo para Ollama creado por Frederick Salazar. Ejecuta modelos como Gemma, Gemini, Llama3 y Mistral en una interfaz nativa estilo macOS Cupertino. Privacidad total y Open Source.">
+    <meta name="keywords" content="Ollama, OllamaFX, Frederick Salazar, Cliente Ollama, Gemma, Gemini, Llama3, Mistral, IA Local, JavaFX, macOS App, Inteligencia Artificial, Desktop Client, Local LLM, Apple Silicon AI">
+    <meta name="author" content="Frederick Salazar">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph / Redes Sociales -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://fredericksalazar.github.io/OllamaFX/">
+    <meta property="og:title" content="OllamaFX - Tu IA Local con Diseño Apple">
+    <meta property="og:description" content="Gestiona y chatea con modelos de IA (Gemma, Gemini, Llama3) en una app nativa diseñada por Frederick Salazar. Descarga gratis para macOS.">
+    <meta property="og:image" content="https://raw.githubusercontent.com/fredericksalazar/OllamaFX/master/docs/screenshots/desktop_view.jpg">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="OllamaFX | Cliente Nativo por Frederick Salazar">
+    <meta name="twitter:description" content="Ejecuta Gemma y Gemini localmente con una interfaz estilo Apple.">
+    <meta name="twitter:image" content="https://raw.githubusercontent.com/fredericksalazar/OllamaFX/master/docs/screenshots/desktop_view.jpg">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#007AFF', // Apple Blue System Color
+                            600: '#0056b3',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        },
+                        dark: '#1e1e1e', // Fondo macOS Dark Mode
+                        darker: '#141414', 
+                        card: '#2c2c2e', // Surface macOS Dark Mode
+                        border: '#3a3a3c', // Border macOS Dark Mode
+                    },
+                    fontFamily: {
+                        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'],
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .hero-gradient {
+            background: linear-gradient(135deg, #000000 0%, #1c1c1e 100%);
+            position: relative;
+        }
+        .hero-gradient::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 80%;
+            height: 80%;
+            background: radial-gradient(circle, rgba(0,122,255,0.15) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        /* Smooth Scroll Behavior */
+        html { scroll-behavior: smooth; }
+        /* Custom scrollbar for aesthetics (Mac style) */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+    </style>
+</head>
+<body class="bg-dark text-gray-300 antialiased selection:bg-brand-500 selection:text-white">
+
+    <!-- Navbar Flotante -->
+    <nav class="fixed w-full z-50 top-0 left-0 bg-dark/80 backdrop-blur-xl border-b border-border">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#" class="text-2xl font-extrabold text-white tracking-tighter flex items-center gap-2 group">
+                <span class="bg-brand-500 text-white p-1.5 rounded-lg shadow-lg shadow-brand-500/20 group-hover:bg-brand-400 transition">
+                    <i class="fa-solid fa-layer-group"></i>
+                </span>
+                OllamaFX
+            </a>
+            <div class="hidden md:flex items-center gap-8 font-medium text-sm text-gray-300">
+                <a href="#features" class="hover:text-white transition">Características</a>
+                <a href="#screenshots" class="hover:text-white transition">Galería</a>
+                <a href="#download" class="hover:text-white transition">Descargar</a>
+                <a href="https://github.com/fredericksalazar/OllamaFX" target="_blank" class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg transition flex items-center gap-2 border border-white/5 group">
+                    <i class="fa-brands fa-github text-lg"></i>
+                    <span class="hidden lg:inline group-hover:text-brand-200 transition">GitHub</span>
+                </a>
+            </div>
+             <!-- Mobile menu button -->
+             <div class="md:hidden">
+                <a href="https://github.com/fredericksalazar/OllamaFX" target="_blank" class="text-gray-300 hover:text-white">
+                    <i class="fa-brands fa-github text-2xl"></i>
+                </a>
+             </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="pt-32 pb-20 lg:pt-48 lg:pb-32 hero-gradient overflow-hidden">
+        <div class="container mx-auto px-6 relative z-10">
+            <div class="text-center max-w-5xl mx-auto">
+                <!-- Badge de Versión -->
+                <a href="https://github.com/fredericksalazar/OllamaFX/releases/tag/v0.2.0" target="_blank" class="inline-flex items-center gap-2 bg-brand-500/10 text-brand-400 px-4 py-1.5 rounded-full text-sm font-semibold border border-brand-500/20 hover:bg-brand-500/20 hover:scale-105 transition-all duration-300 mb-8 cursor-pointer shadow-[0_0_20px_rgba(0,122,255,0.15)]">
+                    <i class="fa-solid fa-rocket animate-pulse"></i>
+                    ¡Lanzamiento v0.2.0 Disponible!
+                    <i class="fa-solid fa-chevron-right text-xs opacity-70"></i>
+                </a>
+                
+                <h1 class="text-5xl md:text-7xl lg:text-8xl font-extrabold text-white mb-8 tracking-tight leading-[1.1]">
+                    Tu IA Local.<br>
+                    <span class="bg-clip-text text-transparent bg-gradient-to-r from-brand-400 via-blue-400 to-purple-500 animate-gradient">
+                        Diseño Cupertino.
+                    </span>
+                </h1>
+                <p class="text-xl md:text-2xl text-gray-400 mb-12 max-w-2xl mx-auto leading-relaxed font-light">
+                    Ejecuta <strong>Gemma</strong>, <strong>Gemini</strong> y <strong>Llama3</strong> con la elegancia nativa de macOS.
+                    <br>Desarrollado por <span class="text-brand-400 font-medium">Frederick Salazar</span> para entusiastas del diseño y la privacidad.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row justify-center gap-5 mb-20">
+                    <a href="https://github.com/fredericksalazar/OllamaFX/releases" target="_blank" class="group bg-brand-600 hover:bg-brand-500 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300 transform hover:-translate-y-1 shadow-[0_10px_40px_-10px_rgba(0,122,255,0.5)] flex items-center justify-center gap-3 text-lg border border-transparent hover:border-brand-300">
+                        <i class="fa-brands fa-apple text-xl"></i>
+                        Descargar OllamaFX
+                    </a>
+                    <a href="#screenshots" class="bg-card/50 backdrop-blur hover:bg-card text-white font-semibold py-4 px-8 rounded-2xl transition-all duration-300 border border-white/10 hover:border-white/30 flex items-center justify-center gap-3 text-lg">
+                        <i class="fa-solid fa-images text-gray-400"></i> Ver Interfaz
+                    </a>
+                </div>
+            </div>
+
+            <!-- Hero Image Showcase -->
+            <div class="relative mx-auto max-w-6xl group perspective mt-10">
+                <!-- Glow Effect -->
+                <div class="absolute -inset-1 bg-gradient-to-r from-brand-500 via-purple-500 to-brand-500 rounded-2xl blur-2xl opacity-20 group-hover:opacity-40 transition duration-1000"></div>
+                
+                <!-- Main Image Container -->
+                <div class="relative rounded-xl overflow-hidden shadow-2xl border border-white/10 bg-darker">
+                    <!-- MacOS Window Controls Mockup -->
+                    <div class="h-8 bg-card border-b border-white/5 flex items-center px-4 gap-2 absolute top-0 w-full z-20">
+                        <div class="w-3 h-3 rounded-full bg-[#ff5f56]"></div>
+                        <div class="w-3 h-3 rounded-full bg-[#ffbd2e]"></div>
+                        <div class="w-3 h-3 rounded-full bg-[#27c93f]"></div>
+                    </div>
+                    
+                    <!-- MAIN IMAGE: Desktop View -->
+                    <!-- Script de fallback: Si falla .jpg, intenta cargar .png automáticamente -->
+                    <img 
+                        src="https://raw.githubusercontent.com/fredericksalazar/OllamaFX/master/docs/screenshots/desktop_view.jpg" 
+                        onerror="this.onerror=null; this.src=this.src.replace('.jpg', '.png');"
+                        alt="OllamaFX Desktop Interface macOS Style" 
+                        class="w-full h-auto object-cover transform transition-transform duration-700 hover:scale-[1.01] pt-8"
+                    >
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Features Section -->
+    <section id="features" class="py-32 bg-darker border-y border-border relative">
+        <div class="container mx-auto px-6 relative">
+            <div class="text-center max-w-3xl mx-auto mb-20">
+                <span class="text-brand-400 font-bold tracking-widest uppercase text-xs mb-3 block">Experiencia Premium</span>
+                <h2 class="text-4xl md:text-5xl font-bold text-white mb-6">Potencia de IA, Estética Apple</h2>
+                <p class="text-xl text-gray-400">Frederick Salazar ha diseñado OllamaFX para que se sienta como una extensión natural de tu sistema operativo.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
+                <!-- Feature 1 -->
+                <div class="bg-card/50 backdrop-blur-sm p-8 rounded-3xl border border-white/5 hover:border-brand-500/30 transition-all duration-300 group hover:-translate-y-2 hover:bg-card">
+                    <div class="w-14 h-14 bg-gradient-to-br from-brand-500 to-blue-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-brand-500/20">
+                        <i class="fa-brands fa-apple text-white text-3xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-4">Interfaz macOS Cupertino</h3>
+                    <p class="text-gray-400 leading-relaxed">Diseño fiel a las guías de estilo de Apple. Transparencias, bordes redondeados y un modo oscuro que se integra perfectamente con tu escritorio.</p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="bg-card/50 backdrop-blur-sm p-8 rounded-3xl border border-white/5 hover:border-purple-500/30 transition-all duration-300 group hover:-translate-y-2 hover:bg-card">
+                    <div class="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-purple-500/20">
+                        <i class="fa-solid fa-microchip text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-4">Soporte Multimodelo</h3>
+                    <p class="text-gray-400 leading-relaxed">¿Gemma 2? ¿Llama 3? ¿Gemini? Descárgalos y ejecútalos todos desde una librería visual unificada sin tocar la terminal.</p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="bg-card/50 backdrop-blur-sm p-8 rounded-3xl border border-white/5 hover:border-green-500/30 transition-all duration-300 group hover:-translate-y-2 hover:bg-card">
+                    <div class="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-green-500/20">
+                        <i class="fa-solid fa-lock text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-4">Privacidad Absoluta</h3>
+                    <p class="text-gray-400 leading-relaxed">Tu data no viaja a servidores externos. OllamaFX aprovecha la potencia local de tu hardware para una IA rápida y segura.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Screenshots Section -->
+    <section id="screenshots" class="py-32 bg-dark">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+                <div class="max-w-2xl">
+                    <h2 class="text-4xl md:text-5xl font-bold text-white mb-4">Galería Visual</h2>
+                    <p class="text-xl text-gray-400">Explora la interfaz creada por Frederick Salazar.</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Image 1: Library View -->
+                <div class="group relative rounded-2xl overflow-hidden border border-white/10 bg-darker aspect-video shadow-2xl">
+                    <img 
+                        src="https://raw.githubusercontent.com/fredericksalazar/OllamaFX/master/docs/screenshots/library_view.jpg" 
+                        onerror="this.onerror=null; this.src=this.src.replace('.jpg', '.png');"
+                        alt="Gestión de Modelos Gemma y Llama3 en OllamaFX" 
+                        class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
+                    >
+                    <div class="absolute inset-0 bg-gradient-to-t from-darker/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-8">
+                        <div>
+                            <h4 class="text-white text-xl font-bold">Librería de Modelos</h4>
+                            <p class="text-gray-300 text-sm mt-1">Gestiona Gemma, Llama3 y más.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Image 2: Chat View -->
+                <div class="group relative rounded-2xl overflow-hidden border border-white/10 bg-darker aspect-video shadow-2xl">
+                    <img 
+                        src="https://raw.githubusercontent.com/fredericksalazar/OllamaFX/master/docs/screenshots/chat_view.jpg" 
+                        onerror="this.onerror=null; this.src=this.src.replace('.jpg', '.png');"
+                        alt="Chat con Gemini usando OllamaFX" 
+                        class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
+                    >
+                    <div class="absolute inset-0 bg-gradient-to-t from-darker/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-8">
+                        <div>
+                            <h4 class="text-white text-xl font-bold">Chat Fluido</h4>
+                            <p class="text-gray-300 text-sm mt-1">Experiencia nativa y rápida.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Download / CTA Section -->
+    <section id="download" class="py-32 relative overflow-hidden">
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-brand-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+        <div class="container mx-auto px-6 relative z-10">
+            <div class="bg-gradient-to-br from-card to-darker border border-white/10 rounded-[3rem] p-8 md:p-16 text-center max-w-5xl mx-auto shadow-2xl">
+                <h2 class="text-4xl md:text-6xl font-extrabold text-white mb-8">Descarga OllamaFX Gratis</h2>
+                <p class="text-xl text-gray-400 mb-12 max-w-2xl mx-auto">
+                    Únete a la revolución de la IA local con el cliente más elegante del mercado. Open Source y seguro.
+                </p>
+
+                <div class="flex flex-col md:flex-row items-center justify-center gap-6">
+                    <a href="https://github.com/fredericksalazar/OllamaFX/releases" target="_blank" class="w-full md:w-auto bg-brand-600 hover:bg-brand-500 text-white font-bold py-5 px-10 rounded-2xl transition-all shadow-xl shadow-brand-600/20 flex items-center justify-center gap-3 text-xl hover:scale-105">
+                        <i class="fa-brands fa-apple text-2xl"></i>
+                        <span>Descargar v0.2.0</span>
+                    </a>
+                    
+                    <a href="https://github.com/fredericksalazar/OllamaFX" target="_blank" class="w-full md:w-auto bg-white/5 hover:bg-white/10 text-white font-bold py-5 px-10 rounded-2xl transition-all border border-white/10 flex items-center justify-center gap-3 text-xl hover:scale-105">
+                        <i class="fa-brands fa-github text-2xl"></i>
+                        Ver Código
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-darker border-t border-white/5 py-12 text-sm">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                <div class="text-center md:text-left">
+                    <div class="font-bold text-white text-lg mb-1">OllamaFX</div>
+                    <p class="text-gray-500">Un proyecto de <strong class="text-gray-400">Frederick Salazar</strong>.</p>
+                </div>
+                <div class="flex gap-8 text-gray-500">
+                    <a href="#" class="hover:text-brand-400 transition">Inicio</a>
+                    <a href="https://github.com/fredericksalazar/OllamaFX" class="hover:text-brand-400 transition">GitHub</a>
+                </div>
+                <div class="text-gray-600">
+                    &copy; 2025 Frederick Salazar. MIT License.
+                </div>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
