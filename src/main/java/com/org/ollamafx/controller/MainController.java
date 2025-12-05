@@ -34,6 +34,8 @@ public class MainController implements Initializable {
     private javafx.scene.control.Button btnLocal;
     @FXML
     private javafx.scene.control.Button btnSettings;
+    @FXML
+    private javafx.scene.control.Button btnAbout;
 
     private ChatManager chatManager;
     private ModelManager modelManager;
@@ -158,6 +160,8 @@ public class MainController implements Initializable {
             btnLocal.getStyleClass().remove("selected");
         if (btnSettings != null)
             btnSettings.getStyleClass().remove("selected");
+        if (btnAbout != null)
+            btnAbout.getStyleClass().remove("selected");
 
         // Add to target
         if (activeButton != null) {
@@ -175,6 +179,8 @@ public class MainController implements Initializable {
             btnLocal.getStyleClass().remove("selected");
         if (btnSettings != null)
             btnSettings.getStyleClass().remove("selected");
+        if (btnAbout != null)
+            btnAbout.getStyleClass().remove("selected");
     }
 
     /**
@@ -216,6 +222,18 @@ public class MainController implements Initializable {
         setActiveTool(btnSettings);
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/settings_view.fxml"));
+            Parent view = loader.load();
+            centerContentPane.getChildren().setAll(view); // Update StackPane content
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    public void showAbout() {
+        setActiveTool(btnAbout);
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/about_view.fxml"));
             Parent view = loader.load();
             centerContentPane.getChildren().setAll(view); // Update StackPane content
         } catch (IOException e) {
