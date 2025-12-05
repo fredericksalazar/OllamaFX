@@ -10,26 +10,38 @@ public class HardwareManager {
     private static final SystemInfo systemInfo = new SystemInfo();
     private static final HardwareAbstractionLayer hardware = systemInfo.getHardware();
 
+    public static String getRamDetails() {
+        GlobalMemory memory = hardware.getMemory();
+        return String.format("%.2f GB Total / %.2f GB Available",
+                bytesToGb(memory.getTotal()),
+                bytesToGb(memory.getAvailable()));
+    }
+
+    public static String getCpuDetails() {
+        CentralProcessor processor = hardware.getProcessor();
+        return processor.getProcessorIdentifier().getName();
+    }
+
+    public static String getOsDetails() {
+        return System.getProperty("os.name") + " " + System.getProperty("os.version");
+    }
+
     public static String getHardwareDetails() {
         StringBuilder sb = new StringBuilder();
         sb.append("Hardware Information:\n");
         sb.append("---------------------\n");
 
         // RAM
-        GlobalMemory memory = hardware.getMemory();
-        sb.append(String.format("RAM: %.2f GB Total / %.2f GB Available\n",
-                bytesToGb(memory.getTotal()),
-                bytesToGb(memory.getAvailable())));
+        sb.append("RAM: ").append(getRamDetails()).append("\n");
 
         // CPU
+        sb.append("CPU: ").append(getCpuDetails()).append("\n");
         CentralProcessor processor = hardware.getProcessor();
-        sb.append("CPU: ").append(processor.getProcessorIdentifier().getName()).append("\n");
         sb.append("Cores: ").append(processor.getPhysicalProcessorCount()).append(" Physical, ")
                 .append(processor.getLogicalProcessorCount()).append(" Logical\n");
 
         // OS
-        sb.append("OS: ").append(System.getProperty("os.name")).append(" ")
-                .append(System.getProperty("os.version")).append("\n");
+        sb.append("OS: ").append(getOsDetails()).append("\n");
 
         return sb.toString();
     }
