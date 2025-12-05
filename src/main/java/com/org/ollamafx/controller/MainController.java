@@ -13,9 +13,8 @@ import javafx.scene.layout.BorderPane;
 
 import java.io.IOException;
 import java.net.URL;
-import java.net.URL;
 import java.util.ResourceBundle;
-import javafx.application.Application; // <-- Added import
+import javafx.application.Application;
 
 public class MainController implements Initializable {
 
@@ -154,6 +153,17 @@ public class MainController implements Initializable {
     }
 
     @FXML
+    public void openSettings() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/settings_view.fxml"));
+            Parent view = loader.load();
+            mainBorderPane.setCenter(view);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
     private void createNewChat() {
         System.out.println("Creating new chat...");
         ChatSession newSession = chatManager.createChat("New Chat");
@@ -185,11 +195,15 @@ public class MainController implements Initializable {
                 .equals(new atlantafx.base.theme.PrimerDark().getUserAgentStylesheet())) {
             // Switch to Light
             Application.setUserAgentStylesheet(new atlantafx.base.theme.PrimerLight().getUserAgentStylesheet());
-            mainBorderPane.getScene().getRoot().getStyleClass().add("light");
+            if (mainBorderPane.getScene() != null) {
+                mainBorderPane.getScene().getRoot().getStyleClass().add("light");
+            }
         } else {
             // Switch to Dark
             Application.setUserAgentStylesheet(new atlantafx.base.theme.PrimerDark().getUserAgentStylesheet());
-            mainBorderPane.getScene().getRoot().getStyleClass().remove("light");
+            if (mainBorderPane.getScene() != null) {
+                mainBorderPane.getScene().getRoot().getStyleClass().remove("light");
+            }
         }
     }
 }
