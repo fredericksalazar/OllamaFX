@@ -1,7 +1,7 @@
 // src/main/java/com/org/ollamafx/App.java
 package com.org.ollamafx;
 
-import atlantafx.base.theme.PrimerDark;
+import atlantafx.base.theme.PrimerLight;
 import com.org.ollamafx.controller.MainController;
 import com.org.ollamafx.manager.ModelManager; // <-- AÑADE ESTE IMPORT
 import javafx.application.Application;

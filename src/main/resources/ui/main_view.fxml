@@ -39,6 +39,7 @@
                 </Label>
                 <Button alignment="BASELINE_LEFT" maxWidth="Infinity" mnemonicParsing="false" onAction="#showAvailableModels" styleClass="sidebar-item" text="Modelos Disponibles" />
                 <Button alignment="BASELINE_LEFT" maxWidth="Infinity" mnemonicParsing="false" onAction="#showLocalModels" styleClass="sidebar-item" text="Modelos Locales" />
+                <Button alignment="BASELINE_LEFT" maxWidth="Infinity" mnemonicParsing="false" onAction="#openSettings" styleClass="sidebar-item" text="Configuración" />
                 
                 <Separator styleClass="sidebar-separator">
                     <VBox.margin>

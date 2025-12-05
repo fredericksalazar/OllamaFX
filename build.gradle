@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.org.ollamafx'
-version = '0.1.0'
+version = '0.2.0'
 
 repositories {
     mavenCentral()
@@ -18,6 +18,7 @@ dependencies {
     implementation 'com.github.oshi:oshi-core-java11:6.4.0'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
     implementation 'org.commonmark:commonmark:0.21.0'
+    implementation 'io.github.mkpaz:atlantafx-base:2.0.1'
 }
 
 java {

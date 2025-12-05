@@ -28,6 +28,7 @@
 
     <VBox spacing="10.0">
         <Label styleClass="title-4" text="Appearance" />
+        <!-- Theme toggle simplified since we removed AtlantaFX -->
         <Button fx:id="themeButton" onAction="#toggleTheme" text="Toggle Dark/Light Mode" />
     </VBox>
     

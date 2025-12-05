@@ -38,6 +38,8 @@ public class SettingsController {
         ramLabel.setText(HardwareManager.getRamDetails());
         cpuLabel.setText(HardwareManager.getCpuDetails());
         osLabel.setText(HardwareManager.getOsDetails());
+        // Initial theme text update if needed, though we might not know current state
+        // easily without checking CSS
     }
 
     @FXML
