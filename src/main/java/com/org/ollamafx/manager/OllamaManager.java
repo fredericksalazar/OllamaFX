@@ -293,27 +293,37 @@ public class OllamaManager {
         return result.getResponse();
     }
 
-    public void askModelStream(String modelName, String prompt,
+    public void askModelStream(String modelName, String prompt, double temperature, String systemPrompt,
             io.github.ollama4j.models.generate.OllamaStreamHandler handler)
             throws Exception {
         System.out.println(
-                "OllamaManager: Asking (Stream) " + com.org.ollamafx.util.SecurityUtils.sanitizeForLog(modelName));
+                "OllamaManager: Asking (Stream) " + com.org.ollamafx.util.SecurityUtils.sanitizeForLog(modelName) +
+                        " [Temp: " + temperature + ", System: " + (systemPrompt.isEmpty() ? "None" : "Yes") + "]");
 
         java.util.List<io.github.ollama4j.models.chat.OllamaChatMessage> messages = new java.util.ArrayList<>();
+
+        // Add System Prompt if present
+        if (systemPrompt != null && !systemPrompt.trim().isEmpty()) {
+            messages.add(new io.github.ollama4j.models.chat.OllamaChatMessage(
+                    io.github.ollama4j.models.chat.OllamaChatMessageRole.SYSTEM, systemPrompt));
+        }
+
         messages.add(new io.github.ollama4j.models.chat.OllamaChatMessage(
                 io.github.ollama4j.models.chat.OllamaChatMessageRole.USER, prompt));
 
-        io.github.ollama4j.models.chat.OllamaChatRequest request = io.github.ollama4j.models.chat.OllamaChatRequestBuilder
-                .getInstance(modelName).withMessages(messages).build();
+        io.github.ollama4j.utils.Options options = new io.github.ollama4j.utils.OptionsBuilder()
+                .setTemperature((float) temperature)
+                .build();
 
-        // Execute in the global executor service
-        com.org.ollamafx.App.getExecutorService().submit(() -> {
-            try {
-                client.chat(request, handler);
-            } catch (Exception e) {
-                e.printStackTrace();
-                // We might want to notify the handler of the error if possible
-            }
-        });
+        io.github.ollama4j.models.chat.OllamaChatRequest request = io.github.ollama4j.models.chat.OllamaChatRequestBuilder
+                .getInstance(modelName).withMessages(messages).withOptions(options).build();
+
+        // Execute in the current thread (the caller should handle background execution)
+        try {
+            client.chat(request, handler);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
     }
 }

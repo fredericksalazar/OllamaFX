@@ -12,42 +12,89 @@
 <?import javafx.scene.text.Font?>
 
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.org.ollamafx.controller.ChatController">
-   <top>
-      <HBox alignment="CENTER_LEFT" prefHeight="50.0" spacing="10.0" styleClass="header-bar" BorderPane.alignment="CENTER">
-         <children>
-            <javafx.scene.control.ComboBox fx:id="modelSelector" promptText="Select a Model" styleClass="combo-box" prefWidth="200.0" />
-            <Region HBox.hgrow="ALWAYS" />
-            <Label fx:id="statusLabel" text="Ready" textFill="#8a8a8a" />
-         </children>
-         <padding>
-            <Insets left="15.0" right="15.0" />
-         </padding>
-      </HBox>
-   </top>
+   <!-- Header Removed as per user request -->
    <center>
-      <ScrollPane fx:id="scrollPane" fitToWidth="true" hbarPolicy="NEVER" styleClass="chat-scroll-pane" BorderPane.alignment="CENTER">
-         <content>
-            <VBox fx:id="messagesContainer" spacing="15.0" styleClass="chat-area">
-               <padding>
-                  <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-               </padding>
-            </VBox>
-         </content>
-      </ScrollPane>
+      <javafx.scene.layout.StackPane BorderPane.alignment="CENTER" styleClass="stack-pane-content">
+         <children>
+             <ScrollPane fx:id="scrollPane" fitToWidth="true" hbarPolicy="NEVER" styleClass="chat-scroll-pane">
+                 <content>
+                    <VBox fx:id="messagesContainer" spacing="15.0" styleClass="chat-area">
+                       <padding>
+                          <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                       </padding>
+                    </VBox>
+                 </content>
+             </ScrollPane>
+             
+             <!-- Welcome Container for New Chats -->
+             <VBox fx:id="welcomeContainer" alignment="CENTER" spacing="40.0" visible="false">
+                <children>
+                    <Label fx:id="welcomeLabel" text="" styleClass="welcome-label" style="-fx-font-size: 36px; -fx-font-weight: 300; -fx-text-fill: -color-fg-default;"/> <!-- Text set by animation -->
+                    
+                    <!-- Step 1: Model Selection Setup -->
+                    <VBox fx:id="setupContainer" alignment="CENTER" spacing="20.0">
+                        <javafx.scene.control.ComboBox fx:id="initialModelSelector" promptText="Seleccionar Modelo..." 
+                                                     styleClass="big-combo-box" prefWidth="350.0" onAction="#onInitialModelSelected"/>
+                    </VBox>
+                    
+                    <!-- Input Capsule will be injected here dynamically, but HIDDEN initially -->
+                </children>
+             </VBox>
+         </children>
+      </javafx.scene.layout.StackPane>
    </center>
    <bottom>
-      <VBox styleClass="input-area-container" BorderPane.alignment="CENTER">
+      <VBox fx:id="bottomInputContainer" styleClass="input-container-wrapper" alignment="BOTTOM_CENTER" BorderPane.alignment="CENTER">
          <children>
-            <HBox alignment="BOTTOM_CENTER" spacing="10.0" styleClass="input-area">
+            <!-- Creativity Panel (Contextual Popover) -->
+            <VBox fx:id="settingsPane" visible="false" managed="false" maxWidth="600.0" styleClass="creativity-panel">
+               <HBox alignment="CENTER_LEFT" spacing="15.0">
+                   <Label text="✨ Creativity Level:" styleClass="creativity-label"/>
+                   <Label fx:id="tempValueLabel" text="Balanced" styleClass="creativity-value-label"/>
+                   <Region HBox.hgrow="ALWAYS" />
+                   <Label text="(0.7)" fx:id="tempNumericLabel" styleClass="creativity-numeric-subtle"/> 
+               </HBox>
+               <javafx.scene.control.Slider fx:id="tempSlider" min="0.0" max="1.0" value="0.7" blockIncrement="0.1" majorTickUnit="0.1" minorTickCount="0" 
+                                          snapToTicks="true" showTickMarks="false" styleClass="creativity-slider"/>
+               <HBox alignment="CENTER" spacing="50.0">
+                   <Label text="Precise" styleClass="creativity-mark-label"/>
+                   <Region HBox.hgrow="ALWAYS" />
+                   <Label text="Imaginative" styleClass="creativity-mark-label"/>
+               </HBox>
+            </VBox>
+
+            <!-- Floating Input Card (Big VBox) -->
+            <VBox fx:id="inputCapsule" styleClass="input-card" maxWidth="800.0" spacing="10.0">
                <children>
-                  <TextArea fx:id="inputField" maxHeight="150.0" minHeight="40.0" prefHeight="50.0" prefRowCount="1" promptText="Type a message..." wrapText="true" HBox.hgrow="ALWAYS" />
-                  <Button fx:id="sendButton" mnemonicParsing="false" onAction="#sendMessage" styleClass="suggested-action" text="Send" />
+                  <!-- Top Row: Input Text -->
+                  <TextArea fx:id="inputField" maxHeight="200.0" minHeight="50.0" prefHeight="50.0" prefRowCount="2" 
+                            promptText="Preguntarle a OllamaFX" wrapText="true" VBox.vgrow="ALWAYS" styleClass="transparent-area"/>
+                  
+                  <!-- Bottom Row: Tools & Actions -->
+                  <HBox alignment="CENTER_LEFT" spacing="15.0">
+                      <children>
+                          <Button fx:id="settingsButton" text="+" onAction="#toggleSettings" styleClass="capsule-icon-button">
+                             <tooltip><javafx.scene.control.Tooltip text="Creativity/Tools" /></tooltip>
+                          </Button>
+                          
+                          <Label text="Herramientas" style="-fx-text-fill: -color-fg-subtle; -fx-font-size: 13px;" />
+                          
+                          <Region HBox.hgrow="ALWAYS" />
+                          
+                          <javafx.scene.control.ComboBox fx:id="modelSelector" promptText="Model" styleClass="capsule-combo-box" prefWidth="150.0" />
+                          
+                          <Button fx:id="sendButton" onAction="#sendMessage" styleClass="send-button-icon" text="➤" />
+                      </children>
+                  </HBox>
                </children>
                <padding>
-                  <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                  <Insets bottom="15.0" left="20.0" right="15.0" top="15.0" />
                </padding>
-            </HBox>
+            </VBox>
          </children>
+         <padding>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="10.0" />
+         </padding>
       </VBox>
    </bottom>
 </BorderPane>

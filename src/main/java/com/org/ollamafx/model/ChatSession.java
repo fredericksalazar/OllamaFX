@@ -102,6 +102,27 @@ public class ChatSession {
         this.messages.add(message);
     }
 
+    private double temperature = 0.7;
+    private String systemPrompt = "";
+
+    @JsonProperty("temperature")
+    public double getTemperature() {
+        return temperature;
+    }
+
+    public void setTemperature(double temperature) {
+        this.temperature = temperature;
+    }
+
+    @JsonProperty("systemPrompt")
+    public String getSystemPrompt() {
+        return systemPrompt;
+    }
+
+    public void setSystemPrompt(String systemPrompt) {
+        this.systemPrompt = systemPrompt;
+    }
+
     @Override
     public String toString() {
         return getName();

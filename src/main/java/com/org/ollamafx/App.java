@@ -1,7 +1,7 @@
 // src/main/java/com/org/ollamafx/App.java
 package com.org.ollamafx;
 
-import atlantafx.base.theme.PrimerLight;
+import atlantafx.base.theme.CupertinoLight;
 import com.org.ollamafx.controller.MainController;
 import com.org.ollamafx.manager.ModelManager; // <-- AÑADE ESTE IMPORT
 import javafx.application.Application;
@@ -49,7 +49,7 @@ public class App extends Application {
         javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/fonts/Ubuntu-Regular.ttf"), 12);
         javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/fonts/Ubuntu-Bold.ttf"), 12);
 
-        Application.setUserAgentStylesheet(new atlantafx.base.theme.PrimerLight().getUserAgentStylesheet());
+        Application.setUserAgentStylesheet(new atlantafx.base.theme.CupertinoLight().getUserAgentStylesheet());
 
         ModelManager modelManager = new ModelManager();
         modelManager.loadAllModels();
@@ -58,13 +58,14 @@ public class App extends Application {
         javafx.scene.Parent root = loader.load();
         root.getStyleClass().add("light"); // Force light mode CSS overrides
         Scene scene = new Scene(root);
-        scene.getStylesheets().add(getClass().getResource("/css/gnome.css").toExternalForm());
+        scene.getStylesheets().add(getClass().getResource("/css/ollama_active.css").toExternalForm());
 
         MainController mainController = loader.getController();
         mainController.initModelManager(modelManager);
 
         primaryStage.setTitle("OllamaFX");
         primaryStage.setScene(scene);
+        primaryStage.setMaximized(true); // Start Maximized
         primaryStage.show();
     }
 
