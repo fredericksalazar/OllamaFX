@@ -23,7 +23,13 @@ public class OllamaManager {
     private final OllamaAPI client;
 
     private OllamaManager() {
-        this.client = new OllamaAPI();
+        String host = ConfigManager.getInstance().getOllamaHost();
+        // Ensure host is valid or default if empty
+        if (host == null || host.isEmpty()) {
+            host = "http://localhost:11434";
+        }
+        this.client = new OllamaAPI(host);
+        this.client.setRequestTimeoutSeconds(60); // Set a reasonable timeout
     }
 
     public static synchronized OllamaManager getInstance() {
