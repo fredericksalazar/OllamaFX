@@ -58,20 +58,21 @@ public class SettingsController {
     @FXML
     private void toggleTheme() {
         if (javafx.application.Application.getUserAgentStylesheet()
-                .equals(new atlantafx.base.theme.PrimerDark().getUserAgentStylesheet())) {
+                .equals(new atlantafx.base.theme.CupertinoDark().getUserAgentStylesheet())) {
             // Switch to Light
             javafx.application.Application
-                    .setUserAgentStylesheet(new atlantafx.base.theme.PrimerLight().getUserAgentStylesheet());
-            // We need to access the scene to update the style class for local variables
+                    .setUserAgentStylesheet(new atlantafx.base.theme.CupertinoLight().getUserAgentStylesheet());
             if (themeButton.getScene() != null) {
+                themeButton.getScene().getRoot().getStyleClass().remove("dark");
                 themeButton.getScene().getRoot().getStyleClass().add("light");
             }
         } else {
             // Switch to Dark
             javafx.application.Application
-                    .setUserAgentStylesheet(new atlantafx.base.theme.PrimerDark().getUserAgentStylesheet());
+                    .setUserAgentStylesheet(new atlantafx.base.theme.CupertinoDark().getUserAgentStylesheet());
             if (themeButton.getScene() != null) {
                 themeButton.getScene().getRoot().getStyleClass().remove("light");
+                themeButton.getScene().getRoot().getStyleClass().add("dark");
             }
         }
     }

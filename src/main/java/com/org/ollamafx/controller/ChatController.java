@@ -10,13 +10,17 @@ import javafx.scene.control.TextArea;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.collections.FXCollections;
+import java.util.stream.Collectors;
 
 public class ChatController {
 
     @FXML
-    private javafx.scene.control.ComboBox<com.org.ollamafx.model.OllamaModel> modelSelector;
+    private javafx.scene.control.ComboBox<String> modelSelector;
     @FXML
     private Label statusLabel;
+    @FXML
+    private javafx.scene.layout.HBox headerBar; // New Header Bar reference
     @FXML
     private ScrollPane scrollPane;
     @FXML
@@ -25,6 +29,32 @@ public class ChatController {
     private TextArea inputField;
     @FXML
     private Button sendButton;
+
+    // Adaptive UI Elements
+    @FXML
+    private javafx.scene.layout.VBox welcomeContainer;
+    @FXML
+    private javafx.scene.layout.VBox bottomInputContainer;
+    @FXML
+    private javafx.scene.layout.VBox inputCapsule;
+    @FXML
+    private javafx.scene.control.Label welcomeLabel;
+
+    // Welcome Flow Elements
+    @FXML
+    private javafx.scene.layout.VBox setupContainer;
+    @FXML
+    private javafx.scene.control.ComboBox<String> initialModelSelector;
+
+    @FXML
+    private javafx.scene.control.Button settingsButton;
+    @FXML
+    private javafx.scene.layout.VBox settingsPane;
+    // @FXML private TextArea systemPromptField; // Removed
+    @FXML
+    private javafx.scene.control.Slider tempSlider;
+    @FXML
+    private Label tempValueLabel;
 
     // private com.org.ollamafx.manager.ModelManager modelManager; // Removed unused
     // field
@@ -49,32 +79,164 @@ public class ChatController {
         });
 
         // Configure ComboBox to display model names nicely
-        modelSelector.setConverter(new javafx.util.StringConverter<>() {
-            @Override
-            public String toString(com.org.ollamafx.model.OllamaModel object) {
-                return object == null ? "" : object.getName() + ":" + object.getTag();
-            }
+        // No converter needed if ComboBox holds String directly
+        // modelSelector.setConverter(new javafx.util.StringConverter<>() {
+        // @Override
+        // public String toString(com.org.ollamafx.model.OllamaModel object) {
+        // return object == null ? "" : object.getName() + ":" + object.getTag();
+        // }
 
-            @Override
-            public com.org.ollamafx.model.OllamaModel fromString(String string) {
-                return null; // Not needed for read-only combo
-            }
-        });
+        // @Override
+        // public com.org.ollamafx.model.OllamaModel fromString(String string) {
+        // return null; // Not needed for read-only combo
+        // }
+        // });
 
         // Save model selection when changed
         modelSelector.valueProperty().addListener((obs, oldVal, newVal) -> {
             if (currentSession != null && newVal != null) {
-                String modelName = newVal.getName() + ":" + newVal.getTag();
+                String modelName = newVal; // ComboBox now holds String directly
                 currentSession.setModelName(modelName);
                 com.org.ollamafx.manager.ChatManager.getInstance().saveChats();
             }
         });
+
+        // Parameters listeners
+        tempSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+            double val = Math.round(newVal.doubleValue() * 10.0) / 10.0;
+
+            // Map value to Creativity Label
+            String creativityText;
+            if (val <= 0.3) {
+                creativityText = "Precise";
+            } else if (val <= 0.7) {
+                creativityText = "Balanced";
+            } else {
+                creativityText = "Imaginative";
+            }
+
+            tempValueLabel.setText(creativityText);
+            // We assume there might be a secondary label for the number, but if not we just
+            // show text
+            // If tempNumericLabel existed we would update it too. For now let's just stick
+            // to the text mapping requested.
+
+            if (currentSession != null) {
+                currentSession.setTemperature(val);
+                com.org.ollamafx.manager.ChatManager.getInstance().saveChats();
+            }
+        });
+
+        // System Prompt listener removed
+        updateUIState(true); // Initial state is welcome screen
+    }
+
+    // Helper method for Adaptive UI
+    private void updateUIState(boolean isNewChat) {
+        if (isNewChat) {
+            // WELCOME STATE
+            // Header is gone permanently
+
+            if (scrollPane != null)
+                scrollPane.setVisible(false);
+            if (welcomeContainer != null)
+                welcomeContainer.setVisible(true);
+
+            // Reset for Welcome Flow
+            if (setupContainer != null) {
+                setupContainer.setVisible(true);
+                setupContainer.setManaged(true);
+                animateWelcomeText(); // Trigger Typewriter
+            }
+
+            // Move Input Capsule to Welcome Container BUT HIDE IT initially
+            if (welcomeContainer != null && inputCapsule != null
+                    && !welcomeContainer.getChildren().contains(inputCapsule)) {
+                if (bottomInputContainer != null)
+                    bottomInputContainer.getChildren().remove(inputCapsule);
+                welcomeContainer.getChildren().add(inputCapsule); // Add to end
+            }
+
+            if (inputCapsule != null) {
+                inputCapsule.setVisible(false); // Hidden until model selected
+                inputCapsule.setManaged(false); // Don't take space
+            }
+        } else {
+            // ACTIVE CHAT STATE
+            // Header is gone permanently
+
+            if (scrollPane != null)
+                scrollPane.setVisible(true);
+            if (welcomeContainer != null)
+                welcomeContainer.setVisible(false);
+
+            // Move Input Capsule to Bottom Container
+            if (bottomInputContainer != null && inputCapsule != null
+                    && !bottomInputContainer.getChildren().contains(inputCapsule)) {
+                if (welcomeContainer != null)
+                    welcomeContainer.getChildren().remove(inputCapsule);
+                bottomInputContainer.getChildren().add(inputCapsule);
+            }
+
+            // Ensure visible in Active Chat
+            if (inputCapsule != null) {
+                inputCapsule.setVisible(true);
+                inputCapsule.setManaged(true);
+            }
+        }
+    }
+
+    // Suggestion chip methods removed as requested
+
+    @FXML
+    private void onInitialModelSelected() {
+        String selected = initialModelSelector.getValue();
+        if (selected != null) {
+            // Sync to main selector
+            modelSelector.setValue(selected);
+
+            // Transition: Hide Setup, Show Input
+            setupContainer.setVisible(false);
+            setupContainer.setManaged(false);
+
+            if (inputCapsule != null) {
+                inputCapsule.setVisible(true);
+                inputCapsule.setManaged(true);
+                // Fade in effect could go here
+            }
+        }
+    }
+
+    private void animateWelcomeText() {
+        String fullText = "Hola, antes de iniciar selecciona un modelo.";
+        welcomeLabel.setText("");
+
+        final Integer[] i = { 0 };
+        javafx.animation.Timeline timeline = new javafx.animation.Timeline();
+        timeline.setCycleCount(1); // Run once works by adding keyframes
+
+        for (int k = 0; k < fullText.length(); k++) {
+            final int index = k;
+            javafx.animation.KeyFrame keyFrame = new javafx.animation.KeyFrame(
+                    javafx.util.Duration.millis(50 * (k + 1)), // 50ms per char
+                    event -> welcomeLabel.setText(fullText.substring(0, index + 1)));
+            timeline.getKeyFrames().add(keyFrame);
+        }
+        timeline.play();
     }
 
     public void setModelManager(com.org.ollamafx.manager.ModelManager modelManager) {
         // this.modelManager = modelManager; // Unused field
         if (modelManager != null) {
-            modelSelector.setItems(modelManager.getLocalModels());
+            // Convert OllamaModel list to String list for the ComboBox
+            javafx.collections.ObservableList<String> models = modelManager.getLocalModels().stream()
+                    .map(model -> model.getName() + ":" + model.getTag())
+                    .collect(Collectors.toCollection(FXCollections::observableArrayList));
+
+            modelSelector.setItems(models);
+            if (initialModelSelector != null) {
+                initialModelSelector.setItems(models);
+            }
         }
     }
 
@@ -83,11 +245,31 @@ public class ChatController {
     public void setChatSession(com.org.ollamafx.model.ChatSession session) {
         this.currentSession = session;
         messagesContainer.getChildren().clear();
+
         if (session != null) {
+            // Adaptive UI: Specific state based on message count
+            boolean newChat = session.getMessages().isEmpty();
+            updateUIState(newChat);
+
             // Restore model selection
             if (session.getModelName() != null && !session.getModelName().isEmpty()) {
                 setModelName(session.getModelName());
             }
+
+            // Restore parameters
+            double temp = session.getTemperature();
+            tempSlider.setValue(temp);
+
+            String creativityText;
+            if (temp <= 0.3)
+                creativityText = "Precise";
+            else if (temp <= 0.7)
+                creativityText = "Balanced";
+            else
+                creativityText = "Imaginative";
+
+            tempValueLabel.setText(creativityText);
+            // systemPromptField.setText(session.getSystemPrompt()); // Removed
 
             for (com.org.ollamafx.model.ChatMessage msg : session.getMessages()) {
                 addMessage(msg.getContent(), "user".equals(msg.getRole()));
@@ -97,18 +279,21 @@ public class ChatController {
 
     @FXML
     private void sendMessage() {
-        String text = inputField.getText().trim();
-        if (text.isEmpty())
+        // Logic to send message to Ollama
+        String text = inputField.getText();
+        if (text.isEmpty() || currentSession == null)
             return;
 
-        com.org.ollamafx.model.OllamaModel selectedModel = modelSelector.getValue();
-        if (selectedModel == null) {
+        // Transition to Active Chat State immediately on send
+        updateUIState(false);
+
+        String modelName = modelSelector.getValue();
+        if (modelName == null) {
             addMessage("Error: No model selected. Please select a model from the dropdown.", false);
-            statusLabel.setText("Ready");
+            if (statusLabel != null)
+                statusLabel.setText("Ready");
             return;
         }
-
-        String modelName = selectedModel.getName() + ":" + selectedModel.getTag();
 
         // Add user message
         addMessage(text, true);
@@ -122,19 +307,25 @@ public class ChatController {
         inputField.clear();
 
         // Call Ollama API
-        statusLabel.setText("Thinking...");
+        if (statusLabel != null)
+            statusLabel.setText("Thinking...");
 
         com.org.ollamafx.App.getExecutorService().submit(() -> {
             try {
                 // Create assistant message placeholder
                 Platform.runLater(() -> {
                     addMessage("", false);
-                    statusLabel.setText("Generating...");
+                    if (statusLabel != null)
+                        statusLabel.setText("Generating...");
                 });
 
                 StringBuilder responseBuilder = new StringBuilder();
 
-                com.org.ollamafx.manager.OllamaManager.getInstance().askModelStream(modelName, text,
+                double temperature = tempSlider.getValue();
+                String systemPrompt = ""; // System prompt disabled in UI
+
+                com.org.ollamafx.manager.OllamaManager.getInstance().askModelStream(modelName, text, temperature,
+                        systemPrompt,
                         new io.github.ollama4j.models.generate.OllamaStreamHandler() {
                             @Override
                             public void accept(String messagePart) {
@@ -168,14 +359,16 @@ public class ChatController {
                         com.org.ollamafx.manager.ChatManager.getInstance().saveChats(); // Save
                                                                                         // state
                     }
-                    statusLabel.setText("Ready");
+                    if (statusLabel != null)
+                        statusLabel.setText("Ready");
                 });
 
             } catch (Exception e) {
                 e.printStackTrace();
                 Platform.runLater(() -> {
                     addMessage("Error: " + e.getMessage(), false);
-                    statusLabel.setText("Error");
+                    if (statusLabel != null)
+                        statusLabel.setText("Error");
                 });
             }
         });
@@ -200,13 +393,19 @@ public class ChatController {
     public void setModelName(String name) {
         // Try to select the model in the combo box if it matches
         if (modelSelector.getItems() != null) {
-            for (com.org.ollamafx.model.OllamaModel model : modelSelector.getItems()) {
-                String fullName = model.getName() + ":" + model.getTag();
-                if (fullName.equals(name) || model.getName().equals(name)) {
-                    modelSelector.getSelectionModel().select(model);
+            for (String modelName : modelSelector.getItems()) {
+                if (modelName.equals(name) || modelName.startsWith(name + ":")) {
+                    modelSelector.getSelectionModel().select(modelName);
                     return;
                 }
             }
         }
+    }
+
+    @FXML
+    private void toggleSettings() {
+        boolean isVisible = settingsPane.isVisible();
+        settingsPane.setVisible(!isVisible);
+        settingsPane.setManaged(!isVisible);
     }
 }
