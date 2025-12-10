@@ -15,6 +15,12 @@ import java.util.stream.Collectors;
 
 public class ChatController {
 
+    private java.util.concurrent.Future<?> currentGenerationTask;
+    private boolean isGenerating = false;
+    private final StringBuilder activeResponseBuffer = new StringBuilder();
+    private long lastUiUpdate = 0;
+    private static final long UI_UPDATE_INTERVAL_MS = 30; // ~30fps for text updates
+
     @FXML
     private javafx.scene.control.ComboBox<String> modelSelector;
     @FXML
@@ -29,6 +35,8 @@ public class ChatController {
     private TextArea inputField;
     @FXML
     private Button sendButton;
+    @FXML
+    private Button cancelButton;
 
     // Adaptive UI Elements
     @FXML
@@ -287,6 +295,11 @@ public class ChatController {
         // Transition to Active Chat State immediately on send
         updateUIState(false);
 
+        if (isGenerating) {
+            cancelGeneration();
+            return;
+        }
+
         String modelName = modelSelector.getValue();
         if (modelName == null) {
             addMessage("Error: " + com.org.ollamafx.App.getBundle().getString("chat.selectModel"), false); // Reuse or
@@ -309,11 +322,15 @@ public class ChatController {
         }
         inputField.clear();
 
+        setGeneratingState(true);
+
         // Call Ollama API
         if (statusLabel != null)
             statusLabel.setText(com.org.ollamafx.App.getBundle().getString("chat.status.thinking"));
 
-        com.org.ollamafx.App.getExecutorService().submit(() -> {
+        activeResponseBuffer.setLength(0); // Reset buffer
+
+        currentGenerationTask = com.org.ollamafx.App.getExecutorService().submit(() -> {
             try {
                 // Create assistant message placeholder
                 Platform.runLater(() -> {
@@ -332,21 +349,29 @@ public class ChatController {
                         new io.github.ollama4j.models.generate.OllamaStreamHandler() {
                             @Override
                             public void accept(String messagePart) {
-                                // System.out.println("Stream chunk: " + messagePart); // Debug
-                                // ollama4j sends the accumulated text, not the delta.
-                                // So we replace the builder content instead of appending.
+                                // ollama4j gives full text usually, but check just in case.
+                                // Actually ollama4j chat stream gives accumulated text?
+                                // Let's assume messagePart IS the accumulated buffer if using certain versions,
+                                // OR checks if it is delta.
+                                // Based on previous code: responseBuilder.setLength(0);
+                                // responseBuilder.append(messagePart);
+                                // This implies messagePart was the FULL text so far.
+                                // Let's stick to that assumption.
+
+                                if (Thread.currentThread().isInterrupted()) {
+                                    throw new RuntimeException("Cancelled by user"); // Force stop
+                                }
+
                                 responseBuilder.setLength(0);
                                 responseBuilder.append(messagePart);
 
-                                Platform.runLater(() -> {
-                                    // Update the last message (assistant's bubble)
-                                    if (!messagesContainer.getChildren().isEmpty()) {
-                                        HBox lastContainer = (HBox) messagesContainer.getChildren()
-                                                .get(messagesContainer.getChildren().size() - 1);
-                                        Label bubble = (Label) lastContainer.getChildren().get(0);
-                                        bubble.setText(messagePart);
-                                    }
-                                });
+                                // Throttle UI Updates for smooth streaming
+                                long now = System.currentTimeMillis();
+                                if (now - lastUiUpdate > UI_UPDATE_INTERVAL_MS) {
+                                    final String textToUpdate = messagePart;
+                                    Platform.runLater(() -> updateLastMessage(textToUpdate));
+                                    lastUiUpdate = now;
+                                }
                             }
                         });
 
@@ -355,26 +380,80 @@ public class ChatController {
                 // Actually askModelStream might be blocking or async.
                 // If blocking, we are good here.
 
+                // Final update to ensure complete text is shown
                 Platform.runLater(() -> {
                     String fullResponse = responseBuilder.toString();
+                    updateLastMessage(fullResponse); // Ensure final state is consistent
+
                     if (currentSession != null) {
                         currentSession.addMessage(new com.org.ollamafx.model.ChatMessage("assistant", fullResponse));
-                        com.org.ollamafx.manager.ChatManager.getInstance().saveChats(); // Save
-                                                                                        // state
+                        com.org.ollamafx.manager.ChatManager.getInstance().saveChats();
                     }
-                    if (statusLabel != null)
-                        statusLabel.setText(com.org.ollamafx.App.getBundle().getString("chat.status.ready"));
+                    setGeneratingState(false);
                 });
 
             } catch (Exception e) {
+                if (e instanceof InterruptedException || Thread.interrupted()
+                        || "Cancelled by user".equals(e.getMessage())) {
+                    // Handled as cancellation
+                    Platform.runLater(() -> setGeneratingState(false));
+                    return;
+                }
+
                 e.printStackTrace();
                 Platform.runLater(() -> {
                     addMessage("Error: " + e.getMessage(), false);
-                    if (statusLabel != null)
-                        statusLabel.setText(com.org.ollamafx.App.getBundle().getString("chat.status.error"));
+                    setGeneratingState(false);
                 });
             }
         });
+    }
+
+    private void updateLastMessage(String text) {
+        if (!messagesContainer.getChildren().isEmpty()) {
+            HBox lastContainer = (HBox) messagesContainer.getChildren()
+                    .get(messagesContainer.getChildren().size() - 1);
+            Label bubble = (Label) lastContainer.getChildren().get(0);
+            bubble.setText(text);
+        }
+    }
+
+    private void setGeneratingState(boolean generating) {
+        this.isGenerating = generating;
+        if (generating) {
+            sendButton.setVisible(false);
+            sendButton.setManaged(false);
+
+            cancelButton.setVisible(true);
+            cancelButton.setManaged(true);
+
+            if (statusLabel != null)
+                statusLabel.setText(com.org.ollamafx.App.getBundle().getString("chat.status.generating"));
+        } else {
+            cancelButton.setVisible(false);
+            cancelButton.setManaged(false);
+
+            sendButton.setVisible(true);
+            sendButton.setManaged(true);
+
+            if (statusLabel != null)
+                statusLabel.setText(com.org.ollamafx.App.getBundle().getString("chat.status.ready"));
+        }
+    }
+
+    @FXML
+    private void onCancelClicked() {
+        cancelGeneration();
+    }
+
+    private void cancelGeneration() {
+        // Force close the stream at the network level
+        com.org.ollamafx.manager.OllamaManager.getInstance().cancelCurrentRequest();
+
+        if (currentGenerationTask != null) {
+            currentGenerationTask.cancel(true); // Interrupt thread as well
+        }
+        setGeneratingState(false);
     }
 
     private void addMessage(String text, boolean isUser) {
