@@ -12,7 +12,7 @@
 
 <VBox fx:id="rootPane" alignment="CENTER_LEFT" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="400.0" spacing="15.0" styleClass="dialog" stylesheets="@../css/gnome.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.org.ollamafx.controller.DownloadPopupController">
    <children>
-      <Label fx:id="titleLabel" text="Downloading Model" styleClass="h3">
+      <Label fx:id="titleLabel" text="%download.title.default" styleClass="h3">
          <font>
             <Font name="System Bold" size="16.0" />
          </font>
@@ -31,7 +31,7 @@
       
       <HBox alignment="CENTER_RIGHT" spacing="10.0">
          <children>
-            <Button fx:id="cancelButton" mnemonicParsing="false" onAction="#onCancel" text="Cancel" />
+            <Button fx:id="cancelButton" mnemonicParsing="false" onAction="#onCancel" text="%button.cancel" />
          </children>
       </HBox>
    </children>

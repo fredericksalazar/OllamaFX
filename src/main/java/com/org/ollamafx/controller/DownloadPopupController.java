@@ -61,7 +61,7 @@ public class DownloadPopupController {
     }
 
     public void setModelName(String modelName) {
-        titleLabel.setText("Downloading " + modelName);
+        titleLabel.setText(com.org.ollamafx.App.getBundle().getString("download.title") + " " + modelName);
     }
 
     @FXML

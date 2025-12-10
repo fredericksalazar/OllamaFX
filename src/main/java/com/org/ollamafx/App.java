@@ -37,36 +37,71 @@ public class App extends Application {
         });
     }
 
+    public static java.util.ResourceBundle getBundle() {
+        // Create a new Locale each time to ensure we get the correct one based on
+        // current config/preference
+        String lang = com.org.ollamafx.manager.ConfigManager.getInstance().getLanguage();
+
+        java.util.Locale locale = new java.util.Locale(lang);
+        java.util.Locale.setDefault(locale); // CRITICAL: Force system default to match preference to avoid fallback
+                                             // issues
+
+        return java.util.ResourceBundle.getBundle("messages", locale);
+    }
+
+    private static Stage primaryStage;
+    private static ModelManager modelManager;
+
     @Override
-    public void start(Stage primaryStage) throws IOException { // Changed Exception to IOException
-        // Load chats
+    public void start(Stage stage) throws IOException {
+        primaryStage = stage;
+
         ChatManager.getInstance().loadChats();
 
-        // Log Hardware Details
+        // Hardware Information Logging
         System.out.println(com.org.ollamafx.manager.HardwareManager.getHardwareDetails());
 
-        // Load Fonts
-        javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/fonts/Ubuntu-Regular.ttf"), 12);
-        javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/fonts/Ubuntu-Bold.ttf"), 12);
+        // Check if fonts are loaded
+        System.out.println("Font being used family: " + javafx.scene.text.Font.font("Inter").getFamily());
 
+        // Set AtlantaFX theme (adjust if needed to match previous styles)
         Application.setUserAgentStylesheet(new atlantafx.base.theme.CupertinoLight().getUserAgentStylesheet());
 
-        ModelManager modelManager = new ModelManager();
+        modelManager = new ModelManager();
         modelManager.loadAllModels();
 
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/main_view.fxml"));
-        javafx.scene.Parent root = loader.load();
-        root.getStyleClass().add("light"); // Force light mode CSS overrides
-        Scene scene = new Scene(root);
-        scene.getStylesheets().add(getClass().getResource("/css/ollama_active.css").toExternalForm());
+        reloadUI();
+    }
 
-        MainController mainController = loader.getController();
-        mainController.initModelManager(modelManager);
+    public static void reloadUI() {
+        try {
+            // Clear ResourceBundle cache to ensure new language is loaded
+            java.util.ResourceBundle.clearCache();
 
-        primaryStage.setTitle("OllamaFX");
-        primaryStage.setScene(scene);
-        primaryStage.setMaximized(true); // Start Maximized
-        primaryStage.show();
+            FXMLLoader loader = new FXMLLoader(App.class.getResource("/ui/main_view.fxml"));
+            loader.setResources(getBundle());
+            javafx.scene.Parent root = loader.load();
+
+            // Add custom style class
+            root.getStyleClass().add("light");
+
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(App.class.getResource("/css/ollama_active.css").toExternalForm());
+
+            // Inject ModelManager into MainController
+            MainController controller = loader.getController();
+            controller.initModelManager(modelManager);
+
+            primaryStage.setScene(scene);
+            primaryStage.setTitle(getBundle().getString("app.title"));
+            primaryStage.setMaximized(true); // Ensure maximized on reload
+
+            if (!primaryStage.isShowing()) {
+                primaryStage.show();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
