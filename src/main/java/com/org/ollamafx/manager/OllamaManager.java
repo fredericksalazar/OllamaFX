@@ -17,10 +17,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.nio.charset.StandardCharsets;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.Map;
+import java.util.HashMap;
+
 public class OllamaManager {
 
     private static OllamaManager instance;
     private final OllamaAPI client;
+    private volatile java.io.InputStream activeStream; // To support forceful cancellation
 
     private OllamaManager() {
         String host = ConfigManager.getInstance().getOllamaHost();
@@ -296,34 +309,97 @@ public class OllamaManager {
     public void askModelStream(String modelName, String prompt, double temperature, String systemPrompt,
             io.github.ollama4j.models.generate.OllamaStreamHandler handler)
             throws Exception {
-        System.out.println(
-                "OllamaManager: Asking (Stream) " + com.org.ollamafx.util.SecurityUtils.sanitizeForLog(modelName) +
-                        " [Temp: " + temperature + ", System: " + (systemPrompt.isEmpty() ? "None" : "Yes") + "]");
 
-        java.util.List<io.github.ollama4j.models.chat.OllamaChatMessage> messages = new java.util.ArrayList<>();
+        // Build Payload manually
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("model", modelName);
+        payload.put("stream", true);
 
-        // Add System Prompt if present
+        List<Map<String, String>> messages = new ArrayList<>();
         if (systemPrompt != null && !systemPrompt.trim().isEmpty()) {
-            messages.add(new io.github.ollama4j.models.chat.OllamaChatMessage(
-                    io.github.ollama4j.models.chat.OllamaChatMessageRole.SYSTEM, systemPrompt));
+            Map<String, String> sysMsg = new HashMap<>();
+            sysMsg.put("role", "system");
+            sysMsg.put("content", systemPrompt);
+            messages.add(sysMsg);
         }
+        Map<String, String> userMsg = new HashMap<>();
+        userMsg.put("role", "user");
+        userMsg.put("content", prompt);
+        messages.add(userMsg);
 
-        messages.add(new io.github.ollama4j.models.chat.OllamaChatMessage(
-                io.github.ollama4j.models.chat.OllamaChatMessageRole.USER, prompt));
+        payload.put("messages", messages);
 
-        io.github.ollama4j.utils.Options options = new io.github.ollama4j.utils.OptionsBuilder()
-                .setTemperature((float) temperature)
+        Map<String, Object> options = new HashMap<>();
+        options.put("temperature", temperature);
+        payload.put("options", options);
+
+        ObjectMapper mapper = new ObjectMapper();
+        String jsonBody = mapper.writeValueAsString(payload);
+
+        HttpClient httpClient = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(ConfigManager.getInstance().getOllamaHost() + "/api/chat"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .build();
 
-        io.github.ollama4j.models.chat.OllamaChatRequest request = io.github.ollama4j.models.chat.OllamaChatRequestBuilder
-                .getInstance(modelName).withMessages(messages).withOptions(options).build();
+        // Use send (blocking) but handle interruption gracefully
+        HttpResponse<java.io.InputStream> response = httpClient.send(request,
+                HttpResponse.BodyHandlers.ofInputStream());
 
-        // Execute in the current thread (the caller should handle background execution)
-        try {
-            client.chat(request, handler);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
+        if (response.statusCode() != 200) {
+            throw new Exception("Ollama API Error: " + response.statusCode());
+        }
+
+        this.activeStream = response.body(); // Capture stream
+
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(activeStream, StandardCharsets.UTF_8))) {
+            String line;
+            StringBuilder fullContent = new StringBuilder();
+
+            while ((line = reader.readLine()) != null) {
+                if (Thread.currentThread().isInterrupted()) {
+                    return; // Stop reading
+                }
+
+                try {
+                    JsonNode node = mapper.readTree(line);
+                    if (node.has("message")) {
+                        JsonNode msgNode = node.get("message");
+                        if (msgNode.has("content")) {
+                            String content = msgNode.get("content").asText();
+                            // If I send DELTAS now, the UI will just flash single characters.
+                            // So I MUST ACCUMULATE here before calling handler.accept
+
+                            fullContent.append(content);
+                            handler.accept(fullContent.toString());
+                        }
+                    }
+                    if (node.has("done") && node.get("done").asBoolean()) {
+                        break;
+                    }
+                } catch (RuntimeException re) {
+                    // Re-throw (e.g., Cancelled by user)
+                    System.out.println(
+                            "OllamaManager: RuntimeException caught in loop (likely cancel): " + re.getMessage());
+                    throw re;
+                } catch (Exception e) {
+                    System.out.println("OllamaManager: Parsing error ignored: " + e.getMessage());
+                }
+            }
+        } finally {
+            this.activeStream = null; // Clean up
+        }
+    }
+
+    public void cancelCurrentRequest() {
+        if (activeStream != null) {
+            try {
+                activeStream.close(); // This will throw IOException in the read loop
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

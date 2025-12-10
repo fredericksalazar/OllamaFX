@@ -83,7 +83,10 @@
                           
                           <javafx.scene.control.ComboBox fx:id="modelSelector" promptText="%chat.selectModel" styleClass="capsule-combo-box" prefWidth="150.0" />
                           
-                          <Button fx:id="sendButton" onAction="#sendMessage" styleClass="send-button-icon" text="➤" />
+                          <javafx.scene.layout.StackPane alignment="CENTER_RIGHT">
+                              <Button fx:id="sendButton" onAction="#sendMessage" styleClass="send-button-icon" text="➤" />
+                              <Button fx:id="cancelButton" onAction="#onCancelClicked" styleClass="send-button-icon" text="⏹" visible="false" managed="false" style="-fx-text-fill: white; -fx-font-size: 16px; -fx-background-color: #ff4444;" />
+                          </javafx.scene.layout.StackPane>
                       </children>
                   </HBox>
                </children>
