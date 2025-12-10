@@ -113,24 +113,28 @@ public class MainController implements Initializable {
                                                                      // leave standard.
                     // Actually, let's stick to standard FLAT.
 
-                    javafx.scene.control.MenuItem renameItem = new javafx.scene.control.MenuItem("Rename");
+                    ResourceBundle bundle = com.org.ollamafx.App.getBundle();
+
+                    javafx.scene.control.MenuItem renameItem = new javafx.scene.control.MenuItem(
+                            bundle.getString("context.rename"));
                     renameItem.setOnAction(e -> {
                         javafx.scene.control.TextInputDialog dialog = new javafx.scene.control.TextInputDialog(
                                 item.getName());
-                        dialog.setTitle("Rename Chat");
-                        dialog.setHeaderText("Enter new name:");
+                        dialog.setTitle(bundle.getString("dialog.rename.title"));
+                        dialog.setHeaderText(bundle.getString("dialog.rename.header"));
                         dialog.showAndWait().ifPresent(newName -> {
                             chatManager.renameChat(item, newName);
                             getListView().refresh();
                         });
                     });
                     javafx.scene.control.MenuItem pinItem = new javafx.scene.control.MenuItem(
-                            item.isPinned() ? "Unpin" : "Pin");
+                            item.isPinned() ? bundle.getString("context.unpin") : bundle.getString("context.pin"));
                     pinItem.setOnAction(e -> {
                         chatManager.togglePin(item);
                         getListView().refresh();
                     });
-                    javafx.scene.control.MenuItem deleteItem = new javafx.scene.control.MenuItem("Delete");
+                    javafx.scene.control.MenuItem deleteItem = new javafx.scene.control.MenuItem(
+                            bundle.getString("context.delete"));
                     deleteItem.setStyle("-fx-text-fill: red;");
                     deleteItem.setOnAction(e -> chatManager.deleteChat(item));
                     menuButton.getItems().addAll(renameItem, pinItem, new javafx.scene.control.SeparatorMenuItem(),
@@ -191,6 +195,7 @@ public class MainController implements Initializable {
         setActiveTool(btnAvailable);
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/available_models_view.fxml"));
+            loader.setResources(com.org.ollamafx.App.getBundle());
             Parent view = loader.load();
             AvailableModelsController controller = loader.getController();
             controller.setModelManager(this.modelManager); // Inyección de dependencia.
@@ -208,6 +213,7 @@ public class MainController implements Initializable {
         setActiveTool(btnLocal);
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/local_models_view.fxml"));
+            loader.setResources(com.org.ollamafx.App.getBundle());
             Parent view = loader.load();
             LocalModelsController controller = loader.getController();
             controller.setModelManager(this.modelManager); // Inyección de dependencia.
@@ -222,6 +228,7 @@ public class MainController implements Initializable {
         setActiveTool(btnSettings);
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/settings_view.fxml"));
+            loader.setResources(com.org.ollamafx.App.getBundle());
             Parent view = loader.load();
             centerContentPane.getChildren().setAll(view); // Update StackPane content
         } catch (IOException e) {
@@ -234,6 +241,7 @@ public class MainController implements Initializable {
         setActiveTool(btnAbout);
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/about_view.fxml"));
+            loader.setResources(com.org.ollamafx.App.getBundle());
             Parent view = loader.load();
             centerContentPane.getChildren().setAll(view); // Update StackPane content
         } catch (IOException e) {
@@ -244,7 +252,10 @@ public class MainController implements Initializable {
     @FXML
     private void createNewChat() {
         System.out.println("Creating new chat...");
-        ChatSession newSession = chatManager.createChat("New Chat");
+        // Use a simple default name or fetch from bundle if desired.
+        // For now, let's keep it simple or use a localized "Chat"
+        ChatSession newSession = chatManager.createChat("Chat"); // Simplified
+
         chatListView.getSelectionModel().select(newSession);
         // Listener calls loadChatView -> which calls clearToolSelection
     }
@@ -255,6 +266,7 @@ public class MainController implements Initializable {
     private void loadChatView(ChatSession session) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/chat_view.fxml"));
+            loader.setResources(com.org.ollamafx.App.getBundle());
             Parent view = loader.load();
 
             ChatController controller = loader.getController();

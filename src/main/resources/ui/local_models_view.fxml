@@ -16,13 +16,13 @@
             <children>
                 <HBox alignment="CENTER_LEFT" prefHeight="50.0" spacing="10.0" styleClass="toolbar">
                     <children>
-                        <Label text="Modelos Instalados">
+                        <Label text="%local.title">
                             <font>
                                 <Font name="System Bold" size="18.0" />
                             </font>
                         </Label>
                         <HBox HBox.hgrow="ALWAYS" />
-                        <Button fx:id="deleteButton" mnemonicParsing="false" onAction="#deleteSelectedModel" styleClass="danger" text="Eliminar" />
+                        <Button fx:id="deleteButton" mnemonicParsing="false" onAction="#deleteSelectedModel" styleClass="danger" text="%button.delete" />
                     </children>
                     <padding>
                         <Insets left="20.0" right="20.0" />
@@ -31,10 +31,10 @@
                 
                 <TableView fx:id="localModelsTable" VBox.vgrow="ALWAYS">
                     <columns>
-                        <TableColumn fx:id="modelNameColumn" prefWidth="200.0" text="Nombre" />
-                        <TableColumn fx:id="modelDigestColumn" prefWidth="100.0" text="Tag" />
-                        <TableColumn fx:id="modelSizeColumn" prefWidth="100.0" text="Tamaño" />
-                        <TableColumn fx:id="modelLastModifiedColumn" prefWidth="150.0" text="Modificado" />
+                        <TableColumn fx:id="modelNameColumn" prefWidth="200.0" text="%column.name" />
+                        <TableColumn fx:id="modelDigestColumn" prefWidth="100.0" text="%column.tag" />
+                        <TableColumn fx:id="modelSizeColumn" prefWidth="100.0" text="%column.size" />
+                        <TableColumn fx:id="modelLastModifiedColumn" prefWidth="150.0" text="%column.modified" />
                     </columns>
                     <columnResizePolicy>
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />

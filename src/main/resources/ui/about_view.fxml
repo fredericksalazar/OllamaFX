@@ -22,27 +22,27 @@
     <VBox prefHeight="20.0" />
 
     <!-- App Name -->
-    <Label styleClass="h1" text="OllamaFX">
+    <Label styleClass="h1" text="%app.title">
         <font>
             <Font name="System Bold" size="36.0" />
         </font>
     </Label>
     
     <!-- Version -->
-    <Label fx:id="versionLabel" style="-fx-text-fill: -color-fg-subtle; -fx-font-size: 14px;" text="Version ..." />
+    <Label fx:id="versionLabel" style="-fx-text-fill: -color-fg-subtle; -fx-font-size: 14px;" text="%about.version.placeholder" />
 
     <!-- Description -->
-    <Label text="Professional Open Source Client for Ollama." styleClass="body-large" wrapText="true" textAlignment="CENTER" />
+    <Label text="%about.description" styleClass="body-large" wrapText="true" textAlignment="CENTER" />
     
     <!-- Credits -->
     <VBox alignment="CENTER" spacing="5.0">
-        <Label text="Created by Frederick Salazar" style="-fx-text-fill: -color-fg-subtle;" />
-        <Label text="Powered by JavaFX &amp; AtlantaFX" style="-fx-text-fill: -color-fg-subtle; -fx-font-size: 11px;" />
+        <Label text="%about.createdby" style="-fx-text-fill: -color-fg-subtle;" />
+        <Label text="%about.poweredby" style="-fx-text-fill: -color-fg-subtle; -fx-font-size: 11px;" />
     </VBox>
 
     <!-- Links -->
-    <Hyperlink onAction="#openGitHub" text="GitHub Repository" style="-fx-font-size: 14px;" />
+    <Hyperlink onAction="#openGitHub" text="%about.github" style="-fx-font-size: 14px;" />
     
-    <Label text="Released under MIT License" style="-fx-text-fill: -color-fg-subtle; -fx-font-size: 10px;" />
+    <Label text="%about.license" style="-fx-text-fill: -color-fg-subtle; -fx-font-size: 10px;" />
 
 </VBox>

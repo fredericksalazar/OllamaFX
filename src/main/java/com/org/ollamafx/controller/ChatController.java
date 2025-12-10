@@ -108,11 +108,11 @@ public class ChatController {
             // Map value to Creativity Label
             String creativityText;
             if (val <= 0.3) {
-                creativityText = "Precise";
+                creativityText = com.org.ollamafx.App.getBundle().getString("chat.creativity.precise");
             } else if (val <= 0.7) {
-                creativityText = "Balanced";
+                creativityText = com.org.ollamafx.App.getBundle().getString("chat.creativity.balanced");
             } else {
-                creativityText = "Imaginative";
+                creativityText = com.org.ollamafx.App.getBundle().getString("chat.creativity.imaginative");
             }
 
             tempValueLabel.setText(creativityText);
@@ -208,7 +208,7 @@ public class ChatController {
     }
 
     private void animateWelcomeText() {
-        String fullText = "Hola, antes de iniciar selecciona un modelo.";
+        String fullText = com.org.ollamafx.App.getBundle().getString("chat.welcome");
         welcomeLabel.setText("");
 
         final Integer[] i = { 0 };
@@ -262,11 +262,11 @@ public class ChatController {
 
             String creativityText;
             if (temp <= 0.3)
-                creativityText = "Precise";
+                creativityText = com.org.ollamafx.App.getBundle().getString("chat.creativity.precise");
             else if (temp <= 0.7)
-                creativityText = "Balanced";
+                creativityText = com.org.ollamafx.App.getBundle().getString("chat.creativity.balanced");
             else
-                creativityText = "Imaginative";
+                creativityText = com.org.ollamafx.App.getBundle().getString("chat.creativity.imaginative");
 
             tempValueLabel.setText(creativityText);
             // systemPromptField.setText(session.getSystemPrompt()); // Removed
@@ -289,9 +289,12 @@ public class ChatController {
 
         String modelName = modelSelector.getValue();
         if (modelName == null) {
-            addMessage("Error: No model selected. Please select a model from the dropdown.", false);
+            addMessage("Error: " + com.org.ollamafx.App.getBundle().getString("chat.selectModel"), false); // Reuse or
+                                                                                                           // add
+                                                                                                           // specific
+                                                                                                           // error
             if (statusLabel != null)
-                statusLabel.setText("Ready");
+                statusLabel.setText(com.org.ollamafx.App.getBundle().getString("chat.status.ready"));
             return;
         }
 
@@ -308,7 +311,7 @@ public class ChatController {
 
         // Call Ollama API
         if (statusLabel != null)
-            statusLabel.setText("Thinking...");
+            statusLabel.setText(com.org.ollamafx.App.getBundle().getString("chat.status.thinking"));
 
         com.org.ollamafx.App.getExecutorService().submit(() -> {
             try {
@@ -316,7 +319,7 @@ public class ChatController {
                 Platform.runLater(() -> {
                     addMessage("", false);
                     if (statusLabel != null)
-                        statusLabel.setText("Generating...");
+                        statusLabel.setText(com.org.ollamafx.App.getBundle().getString("chat.status.generating"));
                 });
 
                 StringBuilder responseBuilder = new StringBuilder();
@@ -360,7 +363,7 @@ public class ChatController {
                                                                                         // state
                     }
                     if (statusLabel != null)
-                        statusLabel.setText("Ready");
+                        statusLabel.setText(com.org.ollamafx.App.getBundle().getString("chat.status.ready"));
                 });
 
             } catch (Exception e) {
@@ -368,7 +371,7 @@ public class ChatController {
                 Platform.runLater(() -> {
                     addMessage("Error: " + e.getMessage(), false);
                     if (statusLabel != null)
-                        statusLabel.setText("Error");
+                        statusLabel.setText(com.org.ollamafx.App.getBundle().getString("chat.status.error"));
                 });
             }
         });

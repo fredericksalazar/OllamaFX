@@ -17,6 +17,9 @@ public class SettingsController {
     private Button themeButton;
 
     @FXML
+    private javafx.scene.control.ComboBox<String> languageComboBox;
+
+    @FXML
     private Label statusLabel;
 
     @FXML
@@ -38,8 +41,27 @@ public class SettingsController {
         ramLabel.setText(HardwareManager.getRamDetails());
         cpuLabel.setText(HardwareManager.getCpuDetails());
         osLabel.setText(HardwareManager.getOsDetails());
-        // Initial theme text update if needed, though we might not know current state
-        // easily without checking CSS
+
+        // Language Setup
+        languageComboBox.getItems().addAll("English", "Español");
+        String currentLang = configManager.getLanguage();
+        if ("es".equals(currentLang)) {
+            languageComboBox.getSelectionModel().select("Español");
+        } else {
+            languageComboBox.getSelectionModel().select("English");
+        }
+
+        languageComboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                if (newVal.equals("Español")) {
+                    configManager.setLanguage("es");
+                } else {
+                    configManager.setLanguage("en");
+                }
+                // Hot reload the UI
+                com.org.ollamafx.App.reloadUI();
+            }
+        });
     }
 
     @FXML
@@ -47,10 +69,10 @@ public class SettingsController {
         String newHost = hostTextField.getText();
         if (newHost != null && !newHost.trim().isEmpty()) {
             configManager.setOllamaHost(newHost.trim());
-            statusLabel.setText("Settings saved! Restart might be required for connection changes.");
+            statusLabel.setText(com.org.ollamafx.App.getBundle().getString("settings.status.saved"));
             statusLabel.setStyle("-fx-text-fill: green;");
         } else {
-            statusLabel.setText("Invalid Host URL");
+            statusLabel.setText(com.org.ollamafx.App.getBundle().getString("settings.status.invalid"));
             statusLabel.setStyle("-fx-text-fill: red;");
         }
     }
