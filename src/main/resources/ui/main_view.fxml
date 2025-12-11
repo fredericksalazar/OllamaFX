@@ -78,6 +78,33 @@
                         <Insets bottom="10.0" left="5.0" right="5.0" top="5.0" />
                     </padding>
                 </VBox>
+                
+                <!-- OLLAMA STATUS BAR (Refined) -->
+                <!-- OLLAMA STATUS BAR (Full Width Color) -->
+                <!-- OLLAMA STATUS BAR (Nano Banana - Minimalist Pulse) -->
+                <HBox fx:id="ollamaStatusBar" styleClass="status-bar-nano" alignment="CENTER_LEFT" spacing="12.0">
+                     <children>
+                         <!-- Pulse Dot -->
+                         <javafx.scene.layout.StackPane>
+                             <javafx.scene.shape.Circle fx:id="pulseEmitter" radius="6.0" styleClass="pulse-emitter" opacity="0.0"/>
+                             <javafx.scene.shape.Circle fx:id="statusDot" radius="4.0" styleClass="status-dot-nano" />
+                         </javafx.scene.layout.StackPane>
+                         
+                         <!-- Status Text -->
+                         <Label fx:id="statusLabel" text="System Operational" styleClass="status-label-nano" />
+                         
+                         <javafx.scene.layout.Region HBox.hgrow="ALWAYS" />
+
+                         <!-- Controls -->
+                         <HBox alignment="CENTER_RIGHT" spacing="15.0">
+                             <!-- Subtle Switch -->
+                             <javafx.scene.control.ToggleButton fx:id="btnControlOllama" text="" onAction="#toggleOllamaService" styleClass="toggle-switch-nano" />
+                         </HBox>
+                     </children>
+                     <padding>
+                        <Insets top="15.0" bottom="15.0" left="20.0" right="20.0"/>
+                     </padding>
+                </HBox>
             </children>
         </VBox>
     </left>

@@ -17,6 +17,17 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.application.Application;
+import javafx.animation.FadeTransition;
+import javafx.animation.Timeline;
+import javafx.animation.KeyFrame;
+import javafx.util.Duration;
+import com.org.ollamafx.manager.OllamaServiceManager;
+import javafx.application.Platform;
+import javafx.scene.control.Label;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.layout.HBox;
+import javafx.scene.shape.Circle;
+import javafx.scene.layout.Region;
 
 public class MainController implements Initializable {
 
@@ -37,6 +48,20 @@ public class MainController implements Initializable {
     @FXML
     private javafx.scene.control.Button btnAbout;
 
+    @FXML
+    private HBox ollamaStatusBar;
+    @FXML
+    private Circle statusDot;
+    @FXML
+    private Circle pulseEmitter;
+    @FXML
+    private Label statusLabel;
+    @FXML
+    private ToggleButton btnControlOllama;
+
+    private Timeline statusPollingTimeline;
+    private FadeTransition pulseAnimation;
+
     private ChatManager chatManager;
     private ModelManager modelManager;
 
@@ -47,8 +72,14 @@ public class MainController implements Initializable {
 
     public void initModelManager(ModelManager modelManager) {
         this.modelManager = modelManager;
-        // Default View? Maybe available models or empty
-        // showAvailableModels();
+        // If Ollama is already running but models failed to load (list empty), retry
+        // now.
+        if (OllamaServiceManager.getInstance().isRunning()) {
+            if (modelManager.getLocalModels().isEmpty()) {
+                System.out.println("MainController: Ollama running but models missing. Retrying load...");
+                modelManager.loadAllModels();
+            }
+        }
     }
 
     @Override
@@ -58,6 +89,10 @@ public class MainController implements Initializable {
         if (centerContentPane == null) {
             System.err.println("centerContentPane is NULL! Check FXML fx:id");
         }
+
+        // Ollama Checks
+        checkOllamaInstallation();
+        startStatusPolling();
 
         chatListView.setItems(chatManager.getChatSessions());
 
@@ -296,6 +331,153 @@ public class MainController implements Initializable {
                 mainBorderPane.getScene().getRoot().getStyleClass().remove("light");
                 mainBorderPane.getScene().getRoot().getStyleClass().add("dark");
             }
+        }
+    }
+
+    // --- OLLAMA STATUS LOGIC ---
+
+    private void checkOllamaInstallation() {
+        boolean installed = OllamaServiceManager.getInstance().isInstalled();
+        if (!installed) {
+            if (statusLabel != null) {
+                statusLabel.setText("Not Installed");
+                statusLabel.setStyle("-fx-text-fill: -color-danger-fg;");
+            }
+            if (btnControlOllama != null) {
+                // btnControlOllama.setText("Download");
+                btnControlOllama.setTooltip(new javafx.scene.control.Tooltip("Download Ollama"));
+                btnControlOllama.setOnAction(e -> {
+                    try {
+                        java.awt.Desktop.getDesktop().browse(new java.net.URI("https://ollama.com"));
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                });
+            }
+        }
+    }
+
+    private void startStatusPolling() {
+        statusPollingTimeline = new Timeline(new KeyFrame(Duration.seconds(5), event -> {
+            boolean running = OllamaServiceManager.getInstance().isRunning();
+            updateStatusUI(running);
+        }));
+        statusPollingTimeline.setCycleCount(Timeline.INDEFINITE);
+        statusPollingTimeline.play();
+
+        // Initial check immediately
+        if (OllamaServiceManager.getInstance().isInstalled()) {
+            boolean running = OllamaServiceManager.getInstance().isRunning();
+            if (!running) {
+                // Auto-Start Scneario
+                statusLabel.setText("Auto-starting...");
+                new Thread(() -> {
+                    boolean started = OllamaServiceManager.getInstance().startOllama();
+                    Platform.runLater(() -> {
+                        updateStatusUI(started);
+                        if (started && modelManager != null) {
+                            System.out.println("MainController: Auto-start success. Loading models...");
+                            modelManager.loadAllModels();
+                        }
+                    });
+                }).start();
+            } else {
+                updateStatusUI(true);
+            }
+        } else {
+            updateStatusUI(false);
+        }
+    }
+
+    private void updateStatusUI(boolean running) {
+        if (ollamaStatusBar == null || statusLabel == null || btnControlOllama == null)
+            return;
+
+        // Ensure Pulse Animation
+        if (pulseAnimation == null && pulseEmitter != null) {
+            pulseAnimation = new FadeTransition(Duration.seconds(1.5), pulseEmitter);
+            pulseAnimation.setFromValue(0.8);
+            pulseAnimation.setToValue(0.0);
+            pulseAnimation.setCycleCount(FadeTransition.INDEFINITE);
+        }
+
+        if (running) {
+            if (statusDot != null) {
+                statusDot.getStyleClass().removeAll("status-dot-stopped");
+                if (!statusDot.getStyleClass().contains("status-dot-running")) {
+                    statusDot.getStyleClass().add("status-dot-running");
+                }
+            }
+            if (pulseEmitter != null) {
+                pulseEmitter.setFill(javafx.scene.paint.Color.rgb(0, 255, 128)); // Neon Green
+                if (pulseAnimation.getStatus() != javafx.animation.Animation.Status.RUNNING) {
+                    pulseAnimation.play();
+                }
+            }
+
+            statusLabel.setText("Ollama Service");
+
+            // Switch State
+            btnControlOllama.setSelected(true);
+            btnControlOllama.setTooltip(new javafx.scene.control.Tooltip("Stop Service"));
+            btnControlOllama.setOnAction(this::toggleOllamaService);
+        } else {
+            if (statusDot != null) {
+                statusDot.getStyleClass().removeAll("status-dot-running");
+                if (!statusDot.getStyleClass().contains("status-dot-stopped")) {
+                    statusDot.getStyleClass().add("status-dot-stopped");
+                }
+            }
+            if (pulseEmitter != null) {
+                pulseEmitter.setFill(javafx.scene.paint.Color.rgb(255, 59, 48)); // Neon Red
+                // Pulse even when stopped? User image implies active pulse for "Operational".
+                // Maybe stop pulse if stopped.
+                pulseAnimation.stop();
+                pulseEmitter.setOpacity(0.0);
+            }
+
+            statusLabel.setText("Ollama Service");
+
+            // Switch State
+            btnControlOllama.setSelected(false);
+            btnControlOllama.setTooltip(new javafx.scene.control.Tooltip("Start Service"));
+            btnControlOllama.setOnAction(this::toggleOllamaService);
+        }
+    }
+
+    @FXML
+    private void toggleOllamaService(javafx.event.ActionEvent event) {
+        boolean isRunning = OllamaServiceManager.getInstance().isRunning();
+
+        if (isRunning) {
+            // Stop
+            statusLabel.setText("Stopping...");
+            new Thread(() -> {
+                OllamaServiceManager.getInstance().stopOllama();
+                Platform.runLater(() -> {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                    } // Wait a bit
+                    updateStatusUI(OllamaServiceManager.getInstance().isRunning());
+                });
+            }).start();
+        } else {
+            // Start
+            statusLabel.setText("Starting...");
+            btnControlOllama.setDisable(true); // Prevent double click
+            new Thread(() -> {
+                boolean success = OllamaServiceManager.getInstance().startOllama();
+                Platform.runLater(() -> {
+                    btnControlOllama.setDisable(false);
+                    if (success) {
+                        updateStatusUI(true);
+                    } else {
+                        statusLabel.setText("Start Failed");
+                        updateStatusUI(false);
+                    }
+                });
+            }).start();
         }
     }
 }
