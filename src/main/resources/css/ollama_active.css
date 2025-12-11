@@ -467,7 +467,197 @@
     -fx-background-color: transparent;
 }
 
-.body-large {
+
+
+/* --- NANO BANANA (LIGHT INTEGRATED) --- */
+.status-bar-nano {
+    -fx-background-color: transparent;
+    /* Seamless with sidebar */
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1px 0 0 0;
+}
+
+.status-dot-nano {
+    -fx-fill: -color-border-subtle;
+    /* Default off/loading */
+}
+
+.status-dot-running {
+    -fx-fill: #34c759;
+    /* iOS Green (Screenshot match) */
+    -fx-effect: dropshadow(gaussian, rgba(52, 199, 89, 0.3), 8, 0, 0, 0);
+}
+
+.status-dot-stopped {
+    -fx-fill: #8e8e93;
+    /* IOS Grey (Inactive) or Red if error */
+    /* Screenshot shows green when running. Assuming grey/neutral when off or red if error.
+       Let's stick to neutral grey for "stopped" to be clean like macOS. */
+}
+
+.status-label-nano {
+    -fx-font-family: system;
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-default;
+    /* Dark text */
+    -fx-font-weight: normal;
+}
+
+.status-latency-nano {
+    -fx-font-family: "Monospaced";
+    -fx-font-size: 10px;
+    -fx-text-fill: rgba(255, 255, 255, 0.5);
+}
+
+/* Toggle Switch Nano (Red/Green) */
+.toggle-switch-nano {
+    -fx-background-color: #ff3b30, white;
+    /* Red (Off) Track, White Knob */
+    -fx-background-insets: 0, 2 18 2 2;
+    /* Knob on Left (for Off state approx) - wait, width is 36. 
+                                           Knob size ~16. 
+                                           Insets: Top=2, Right=18, Bottom=2, Left=2. 
+                                           Right inset 18 means 36-18 = 18px from right. 
+                                           Knob width = 36 - 2 - 18 = 16. Correct. */
+    -fx-background-radius: 20, 20;
+    -fx-text-fill: transparent;
+    -fx-padding: 0;
+    /* Clear padding, use insets for graphic */
+    -fx-cursor: hand;
+    -fx-min-width: 36px;
+    -fx-max-width: 36px;
+    -fx-min-height: 20px;
+    -fx-max-height: 20px;
+}
+
+.toggle-switch-nano:selected {
+    -fx-background-color: #34c759, white;
+    /* Green (On) Track, White Knob */
+    -fx-background-insets: 0, 2 2 2 18;
+    /* Knob on Right.
+                                           Insets: Top=2, Right=2, Bottom=2, Left=18. */
+}
+
+.toggle-switch-nano:hover {
+    -fx-opacity: 0.9;
+}
+
+/* --- FULL WIDTH COLOR OLLAMA STATUS BAR --- */
+.status-bar-container {
+    -fx-padding: 12px 15px;
+    -fx-background-radius: 0;
+}
+
+/* Background Colors */
+.status-bar-stopped {
+    -fx-background-color: #d32f2f;
+    /* Muted Red (Material Red 700) - "Dry Red" */
+}
+
+.status-bar-running {
+    -fx-background-color: #388e3c;
+    /* Muted Green (Material Green 700) - "Dry Green" */
+}
+
+.status-label-white {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+}
+
+/* SWITCH BUTTON STYLING */
+.status-switch-button {
+    -fx-background-color: white;
+    -fx-text-fill: -color-fg-default;
+    -fx-background-radius: 15px;
+    /* Pill shape */
+    -fx-min-width: 50px;
+    -fx-padding: 3px 10px;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 3, 0, 0, 1);
+}
+
+.status-switch-button:selected {
+    -fx-background-color: white;
+    /* Keep white bg for the "knob" look if possible, or inverse */
+    -fx-text-fill: #388e3c;
+}
+
+
+/* Make it look more like a switch? 
+   Actually, standard ToggleButton with pills style is clean. 
+   User asked for "boton switch" shape.
+   Let's simulate a simpler toggle: White pill with text inside.
+*/
+
+/* --- REFINED OLLAMA STATUS BAR --- */
+.status-bar-refined {
+    -fx-padding: 10px 15px;
+    -fx-background-color: rgba(0, 0, 0, 0.03);
+    /* Subtle footer background */
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1px 0 0 0;
+}
+
+.status-indicator-dot {
+    -fx-min-width: 8px;
+    -fx-min-height: 8px;
+    -fx-max-width: 8px;
+    -fx-max-height: 8px;
+    -fx-background-radius: 5px;
+}
+
+/* Re-use active/inactive classes but with updated colors if needed */
+.status-dot-active {
+    -fx-background-color: #34c759;
+    /* iOS Green */
+    -fx-effect: dropshadow(gaussian, rgba(52, 199, 89, 0.4), 6, 0, 0, 0);
+}
+
+.status-dot-inactive {
+    -fx-background-color: #ff3b30;
+    /* iOS Red */
+}
+
+.status-title-small {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+}
+
+.status-subtitle-small {
+    -fx-font-size: 10px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+/* POWER BUTTON */
+.icon-button-power {
+    -fx-background-color: transparent;
+    -fx-padding: 5px;
+    -fx-cursor: hand;
+    -fx-border-radius: 50%;
+    -fx-background-radius: 50%;
+}
+
+.icon-button-power:hover {
+    -fx-background-color: rgba(0, 0, 0, 0.05);
+}
+
+.icon-button-power:pressed {
+    -fx-background-color: rgba(0, 0, 0, 0.1);
+}
+
+.power-icon-shape {
+    -fx-fill: -color-fg-muted;
+    /* Default Grey */
+    -fx-min-width: 16px;
+    -fx-min-height: 16px;
+    -fx-scale-x: 0.9;
+    -fx-scale-y: 0.9;
+}
+
+.icon-button-power:hover .power-icon-shape {
     -fx-fill: -color-fg-default;
-    -fx-font-size: 14px;
 }

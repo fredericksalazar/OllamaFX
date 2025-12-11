@@ -236,16 +236,43 @@ public class ChatController {
     public void setModelManager(com.org.ollamafx.manager.ModelManager modelManager) {
         // this.modelManager = modelManager; // Unused field
         if (modelManager != null) {
-            // Convert OllamaModel list to String list for the ComboBox
-            javafx.collections.ObservableList<String> models = modelManager.getLocalModels().stream()
+            // Bind ComboBox items to ModelManager's observable list
+            // Convert OllamaModel list to String list dynamically would be hard with direct
+            // binding if types mismatch.
+            // But we can add a listener to the ObservableList<OllamaModel> and update the
+            // String list.
+
+            // Initial population
+            updateModelList(modelManager.getLocalModels());
+
+            // Listener for future updates
+            modelManager.getLocalModels().addListener(
+                    (javafx.collections.ListChangeListener.Change<? extends com.org.ollamafx.model.OllamaModel> c) -> {
+                        updateModelList(modelManager.getLocalModels());
+                    });
+        }
+    }
+
+    private void updateModelList(java.util.List<com.org.ollamafx.model.OllamaModel> models) {
+        Platform.runLater(() -> {
+            javafx.collections.ObservableList<String> modelNames = models.stream()
                     .map(model -> model.getName() + ":" + model.getTag())
                     .collect(Collectors.toCollection(FXCollections::observableArrayList));
 
-            modelSelector.setItems(models);
+            String currentSelection = modelSelector.getValue();
+
+            modelSelector.setItems(modelNames);
             if (initialModelSelector != null) {
-                initialModelSelector.setItems(models);
+                initialModelSelector.setItems(modelNames);
             }
-        }
+
+            // Restore selection if still valid
+            if (currentSelection != null && modelNames.contains(currentSelection)) {
+                modelSelector.setValue(currentSelection);
+                if (initialModelSelector != null)
+                    initialModelSelector.setValue(currentSelection);
+            }
+        });
     }
 
     private com.org.ollamafx.model.ChatSession currentSession;
