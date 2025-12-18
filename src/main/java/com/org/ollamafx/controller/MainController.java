@@ -339,25 +339,37 @@ public class MainController implements Initializable {
     private void checkOllamaInstallation() {
         boolean installed = OllamaServiceManager.getInstance().isInstalled();
         if (!installed) {
-            if (statusLabel != null) {
-                statusLabel.setText("Not Installed");
-                statusLabel.setStyle("-fx-text-fill: -color-danger-fg;");
-            }
-            if (btnControlOllama != null) {
-                // btnControlOllama.setText("Download");
-                btnControlOllama.setTooltip(new javafx.scene.control.Tooltip("Download Ollama"));
-                btnControlOllama.setOnAction(e -> {
-                    try {
-                        java.awt.Desktop.getDesktop().browse(new java.net.URI("https://ollama.com"));
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
-                });
-            }
+            statusLabel.setText("Not Installed");
+            statusLabel.setStyle("-fx-text-fill: -color-danger-fg;"); // Use error color
+
+            // Reconfigure control button to be "Download"
+            btnControlOllama.setText("Download"); // Assuming button supports text/icon change
+            btnControlOllama.setSelected(false);
+            btnControlOllama.setDisable(false);
+            btnControlOllama.setTooltip(new javafx.scene.control.Tooltip("Download Ollama from ollama.com"));
+
+            btnControlOllama.setOnAction(e -> {
+                try {
+                    java.awt.Desktop.getDesktop().browse(new java.net.URI("https://ollama.com"));
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    // Fallback: copy to clipboard or show alert
+                }
+            });
+
+            // Optionally disable other interactions or show a modal
+        } else {
+            // Reset to default behavior (managed by updateStatusUI)
+            btnControlOllama.setText(null); // Clear text if icon only
         }
     }
 
     private void startStatusPolling() {
+        // If not installed, don't poll or auto-start
+        if (!OllamaServiceManager.getInstance().isInstalled()) {
+            return;
+        }
+
         statusPollingTimeline = new Timeline(new KeyFrame(Duration.seconds(5), event -> {
             boolean running = OllamaServiceManager.getInstance().isRunning();
             updateStatusUI(running);
@@ -366,26 +378,22 @@ public class MainController implements Initializable {
         statusPollingTimeline.play();
 
         // Initial check immediately
-        if (OllamaServiceManager.getInstance().isInstalled()) {
-            boolean running = OllamaServiceManager.getInstance().isRunning();
-            if (!running) {
-                // Auto-Start Scneario
-                statusLabel.setText("Auto-starting...");
-                new Thread(() -> {
-                    boolean started = OllamaServiceManager.getInstance().startOllama();
-                    Platform.runLater(() -> {
-                        updateStatusUI(started);
-                        if (started && modelManager != null) {
-                            System.out.println("MainController: Auto-start success. Loading models...");
-                            modelManager.loadAllModels();
-                        }
-                    });
-                }).start();
-            } else {
-                updateStatusUI(true);
-            }
+        boolean running = OllamaServiceManager.getInstance().isRunning();
+        if (!running) {
+            // Auto-Start Scenario
+            statusLabel.setText("Auto-starting...");
+            new Thread(() -> {
+                boolean started = OllamaServiceManager.getInstance().startOllama();
+                Platform.runLater(() -> {
+                    updateStatusUI(started);
+                    if (started && modelManager != null) {
+                        System.out.println("MainController: Auto-start success. Loading models...");
+                        modelManager.loadAllModels();
+                    }
+                });
+            }).start();
         } else {
-            updateStatusUI(false);
+            updateStatusUI(true);
         }
     }
 

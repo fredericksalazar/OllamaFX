@@ -38,11 +38,12 @@ public class OllamaServiceManager {
 
     /**
      * Checks if the Ollama service is currently running on the default port
-     * (11434).
+     * (11434). Uses 127.0.0.1 to avoid DNS issues.
      */
     public boolean isRunning() {
         try (Socket socket = new Socket()) {
-            socket.connect(new InetSocketAddress("localhost", 11434), 500); // 500ms timeout
+            // Use 127.0.0.1 instead of localhost for robustness
+            socket.connect(new InetSocketAddress("127.0.0.1", 11434), 1000); // 1000ms timeout
             return true;
         } catch (IOException e) {
             return false;
@@ -53,23 +54,31 @@ public class OllamaServiceManager {
      * Attempts to start the Ollama service.
      */
     public boolean startOllama() {
-        if (isRunning())
+        if (isRunning()) {
+            System.out.println("OllamaServiceManager: Service already running. No action needed.");
             return true;
+        }
 
         System.out.println("OllamaServiceManager: Attempting to start Ollama...");
         try {
             ProcessBuilder pb = new ProcessBuilder("ollama", "serve");
-            // Redirect output to inherit IO so we can see logs if run from terminal,
-            // or maybe redirect to a specific log file in the future.
-            // For now, let's keep it simple.
             pb.redirectErrorStream(true);
+
+            // Inherit IO might be useful for debug but can clutter app logs.
+            // pb.inheritIO();
 
             this.ollamaProcess = pb.start();
 
             // Give it a moment to spin up
             int Retries = 10;
             while (Retries > 0) {
-                Thread.sleep(1000);
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    return false;
+                }
+
                 if (isRunning()) {
                     System.out.println("OllamaServiceManager: Ollama started successfully.");
                     return true;
@@ -77,7 +86,7 @@ public class OllamaServiceManager {
                 Retries--;
             }
             return false; // Timed out
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             e.printStackTrace();
             return false;
         }
@@ -85,29 +94,14 @@ public class OllamaServiceManager {
 
     /**
      * Attempts to stop the locally managed Ollama process.
-     * Note: This only works if WE started it. Stopping a system-wide service is
-     * harder/requires admin.
-     * However, the requirement is "Start/Stop" button.
-     * If we didn't start it, we can't easily kill it without 'pkill' which might be
-     * aggressive.
-     * Let's try to kill the process we hold reference to first.
      */
     public void stopOllama() {
         if (this.ollamaProcess != null && this.ollamaProcess.isAlive()) {
             System.out.println("OllamaServiceManager: Stopping local Ollama process...");
             this.ollamaProcess.destroy(); // SIGTERM
         } else {
-            // Try explicit kill if we want to be aggressive (User request: "botón para
-            // iniciar o apagar")
-            // This is useful if the user started it manually or via another instance.
-            // On Mac/Linux:
-            try {
-                System.out.println("OllamaServiceManager: Attempting to kill system ollama process...");
-                ProcessBuilder pb = new ProcessBuilder("pkill", "ollama");
-                pb.start().waitFor();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            System.out.println(
+                    "OllamaServiceManager: No local child process to stop. System service may still be running.");
         }
     }
 }

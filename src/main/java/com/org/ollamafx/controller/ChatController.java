@@ -464,11 +464,21 @@ public class ChatController {
                 HBox container = (HBox) lastNode;
                 if (!container.getChildren().isEmpty()) {
                     Node content = container.getChildren().get(0);
+
+                    // Case 1: Direct MarkdownOutput (Old structure, unlikely now but safe to keep)
                     if (content instanceof MarkdownOutput) {
                         ((MarkdownOutput) content).updateContent(text);
                     }
-                    // Removed Label update to prevent overwriting user input if MarkdownOutput
-                    // fails
+                    // Case 2: Wrapped in VBox (New structure with Copy Button)
+                    else if (content instanceof VBox) {
+                        VBox wrapper = (VBox) content;
+                        for (Node child : wrapper.getChildren()) {
+                            if (child instanceof MarkdownOutput) {
+                                ((MarkdownOutput) child).updateContent(text);
+                                break;
+                            }
+                        }
+                    }
                 }
             }
         }

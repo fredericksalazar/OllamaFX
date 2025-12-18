@@ -116,6 +116,10 @@ public class App extends Application {
                 executorService.shutdownNow();
             }
         }
+
+        // Ensure we stop any managed Ollama process
+        com.org.ollamafx.manager.OllamaServiceManager.getInstance().stopOllama();
+
         ChatManager.getInstance().saveChats();
         super.stop();
     }
