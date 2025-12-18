@@ -94,6 +94,22 @@ public class App extends Application {
 
             primaryStage.setScene(scene);
             primaryStage.setTitle(getBundle().getString("app.title"));
+
+            // Set App Icon
+            try {
+                primaryStage.getIcons()
+                        .add(new javafx.scene.image.Image(App.class.getResourceAsStream("/icons/icon.png")));
+                // For Mac Dock Icon in dev mode (often requires Taskbar usage in AWT or
+                // specific FX hooks, but Stage icon is the first step)
+                if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+                    java.awt.Taskbar.getTaskbar().setIconImage(
+                            java.awt.Toolkit.getDefaultToolkit().getImage(App.class.getResource("/icons/icon.png")));
+                }
+            } catch (Exception e) {
+                // Ignore icon load error
+                System.out.println("Failed to load icon: " + e.getMessage());
+            }
+
             primaryStage.setMaximized(true); // Ensure maximized on reload
 
             if (!primaryStage.isShowing()) {
