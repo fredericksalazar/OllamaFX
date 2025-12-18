@@ -90,6 +90,7 @@ public class ChatSession {
         this.creationDate = creationDate;
     }
 
+    @JsonProperty("messages")
     public List<ChatMessage> getMessages() {
         return messages;
     }

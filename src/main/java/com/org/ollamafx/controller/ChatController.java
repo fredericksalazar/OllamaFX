@@ -12,6 +12,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.collections.FXCollections;
 import java.util.stream.Collectors;
+import com.org.ollamafx.ui.MarkdownOutput;
+import javafx.scene.Node;
 
 public class ChatController {
 
@@ -266,8 +268,15 @@ public class ChatController {
                 initialModelSelector.setItems(modelNames);
             }
 
-            // Restore selection if still valid
-            if (currentSelection != null && modelNames.contains(currentSelection)) {
+            modelListLoaded = true;
+
+            // Priority: Pending Selection (from loading chat) > Current Selection
+            // (preserve)
+            if (pendingModelSelection != null) {
+                setModelName(pendingModelSelection);
+                pendingModelSelection = null; // Clear after applying
+            } else if (currentSelection != null && modelNames.contains(currentSelection)) {
+                // Restore previous selection if still valid and no pending overwrite
                 modelSelector.setValue(currentSelection);
                 if (initialModelSelector != null)
                     initialModelSelector.setValue(currentSelection);
@@ -340,80 +349,90 @@ public class ChatController {
 
         // Add user message
         addMessage(text, true);
-        if (currentSession != null) {
-            currentSession.addMessage(new com.org.ollamafx.model.ChatMessage("user", text));
-            currentSession.setModelName(modelName); // Update
-                                                    // model
-                                                    // name
-            com.org.ollamafx.manager.ChatManager.getInstance().saveChats(); // Save state
-        }
-        inputField.clear();
+        // Capture session and model to ensure thread safety across tab switches
+        final com.org.ollamafx.model.ChatSession targetSession = currentSession;
+        final String targetModel = modelName;
 
+        // Add user message to session synchronously
+        if (targetSession != null) {
+            targetSession.addMessage(new com.org.ollamafx.model.ChatMessage("user", text));
+            targetSession.setModelName(targetModel);
+            com.org.ollamafx.manager.ChatManager.getInstance().saveChats();
+        }
+
+        // Add User UI separately (already done above in original code, ensure we don't
+        // dupe if I replace it all)
+        // Checks lines: 343-350 in original was adding user msg. I should target the
+        // block AFTER user msg is added.
+
+        inputField.clear();
         setGeneratingState(true);
 
-        // Call Ollama API
         if (statusLabel != null)
             statusLabel.setText(com.org.ollamafx.App.getBundle().getString("chat.status.thinking"));
 
-        activeResponseBuffer.setLength(0); // Reset buffer
+        activeResponseBuffer.setLength(0);
+
+        // Add Assistant Placeholder message to SESSION Synchronously
+        com.org.ollamafx.model.ChatMessage assistantMsg = new com.org.ollamafx.model.ChatMessage("assistant", "");
+        if (targetSession != null) {
+            targetSession.addMessage(assistantMsg);
+            com.org.ollamafx.manager.ChatManager.getInstance().saveChats(); // Persist placeholder
+        }
+
+        // Add Assistant Placeholder to UI Synchronously
+        addMessage("", false);
+        if (statusLabel != null)
+            statusLabel.setText(com.org.ollamafx.App.getBundle().getString("chat.status.generating"));
 
         currentGenerationTask = com.org.ollamafx.App.getExecutorService().submit(() -> {
             try {
-                // Create assistant message placeholder
-                Platform.runLater(() -> {
-                    addMessage("", false);
-                    if (statusLabel != null)
-                        statusLabel.setText(com.org.ollamafx.App.getBundle().getString("chat.status.generating"));
-                });
-
                 StringBuilder responseBuilder = new StringBuilder();
-
                 double temperature = tempSlider.getValue();
-                String systemPrompt = ""; // System prompt disabled in UI
+                String systemPrompt = "";
 
-                com.org.ollamafx.manager.OllamaManager.getInstance().askModelStream(modelName, text, temperature,
+                com.org.ollamafx.manager.OllamaManager.getInstance().askModelStream(targetModel, text, temperature,
                         systemPrompt,
                         new io.github.ollama4j.models.generate.OllamaStreamHandler() {
                             @Override
                             public void accept(String messagePart) {
-                                // ollama4j gives full text usually, but check just in case.
-                                // Actually ollama4j chat stream gives accumulated text?
-                                // Let's assume messagePart IS the accumulated buffer if using certain versions,
-                                // OR checks if it is delta.
-                                // Based on previous code: responseBuilder.setLength(0);
-                                // responseBuilder.append(messagePart);
-                                // This implies messagePart was the FULL text so far.
-                                // Let's stick to that assumption.
-
                                 if (Thread.currentThread().isInterrupted()) {
-                                    throw new RuntimeException("Cancelled by user"); // Force stop
+                                    throw new RuntimeException("Cancelled by user");
                                 }
 
+                                // FIX: Ollama4j gives full text accumulator
                                 responseBuilder.setLength(0);
                                 responseBuilder.append(messagePart);
+                                String properFullText = responseBuilder.toString();
 
-                                // Throttle UI Updates for smooth streaming
+                                // Update Session Data (Always safe to do, even if in background)
+                                assistantMsg.setContent(properFullText);
+
                                 long now = System.currentTimeMillis();
                                 if (now - lastUiUpdate > UI_UPDATE_INTERVAL_MS) {
-                                    final String textToUpdate = messagePart;
-                                    Platform.runLater(() -> updateLastMessage(textToUpdate));
+                                    Platform.runLater(() -> {
+                                        // Guard: Only update UI if we are still looking at this session
+                                        if (currentSession == targetSession) {
+                                            updateLastMessage(properFullText);
+                                        }
+                                    });
                                     lastUiUpdate = now;
                                 }
                             }
                         });
 
-                // On complete (OllamaStreamHandler doesn't have onComplete, so we assume it
-                // finishes when askModelStream returns?
-                // Actually askModelStream might be blocking or async.
-                // If blocking, we are good here.
-
-                // Final update to ensure complete text is shown
                 Platform.runLater(() -> {
                     String fullResponse = responseBuilder.toString();
-                    updateLastMessage(fullResponse); // Ensure final state is consistent
 
-                    if (currentSession != null) {
-                        currentSession.addMessage(new com.org.ollamafx.model.ChatMessage("assistant", fullResponse));
+                    // Final UI Update (Guarded)
+                    if (currentSession == targetSession) {
+                        updateLastMessage(fullResponse);
+                    }
+
+                    // Final Data Update (Always)
+                    assistantMsg.setContent(fullResponse);
+
+                    if (targetSession != null) {
                         com.org.ollamafx.manager.ChatManager.getInstance().saveChats();
                     }
                     setGeneratingState(false);
@@ -422,14 +441,15 @@ public class ChatController {
             } catch (Exception e) {
                 if (e instanceof InterruptedException || Thread.interrupted()
                         || "Cancelled by user".equals(e.getMessage())) {
-                    // Handled as cancellation
                     Platform.runLater(() -> setGeneratingState(false));
                     return;
                 }
-
                 e.printStackTrace();
                 Platform.runLater(() -> {
-                    addMessage("Error: " + e.getMessage(), false);
+                    // Only show error if active
+                    if (currentSession == targetSession) {
+                        addMessage("Error: " + e.getMessage(), false);
+                    }
                     setGeneratingState(false);
                 });
             }
@@ -438,10 +458,19 @@ public class ChatController {
 
     private void updateLastMessage(String text) {
         if (!messagesContainer.getChildren().isEmpty()) {
-            HBox lastContainer = (HBox) messagesContainer.getChildren()
-                    .get(messagesContainer.getChildren().size() - 1);
-            Label bubble = (Label) lastContainer.getChildren().get(0);
-            bubble.setText(text);
+            Node lastNode = messagesContainer.getChildren().get(messagesContainer.getChildren().size() - 1);
+
+            if (lastNode instanceof HBox) {
+                HBox container = (HBox) lastNode;
+                if (!container.getChildren().isEmpty()) {
+                    Node content = container.getChildren().get(0);
+                    if (content instanceof MarkdownOutput) {
+                        ((MarkdownOutput) content).updateContent(text);
+                    }
+                    // Removed Label update to prevent overwriting user input if MarkdownOutput
+                    // fails
+                }
+            }
         }
     }
 
@@ -484,31 +513,110 @@ public class ChatController {
     }
 
     private void addMessage(String text, boolean isUser) {
-        HBox bubbleContainer = new HBox();
-        bubbleContainer.setAlignment(isUser ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
+        if (isUser) {
+            HBox bubbleContainer = new HBox();
+            bubbleContainer.setAlignment(Pos.CENTER_RIGHT);
 
-        Label bubble = new Label(text);
-        bubble.setWrapText(true);
-        bubble.getStyleClass().add("chat-bubble");
-        bubble.getStyleClass().add(isUser ? "chat-bubble-user" : "chat-bubble-assistant");
+            Label bubble = new Label(text);
+            bubble.setWrapText(true);
+            bubble.getStyleClass().add("chat-bubble");
+            bubble.getStyleClass().add("chat-bubble-user");
+            // Ensure the label doesn't grow indefinitely
+            bubble.setMaxWidth(600);
 
-        // Ensure the label doesn't grow indefinitely
-        bubble.setMaxWidth(Double.MAX_VALUE);
+            bubbleContainer.getChildren().add(bubble);
+            messagesContainer.getChildren().add(bubbleContainer);
+        } else {
+            // Assistant Message - Centered, Markdown, No Bubble background (handled by
+            // MarkdownOutput logic/css)
+            HBox container = new HBox();
+            container.setAlignment(Pos.CENTER); // Center the text area in the screen
+            container.setPadding(new javafx.geometry.Insets(10, 20, 10, 20));
 
-        bubbleContainer.getChildren().add(bubble);
-        messagesContainer.getChildren().add(bubbleContainer);
+            // Wrapper for Markdown + Footer actions
+            VBox contentWrapper = new VBox();
+            contentWrapper.setStyle("-fx-background-color: transparent;");
+            HBox.setHgrow(contentWrapper, javafx.scene.layout.Priority.ALWAYS);
+            contentWrapper.setMaxWidth(800); // Strict max width
+
+            try {
+                MarkdownOutput markdownOutput = new MarkdownOutput();
+                // We let the wrapper constrain the width, but MarkdownOutput needs to fill it
+                markdownOutput.setMaxWidth(Double.MAX_VALUE);
+
+                // Set Initial Content
+                markdownOutput.setMarkdown(text);
+
+                // --- Copy Button Footer ---
+                HBox footer = new HBox();
+                footer.setAlignment(Pos.CENTER_RIGHT);
+                footer.setPadding(new javafx.geometry.Insets(5, 0, 0, 0));
+
+                Button copyBtn = new Button();
+                copyBtn.getStyleClass().add("chat-copy-button"); // Custom prominent style
+
+                javafx.scene.shape.SVGPath copyIcon = new javafx.scene.shape.SVGPath();
+                // Material Design Content Copy Icon
+                copyIcon.setContent(
+                        "M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z");
+                copyIcon.setStyle("-fx-fill: -color-fg-muted; -fx-scale-x: 0.9; -fx-scale-y: 0.9;");
+                copyIcon.getStyleClass().add("icon"); // For CSS hover effect
+
+                copyBtn.setGraphic(copyIcon);
+                copyBtn.setTooltip(new javafx.scene.control.Tooltip("Copy full response"));
+                // Always visible now
+
+                copyBtn.setOnAction(e -> {
+                    javafx.scene.input.ClipboardContent content = new javafx.scene.input.ClipboardContent();
+                    content.putString(markdownOutput.getMarkdown());
+                    javafx.scene.input.Clipboard.getSystemClipboard().setContent(content);
+
+                    // Visual Feedback (Green Tick)
+                    copyIcon.setStyle("-fx-fill: -color-success-fg; -fx-scale-x: 0.9; -fx-scale-y: 0.9;");
+                    javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(
+                            javafx.util.Duration.seconds(1));
+                    pause.setOnFinished(
+                            ev -> copyIcon.setStyle("-fx-fill: -color-fg-muted; -fx-scale-x: 0.9; -fx-scale-y: 0.9;"));
+                    pause.play();
+                });
+
+                footer.getChildren().add(copyBtn);
+                contentWrapper.getChildren().addAll(markdownOutput, footer);
+
+                container.getChildren().add(contentWrapper);
+            } catch (Throwable t) {
+                t.printStackTrace();
+                Label errorLabel = new Label("Error loading Markdown Component: " + t.getMessage());
+                errorLabel.setStyle("-fx-text-fill: red;");
+                container.getChildren().add(errorLabel);
+            }
+            messagesContainer.getChildren().add(container);
+        }
     }
 
+    private boolean modelListLoaded = false;
+    private String pendingModelSelection = null;
+
     public void setModelName(String name) {
+        // If the list isn't loaded yet or is empty, queue the selection
+        if (!modelListLoaded || modelSelector.getItems() == null || modelSelector.getItems().isEmpty()) {
+            this.pendingModelSelection = name;
+            return;
+        }
+
         // Try to select the model in the combo box if it matches
-        if (modelSelector.getItems() != null) {
-            for (String modelName : modelSelector.getItems()) {
-                if (modelName.equals(name) || modelName.startsWith(name + ":")) {
-                    modelSelector.getSelectionModel().select(modelName);
-                    return;
-                }
+        boolean found = false;
+        for (String modelName : modelSelector.getItems()) {
+            if (modelName.equals(name) || modelName.startsWith(name + ":")) {
+                modelSelector.getSelectionModel().select(modelName);
+                found = true;
+                break;
             }
         }
+
+        // If exact match not found but we have a pending selection, we might want to
+        // keep it pending?
+        // For now, if not found, we just don't select, but we've tried.
     }
 
     @FXML

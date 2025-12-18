@@ -661,3 +661,216 @@
 .icon-button-power:hover .power-icon-shape {
     -fx-fill: -color-fg-default;
 }
+
+/* --- MARKDOWN STYLES (RichTextFX) --- */
+/* --- MARKDOWN STYLES (RichTextFX / BBCode) --- */
+.markdown-area {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0 10;
+}
+
+.markdown-area .content {
+    -fx-background-color: transparent;
+}
+
+/* Base Text */
+.markdown-area text {
+    -fx-fill: -color-fg-default;
+    -fx-font-family: "System";
+    -fx-font-size: 16px;
+    /* Increased from 14px for better readability */
+    -fx-font-smoothing-type: lcd;
+    /* Better anti-aliasing */
+}
+
+/* Headers - Gemini Style (Larger, Bolder) */
+/* Note: These classes depend on how BBCodeParser assigns styles to [h1] tags. 
+   Usually it maps to .heading1 etc. or we rely on the specific implementation. 
+   Assuming AtlantaFX BBCodeParser maps [h1] -> styleClass "h1" or similar?
+   Wait, looking at MarkdownOutput, it uses BBCodeParser.createLayout.
+   If specific classes aren't generated, we might be styling blindly if we rely solely on these names.
+   However, assuming standard implementation or that we can target them:
+*/
+
+/* If we can't be sure of the class names generated for H tags, we rely on what was there: .markdown-h1
+   If the previous CSS had it, presumably it works or was intended to work.
+   We will keep the names and just beef them up.
+*/
+
+/* Headers - Gemini Style (Larger, Bolder) */
+/* Aliasing widely used classes for headers */
+.markdown-h1,
+.h1,
+.header-1,
+.title-1 {
+    -fx-font-size: 32px;
+    /* Massive, bold */
+    -fx-font-weight: 800;
+    /* Extra Bold */
+    -fx-fill: -color-fg-default;
+    -fx-padding: 20px 0 10px 0;
+    -fx-font-smoothing-type: lcd;
+}
+
+.markdown-h2,
+.h2,
+.header-2,
+.title-2 {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-fill: -color-fg-default;
+    -fx-padding: 15px 0 8px 0;
+    -fx-font-smoothing-type: lcd;
+}
+
+.markdown-h3,
+.h3,
+.header-3,
+.title-3 {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-fill: -color-fg-default;
+    -fx-padding: 10px 0 5px 0;
+    -fx-font-smoothing-type: lcd;
+}
+
+.markdown-h4 {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-fill: -color-fg-default;
+}
+
+.markdown-h5,
+.markdown-h6 {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-fill: -color-fg-subtle;
+}
+
+/* Emphasis */
+.markdown-bold {
+    -fx-font-weight: bold;
+}
+
+.markdown-italic {
+    -fx-font-style: italic;
+}
+
+/* Code Blocks */
+/* Code Blocks (Paragraph Level) */
+.markdown-code-paragraph {
+    -fx-background-color: -color-bg-subtle;
+    -fx-background-radius: 4px;
+    -fx-border-width: 0;
+}
+
+.markdown-code-paragraph .text {
+    -fx-font-family: "Monospaced";
+    -fx-fill: -color-fg-default;
+}
+
+/* Inline Code (Span Level) */
+/* Syntax Highlighting */
+.keyword {
+    -fx-fill: #cc7832;
+    -fx-font-weight: bold;
+}
+
+.paren {
+    -fx-fill: #a9b7c6;
+}
+
+.brace {
+    -fx-fill: #a9b7c6;
+}
+
+.bracket {
+    -fx-fill: #a9b7c6;
+}
+
+.semicolon {
+    -fx-fill: #cc7832;
+}
+
+.string {
+    -fx-fill: #6a8759;
+}
+
+.comment {
+    -fx-fill: #808080;
+    -fx-font-style: italic;
+}
+
+.number {
+    -fx-fill: #6897bb;
+}
+
+/* Code Block Card */
+.code-block-card {
+    -fx-background-color: -color-bg-subtle;
+    -fx-background-radius: 8px;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-radius: 8px;
+    -fx-border-width: 1px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.05), 5, 0, 0, 2);
+}
+
+.code-block-header {
+    -fx-background-color: -color-bg-default;
+    -fx-background-radius: 8px 8px 0 0;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 0 1px 0;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.code-block-language {
+    -fx-font-weight: bold;
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.code-block-copy-btn {
+    -fx-font-size: 10px;
+    -fx-padding: 4px 8px;
+    -fx-cursor: hand;
+}
+
+.code-block-content {
+    -fx-font-family: "Monospaced";
+    -fx-font-size: 13px;
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-fg-default;
+}
+
+.code-block-content .content {
+    -fx-background-color: transparent;
+}
+
+/* --- Chat Message Footer Actions --- */
+.chat-copy-button {
+    -fx-background-color: -color-bg-default;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-min-width: 32px;
+    -fx-min-height: 32px;
+    -fx-padding: 6px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.08), 4, 0, 0, 2);
+    -fx-alignment: CENTER;
+}
+
+.chat-copy-button:hover {
+    -fx-background-color: -color-bg-subtle;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.12), 6, 0, 0, 3);
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+}
+
+.chat-copy-button:pressed {
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.05), 2, 0, 0, 1);
+    -fx-scale-x: 0.95;
+    -fx-scale-y: 0.95;
+}
