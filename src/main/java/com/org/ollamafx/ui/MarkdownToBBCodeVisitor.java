@@ -40,11 +40,35 @@ public class MarkdownToBBCodeVisitor extends AbstractVisitor {
 
     @Override
     public void visit(Heading heading) {
-        // Use standard [h] tags which AtlantaFX BBCodeParser should handle
-        // or we can style via CSS if needed.
-        sb.append("\n[h").append(heading.getLevel()).append("]");
+        // AtlantaFX BBCodeParser may not support [h1]..[h6] tags directly.
+        // We map them to bold + size scaling.
+        int level = heading.getLevel();
+        String size = "1.5em"; // Default
+
+        switch (level) {
+            case 1:
+                size = "2em";
+                break;
+            case 2:
+                size = "1.75em";
+                break;
+            case 3:
+                size = "1.5em";
+                break;
+            case 4:
+                size = "1.25em";
+                break;
+            case 5:
+                size = "1.1em";
+                break;
+            case 6:
+                size = "1em";
+                break;
+        }
+
+        sb.append("\n\n[size=").append(size).append("][b]");
         visitChildren(heading);
-        sb.append("[/h").append(heading.getLevel()).append("]\n\n");
+        sb.append("[/b][/size]\n\n");
     }
 
     @Override

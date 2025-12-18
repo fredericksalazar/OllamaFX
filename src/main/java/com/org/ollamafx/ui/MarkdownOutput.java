@@ -90,21 +90,33 @@ public class MarkdownOutput extends VBox {
             return new CodeBlockCard(block.content, block.info);
         } else {
             try {
-                // Use createLayout to handle block elements (lists, etc.) properly regarding
-                // wrapping
-                Node bbCodeNode = BBCodeParser.createLayout(block.content);
+                // Use createLayout to handle block elements
+                // Note: AtlantaFX BBCodeParser might be strict or limited.
+                // If it fails, we fall back to raw text, which explains the [h2] visible.
+                Node bbCodeNode = BBCodeParser.createFormattedText(block.content); // Try createFormattedText instead of
+                                                                                   // createLayout? Or debug.
 
-                // Fix Text Wrapping: Bind maxWidth AND prefWidth to MarkdownOutput width
+                // createLayout is usually for full blocks. createFormattedText for inline.
+                // Let's stick to createLayout but debug the failure.
+                // Actually, let's look at the imports. atlantafx.base.util.BBCodeParser
+
+                bbCodeNode = BBCodeParser.createLayout(block.content);
+
+                // Fix Text Wrapping
                 if (bbCodeNode instanceof Region) {
                     Region region = (Region) bbCodeNode;
-                    region.setMinWidth(0); // Allow shrinking
-                    // Account for CSS padding (20px) + Safety Buffer
+                    region.setMinWidth(0);
                     region.prefWidthProperty().bind(this.widthProperty().subtract(40));
                     region.maxWidthProperty().bind(this.widthProperty().subtract(40));
                 }
                 bbCodeNode.getProperties().put("bbcode", block.content);
                 return bbCodeNode;
             } catch (Exception e) {
+                // Formatting failed, likely due to unsupported tags.
+                System.err.println("BBCode Parsing Failed for content: " + block.content);
+                e.printStackTrace();
+
+                // Fallback: Strip tags for cleaner failure? Or return TextFlow with basic text.
                 return new javafx.scene.control.Label(block.content);
             }
         }
