@@ -71,6 +71,7 @@ public class ChatManager {
             saveChat(session); // Save on pin change
         });
         session.nameProperty().addListener((obs, oldVal, newVal) -> saveChat(session)); // Save on rename
+        session.modelNameProperty().addListener((obs, oldVal, newVal) -> saveChat(session)); // Save on model change
     }
 
     public void deleteChat(ChatSession session) {
