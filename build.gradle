@@ -65,6 +65,14 @@ javafx {
 
 application {
     mainClass = 'com.org.ollamafx.Launcher'
+    applicationDefaultJvmArgs = ['-Xdock:name=OllamaFX', '-Xdock:icon=src/main/resources/icons/icon.png']
+}
+
+tasks.withType(JavaExec) {
+    if (System.getProperty('os.name').toLowerCase().contains('mac')) {
+        jvmArgs '-Xdock:name=OllamaFX'
+        jvmArgs "-Xdock:icon=${project.projectDir}/src/main/resources/icons/icon.png"
+    }
 }
 
 processResources {
@@ -103,5 +111,31 @@ task packageDistribution(type: Zip) {
             include archiveFileName.get()
         }
         println "Release copied to ${project.rootDir}/releases/${archiveFileName.get()}"
+    }
+}
+
+// Custom jpackage task for Mac
+task createInstaller(type: Exec) {
+    dependsOn shadowJar
+    workingDir project.rootDir
+    
+    // Command to key inputs:
+    // --input build/libs containing the shadow jar
+    // --main-jar the shadow jar name
+    // --icon the generated icns
+    
+    commandLine 'jpackage', 
+        '--input', 'build/libs',
+        '--name', 'OllamaFX',
+        '--main-jar', "OllamaFX-${version}.jar",
+        '--main-class', 'com.org.ollamafx.Launcher',
+        '--type', 'dmg',
+        '--icon', 'src/main/resources/icons/icon.icns',
+        '--dest', 'releases',
+        '--java-options', '--enable-preview' 
+        
+    doFirst {
+        mkdir 'releases'
+        println "Creating Installer with icon..."
     }
 }
