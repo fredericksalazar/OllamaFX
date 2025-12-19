@@ -94,13 +94,64 @@ shadowJar {
 
 task packageDistribution(type: Zip) {
     dependsOn shadowJar
+    dependsOn startShadowScripts
     archiveFileName = "OllamaFX-${version}-Dist.zip"
     destinationDirectory = file("$buildDir/distributions")
 
+    // 1. Put the JAR in lib/
     from(shadowJar.archiveFile) {
+        into "lib"
+    }
+    
+    // 2. Prepare scripts: Patch them to work from root (remove 'cd ..' logic)
+    // We use a temporary directory to patch files before zipping to avoid modifying original build artifacts repeatedly
+    def patchedScriptsDir = file("$buildDir/scriptsPatched")
+    
+    doFirst {
+        patchedScriptsDir.mkdirs()
+        
+        // Copy and patch the scripts
+        copy {
+            from "$buildDir/scriptsShadow"
+            into patchedScriptsDir
+            filter { line ->
+                // The generated script does `cd "dirname \"$PRG\"`/.." to find APP_HOME
+                // We want APP_HOME to be the script's directory, so we remove the `cd ..` part
+                // Standard line: cd "`dirname \"$PRG\"`/.." >/dev/null
+                if (line.contains('cd "`dirname \\"$PRG\\"`/.."')) {
+                    return 'cd "`dirname \\"$PRG\\"`" >/dev/null' 
+                }
+                // Windows batch: pushd %DIRNAME%..
+                if (line.contains('pushd %DIRNAME%..')) {
+                    return 'pushd %DIRNAME%'
+                }
+                return line
+            }
+        }
+    }
+
+    // 3. Include patched linux script as defaults
+    from(patchedScriptsDir) {
+        include "OllamaFX"
         into "."
     }
-    from("scripts") {
+
+     // 4. Include patched bat script
+    from(patchedScriptsDir) {
+        include "OllamaFX.bat"
+        into "."
+    }
+
+    // 5. Create specific extensions from the patched unix script
+    from(patchedScriptsDir) {
+        include "OllamaFX"
+        rename { "OllamaFX.sh" }
+        into "."
+    }
+
+    from(patchedScriptsDir) {
+        include "OllamaFX"
+        rename { "OllamaFX.command" }
         into "."
     }
 
