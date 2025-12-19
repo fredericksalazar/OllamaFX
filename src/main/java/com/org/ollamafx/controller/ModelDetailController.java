@@ -4,6 +4,7 @@ import com.org.ollamafx.App;
 import com.org.ollamafx.manager.ModelManager;
 import com.org.ollamafx.manager.OllamaManager;
 import com.org.ollamafx.model.OllamaModel;
+import atlantafx.base.theme.Styles;
 
 import javafx.animation.PauseTransition;
 import javafx.application.Application;
@@ -74,7 +75,7 @@ public class ModelDetailController {
             Stage stage = new Stage();
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.initStyle(StageStyle.TRANSPARENT);
-            stage.setTitle("Downloading Model");
+            stage.setTitle(App.getBundle().getString("download.title.default"));
 
             Scene scene = new Scene(root);
             scene.setFill(Color.TRANSPARENT);
@@ -84,7 +85,7 @@ public class ModelDetailController {
             Task<Void> task = new Task<>() {
                 @Override
                 protected Void call() throws Exception {
-                    updateMessage("Starting download process...");
+                    updateMessage(App.getBundle().getString("download.status.process"));
                     updateProgress(0, 100);
 
                     OllamaManager.getInstance().pullModel(model.getName(), model.getTag(),
@@ -107,7 +108,7 @@ public class ModelDetailController {
                     String date = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
                             .format(LocalDateTime.now());
                     OllamaModel newModel = new OllamaModel(
-                            model.getName(), "Installed locally", "N/A", model.getTag(),
+                            model.getName(), App.getBundle().getString("model.installed"), "N/A", model.getTag(),
                             model.sizeProperty().get(), date,
                             model.getContextLength(), model.getInputType());
                     modelManager.addLocalModel(newModel);
@@ -140,8 +141,8 @@ public class ModelDetailController {
 
     public void populateDetails(List<OllamaModel> modelTags) {
         if (modelTags == null || modelTags.isEmpty()) {
-            modelNameLabel.setText("Error");
-            modelDescriptionText.setText("Could not retrieve model details.");
+            modelNameLabel.setText(App.getBundle().getString("model.error"));
+            modelDescriptionText.setText(App.getBundle().getString("model.error.details"));
             modelListContainer.getChildren().clear();
             return;
         }
@@ -240,8 +241,8 @@ public class ModelDetailController {
                     && modelManager.isModelInstalled(model.getName(), model.getTag());
 
             if (isInstalled) {
-                actionBtn.setText("Uninstall");
-                actionBtn.getStyleClass().add("apple-button-destructive");
+                actionBtn.setText(App.getBundle().getString("model.action.uninstall"));
+                actionBtn.getStyleClass().add(Styles.DANGER);
                 actionBtn.setOnAction(ev -> {
                     if (modelManager != null) {
                         modelManager.deleteModel(model.getName(), model.getTag());
@@ -249,8 +250,8 @@ public class ModelDetailController {
                     }
                 });
             } else {
-                actionBtn.setText("Get"); // Apple Style "Get"
-                actionBtn.getStyleClass().add("apple-button-action");
+                actionBtn.setText(App.getBundle().getString("model.action.get")); // Apple Style "Get"
+                actionBtn.getStyleClass().add(Styles.SUCCESS);
                 actionBtn.setOnAction(ev -> {
                     showDownloadPopup(model);
                 });

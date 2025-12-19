@@ -2,6 +2,7 @@ package com.org.ollamafx.controller;
 
 import com.org.ollamafx.manager.ModelManager;
 import com.org.ollamafx.model.OllamaModel;
+import atlantafx.base.theme.Styles;
 import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
@@ -13,6 +14,9 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+
+import com.org.ollamafx.App;
+import java.text.MessageFormat;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -52,7 +56,7 @@ public class LocalModelsController implements Initializable {
         modelListContainer.setSpacing(12);
 
         if (modelManager == null || modelManager.getLocalModels().isEmpty()) {
-            Label placeholder = new Label("No installed models found.");
+            Label placeholder = new Label(App.getBundle().getString("local.empty"));
             placeholder.setStyle("-fx-text-fill: -color-fg-subtle; -fx-font-size: 14px;");
             modelListContainer.getChildren().add(placeholder);
             return;
@@ -92,8 +96,8 @@ public class LocalModelsController implements Initializable {
             HBox.setHgrow(spacer, Priority.ALWAYS);
 
             // Delete Action (Text Button, Apple Destructive Style)
-            Button deleteBtn = new Button("Uninstall");
-            deleteBtn.getStyleClass().add("apple-button-destructive");
+            Button deleteBtn = new Button(App.getBundle().getString("model.action.uninstall"));
+            deleteBtn.getStyleClass().add(Styles.DANGER);
 
             deleteBtn.setOnAction(e -> confirmAndDelete(model));
 
@@ -105,9 +109,11 @@ public class LocalModelsController implements Initializable {
     private void confirmAndDelete(OllamaModel model) {
         javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
                 javafx.scene.control.Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Uninstall Model");
-        alert.setHeaderText("Delete " + model.getName() + ":" + model.getTag() + "?");
-        alert.setContentText("This action cannot be undone. The model files will be removed from your system.");
+        alert.setTitle(App.getBundle().getString("local.uninstall.title"));
+        String header = MessageFormat.format(App.getBundle().getString("local.uninstall.header"),
+                model.getName() + ":" + model.getTag());
+        alert.setHeaderText(header);
+        alert.setContentText(App.getBundle().getString("local.uninstall.content"));
 
         // Apply styling to dialog if we had a Utils method for it, or just rely on
         // default for now.

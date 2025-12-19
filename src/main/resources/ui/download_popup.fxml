@@ -13,13 +13,13 @@
 
 <VBox fx:id="rootPane" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="420.0" spacing="25.0" styleClass="apple-dialog" stylesheets="@../css/ollama_active.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.org.ollamafx.controller.DownloadPopupController">
    <children>
-      <Label fx:id="titleLabel" text="Downloading..." styleClass="apple-dialog-title" wrapText="true" textAlignment="CENTER"/>
+      <Label fx:id="titleLabel" text="%download.title.default" styleClass="apple-dialog-title" wrapText="true" textAlignment="CENTER"/>
       
       <atlantafx.base.controls.RingProgressIndicator fx:id="ringIndicator" progress="0.0" prefWidth="140.0" prefHeight="140.0"/>
       
       <VBox alignment="CENTER" spacing="5.0">
          <children>
-            <Label fx:id="statusLabel" text="Starting..." styleClass="apple-dialog-status-subtle"/>
+            <Label fx:id="statusLabel" text="%download.status.starting" styleClass="apple-dialog-status-subtle"/>
          </children>
       </VBox>
       
