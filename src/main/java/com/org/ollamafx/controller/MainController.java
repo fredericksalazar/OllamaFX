@@ -23,11 +23,9 @@ import javafx.animation.KeyFrame;
 import javafx.util.Duration;
 import com.org.ollamafx.manager.OllamaServiceManager;
 import javafx.application.Platform;
-import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.HBox;
 import javafx.scene.shape.Circle;
-import javafx.scene.layout.Region;
 
 public class MainController implements Initializable {
 

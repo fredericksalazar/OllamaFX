@@ -1,5 +1,9 @@
 /* ollama-custom.css */
 
+.root {
+    -fx-font-family: 'System', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
 /* --- Estilos para la Barra Lateral estilo macOS --- */
 .sidebar {
     -fx-background-color: -color-bg-subtle;
@@ -213,7 +217,7 @@
 .welcome-label {
     -fx-font-size: 54px;
     /* HUGE! */
-    -fx-font-weight: 700;
+    -fx-font-weight: 400;
     /* Bold */
     -fx-text-fill: -color-fg-default;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 2, 0, 0, 1);
@@ -348,7 +352,7 @@
 }
 
 .creativity-label {
-    -fx-font-weight: bold;
+    -fx-font-weight: normal;
     -fx-font-size: 13px;
     -fx-text-fill: -color-fg-default;
 }
@@ -356,7 +360,7 @@
 .creativity-value-label {
     -fx-font-family: "System";
     /* O la fuente que uses */
-    -fx-font-weight: 800;
+    -fx-font-weight: 400;
     -fx-text-fill: -color-accent-emphasis;
 }
 
@@ -368,7 +372,7 @@
 .creativity-mark-label {
     -fx-font-size: 10px;
     -fx-text-fill: -color-fg-subtle;
-    -fx-font-weight: 600;
+    -fx-font-weight: 400;
     -fx-text-transform: uppercase;
     -fx-letter-spacing: 1px;
 }
@@ -561,7 +565,7 @@
 
 .status-label-white {
     -fx-text-fill: white;
-    -fx-font-weight: bold;
+    -fx-font-weight: normal;
     -fx-font-size: 13px;
 }
 
@@ -574,7 +578,7 @@
     -fx-min-width: 50px;
     -fx-padding: 3px 10px;
     -fx-font-size: 11px;
-    -fx-font-weight: bold;
+    -fx-font-weight: normal;
     -fx-cursor: hand;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 3, 0, 0, 1);
 }
@@ -623,7 +627,7 @@
 
 .status-title-small {
     -fx-font-size: 11px;
-    -fx-font-weight: bold;
+    -fx-font-weight: normal;
     -fx-text-fill: -color-fg-default;
 }
 
@@ -706,7 +710,7 @@
 .title-1 {
     -fx-font-size: 32px;
     /* Massive, bold */
-    -fx-font-weight: 800;
+    -fx-font-weight: 400;
     /* Extra Bold */
     -fx-fill: -color-fg-default;
     -fx-padding: 20px 0 10px 0;
@@ -718,7 +722,7 @@
 .header-2,
 .title-2 {
     -fx-font-size: 24px;
-    -fx-font-weight: bold;
+    -fx-font-weight: normal;
     -fx-fill: -color-fg-default;
     -fx-padding: 15px 0 8px 0;
     -fx-font-smoothing-type: lcd;
@@ -729,7 +733,7 @@
 .header-3,
 .title-3 {
     -fx-font-size: 20px;
-    -fx-font-weight: bold;
+    -fx-font-weight: normal;
     -fx-fill: -color-fg-default;
     -fx-padding: 10px 0 5px 0;
     -fx-font-smoothing-type: lcd;
@@ -737,20 +741,20 @@
 
 .markdown-h4 {
     -fx-font-size: 18px;
-    -fx-font-weight: bold;
+    -fx-font-weight: normal;
     -fx-fill: -color-fg-default;
 }
 
 .markdown-h5,
 .markdown-h6 {
     -fx-font-size: 16px;
-    -fx-font-weight: bold;
+    -fx-font-weight: normal;
     -fx-fill: -color-fg-subtle;
 }
 
 /* Emphasis */
 .markdown-bold {
-    -fx-font-weight: bold;
+    -fx-font-weight: normal;
 }
 
 .markdown-italic {
@@ -774,7 +778,7 @@
 /* Syntax Highlighting */
 .keyword {
     -fx-fill: #cc7832;
-    -fx-font-weight: bold;
+    -fx-font-weight: normal;
 }
 
 .paren {
@@ -816,14 +820,14 @@
 
     .apple-dialog-title {
         -fx-font-size: 18px;
-        -fx-font-weight: bold;
+        -fx-font-weight: normal;
         -fx-text-fill: -color-fg-default;
         -fx-font-family: "System";
     }
 
     .apple-dialog-status-large {
         -fx-font-size: 32px;
-        -fx-font-weight: 800;
+        -fx-font-weight: 400;
         /* Extra bold */
         -fx-text-fill: -color-fg-default;
         -fx-font-family: "System";
@@ -862,7 +866,7 @@
     .apple-title-large {
         -fx-font-family: "System";
         -fx-font-size: 38px;
-        -fx-font-weight: 800;
+        -fx-font-weight: 400;
         /* Extra Bold */
         -fx-text-fill: -color-fg-default;
         -fx-letter-spacing: -0.5px;
@@ -880,7 +884,7 @@
     .apple-text-subtle {
         -fx-font-size: 13px;
         -fx-text-fill: -color-fg-muted;
-        -fx-font-weight: bold;
+        -fx-font-weight: normal;
     }
 
     /* 2. Cards (Inset Grouped Style) */
@@ -930,7 +934,7 @@
         -fx-text-fill: white;
         -fx-background-radius: 20px;
         /* Pill shape */
-        -fx-font-weight: bold;
+        -fx-font-weight: normal;
         -fx-font-size: 13px;
         -fx-padding: 6px 20px;
         -fx-cursor: hand;
@@ -954,7 +958,7 @@
         -fx-padding: 5px 15px;
         -fx-cursor: hand;
         -fx-font-size: 13px;
-        -fx-font-weight: bold;
+        -fx-font-weight: normal;
     }
 
     .apple-button-destructive:hover {
@@ -967,7 +971,7 @@
         -fx-background-radius: 6px;
         -fx-padding: 4px 10px;
         -fx-font-size: 12px;
-        -fx-font-weight: bold;
+        -fx-font-weight: normal;
         -fx-font-family: "Monospaced";
         /* For tech specs */
     }
@@ -1018,7 +1022,7 @@
 }
 
 .code-block-language {
-    -fx-font-weight: bold;
+    -fx-font-weight: normal;
     -fx-font-size: 11px;
     -fx-text-fill: -color-fg-muted;
 }

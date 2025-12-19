@@ -223,7 +223,7 @@ public class ModelDetailController {
             infoBox.setSpacing(4);
 
             Label nameLbl = new Label(model.getTag());
-            nameLbl.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: -color-fg-default;");
+            nameLbl.setStyle("-fx-font-size: 16px; -fx-font-weight: normal; -fx-text-fill: -color-fg-default;");
 
             Label sizeLbl = new Label(model.sizeProperty().get() + " • " + model.getInputType());
             sizeLbl.getStyleClass().add("apple-text-subtle");

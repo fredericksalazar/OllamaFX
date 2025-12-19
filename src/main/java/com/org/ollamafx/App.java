@@ -1,7 +1,6 @@
 // src/main/java/com/org/ollamafx/App.java
 package com.org.ollamafx;
 
-import atlantafx.base.theme.CupertinoLight;
 import com.org.ollamafx.controller.MainController;
 import com.org.ollamafx.manager.ModelManager; // <-- AÑADE ESTE IMPORT
 import javafx.application.Application;
@@ -72,8 +71,11 @@ public class App extends Application {
         // Hardware Information Logging
         System.out.println(com.org.ollamafx.manager.HardwareManager.getHardwareDetails());
 
+        // Load Fonts - DISABLED (Reverting to System Font for better native rendering)
+        // loadFonts();
+
         // Check if fonts are loaded
-        System.out.println("Font being used family: " + javafx.scene.text.Font.font("Inter").getFamily());
+        System.out.println("Font being used family: " + javafx.scene.text.Font.getDefault().getFamily());
 
         // Set AtlantaFX theme (adjust if needed to match previous styles)
         Application.setUserAgentStylesheet(new atlantafx.base.theme.CupertinoLight().getUserAgentStylesheet());

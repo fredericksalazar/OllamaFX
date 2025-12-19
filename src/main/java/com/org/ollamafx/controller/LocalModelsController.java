@@ -80,7 +80,7 @@ public class LocalModelsController implements Initializable {
             // Title: "gemma3:latest" or just "latest" vs "gemma3"?
             // In a global list, we need the full identifier.
             Label nameLbl = new Label(model.getName() + ":" + model.getTag());
-            nameLbl.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: -color-fg-default;");
+            nameLbl.setStyle("-fx-font-size: 16px; -fx-font-weight: normal; -fx-text-fill: -color-fg-default;");
 
             String details = String.format("%s • Modified: %s",
                     model.sizeProperty().get(),

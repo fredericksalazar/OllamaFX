@@ -1,7 +1,6 @@
 package com.org.ollamafx.ui;
 
 import atlantafx.base.util.BBCodeParser;
-import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;

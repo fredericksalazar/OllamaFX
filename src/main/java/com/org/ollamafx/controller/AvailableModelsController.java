@@ -181,7 +181,7 @@ public class AvailableModelsController {
         errorBox.setAlignment(Pos.CENTER);
 
         Label titleLabel = new Label(title);
-        titleLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+        titleLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: normal;");
         titleLabel.setTextFill(Color.RED);
 
         Label messageLabel = new Label(message);
