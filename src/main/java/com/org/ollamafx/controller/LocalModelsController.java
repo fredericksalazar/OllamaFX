@@ -2,125 +2,132 @@ package com.org.ollamafx.controller;
 
 import com.org.ollamafx.manager.ModelManager;
 import com.org.ollamafx.model.OllamaModel;
+import atlantafx.base.theme.Styles;
+import javafx.application.Platform;
+import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.Label;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
+
+import com.org.ollamafx.App;
+import java.text.MessageFormat;
+
 import java.net.URL;
 import java.util.ResourceBundle;
 
 public class LocalModelsController implements Initializable {
 
     @FXML
-    private TableView<OllamaModel> localModelsTable;
-    @FXML
-    private TableColumn<OllamaModel, String> modelNameColumn;
-    @FXML
-    private TableColumn<OllamaModel, String> modelSizeColumn;
-    @FXML
-    private TableColumn<OllamaModel, String> modelLastModifiedColumn;
-    @FXML
-    private TableColumn<OllamaModel, String> modelDigestColumn; // Asumiremos que esta columna ahora mostrará el 'tag'.
-    @FXML
-    private Button deleteButton;
+    private VBox modelListContainer;
+
+    // We might want to keep a reference to title or other header elements if
+    // needed,
+    // but the FXML update will handle the structural containers.
 
     private ModelManager modelManager;
 
-    // Este método se llama DESPUÉS de initialize. Es el lugar perfecto para
-    // vincular los datos.
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        // Init logic if needed, currently empty as we wait for modelManager
+    }
+
     public void setModelManager(ModelManager modelManager) {
         this.modelManager = modelManager;
 
-        // 3. ¡La vinculación! La tabla ahora "observa" la lista del gestor.
-        localModelsTable.setItems(this.modelManager.getLocalModels());
+        // Populate initial list using a safe copy to avoid thread issues
+        populateLocalModels();
 
-        // Debug: Listen for changes in the table's items
-        localModelsTable.getItems()
-                .addListener((javafx.collections.ListChangeListener.Change<? extends OllamaModel> c) -> {
-                    while (c.next()) {
-                        if (c.wasAdded()) {
-                            System.out.println("LocalModelsController: Items added to table: " + c.getAddedSize());
-                        }
-                    }
-                });
-    }
-
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        // 1. Configuramos las columnas para que coincidan con las propiedades de
-        // OllamaModel.
-        modelNameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
-        modelSizeColumn.setCellValueFactory(new PropertyValueFactory<>("size"));
-        modelSizeColumn.setComparator((size1, size2) -> {
-            return parseSize(size1).compareTo(parseSize(size2));
-        });
-        modelLastModifiedColumn.setCellValueFactory(new PropertyValueFactory<>("lastUpdated"));
-        modelDigestColumn.setCellValueFactory(new PropertyValueFactory<>("tag")); // Apuntamos al 'tag'.
-
-        // 2. La lógica de la UI (como deshabilitar botones) se queda aquí.
-        deleteButton.setDisable(true);
-        localModelsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
-            deleteButton.setDisable(newSelection == null);
+        // Listen for changes
+        this.modelManager.getLocalModels().addListener((ListChangeListener<OllamaModel>) c -> {
+            Platform.runLater(this::populateLocalModels);
         });
     }
 
-    @FXML
-    private void deleteSelectedModel() {
-        OllamaModel selectedModel = localModelsTable.getSelectionModel().getSelectedItem();
-        if (selectedModel != null) {
-            System.out.println("Delete button clicked for: " + selectedModel.getName() + ":" + selectedModel.getTag());
+    private void populateLocalModels() {
+        if (modelListContainer == null)
+            return;
+        modelListContainer.getChildren().clear();
+        modelListContainer.setSpacing(12);
 
-            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
-                    javafx.scene.control.Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Delete Model");
-            alert.setHeaderText("Are you sure you want to delete this model?");
-            alert.setContentText("Model: " + selectedModel.getName() + ":" + selectedModel.getTag());
+        if (modelManager == null || modelManager.getLocalModels().isEmpty()) {
+            Label placeholder = new Label(App.getBundle().getString("local.empty"));
+            placeholder.setStyle("-fx-text-fill: -color-fg-subtle; -fx-font-size: 14px;");
+            modelListContainer.getChildren().add(placeholder);
+            return;
+        }
 
-            java.util.Optional<javafx.scene.control.ButtonType> result = alert.showAndWait();
-            if (result.isPresent() && result.get() == javafx.scene.control.ButtonType.OK) {
-                System.out.println("User confirmed deletion.");
-                if (modelManager != null) {
-                    modelManager.deleteModel(selectedModel.getName(), selectedModel.getTag());
-                }
-            } else {
-                System.out.println("Deletion cancelled by user.");
-            }
+        for (OllamaModel model : modelManager.getLocalModels()) {
+            HBox card = new HBox();
+            card.getStyleClass().add("apple-card-row");
+            card.setAlignment(Pos.CENTER_LEFT);
+            card.setSpacing(15);
+
+            // Hide the icon, just use text layout like the screenshot
+            // Or keep a small one? The screenshot has NO icon on the left row.
+            // Let's remove the icon region to match the screenshot exactly.
+
+            // Info Box
+            VBox infoBox = new VBox();
+            infoBox.setAlignment(Pos.CENTER_LEFT);
+            infoBox.setSpacing(4);
+
+            // Title: "gemma3:latest" or just "latest" vs "gemma3"?
+            // In a global list, we need the full identifier.
+            Label nameLbl = new Label(model.getName() + ":" + model.getTag());
+            nameLbl.setStyle("-fx-font-size: 16px; -fx-font-weight: normal; -fx-text-fill: -color-fg-default;");
+
+            String details = String.format("%s • Modified: %s",
+                    model.sizeProperty().get(),
+                    model.lastUpdatedProperty().get());
+
+            Label detailsLbl = new Label(details);
+            detailsLbl.getStyleClass().add("apple-text-subtle");
+
+            infoBox.getChildren().addAll(nameLbl, detailsLbl);
+
+            // Spacer
+            Region spacer = new Region();
+            HBox.setHgrow(spacer, Priority.ALWAYS);
+
+            // Delete Action (Text Button, Apple Destructive Style)
+            Button deleteBtn = new Button(App.getBundle().getString("model.action.uninstall"));
+            deleteBtn.getStyleClass().add(Styles.DANGER);
+
+            deleteBtn.setOnAction(e -> confirmAndDelete(model));
+
+            card.getChildren().addAll(infoBox, spacer, deleteBtn);
+            modelListContainer.getChildren().add(card);
         }
     }
 
-    private Long parseSize(String sizeStr) {
-        if (sizeStr == null || sizeStr.isEmpty() || sizeStr.equals("N/A")) {
-            return -1L;
-        }
-        try {
-            String[] parts = sizeStr.trim().split("\\s+");
-            if (parts.length < 2)
-                return 0L;
+    private void confirmAndDelete(OllamaModel model) {
+        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
+                javafx.scene.control.Alert.AlertType.CONFIRMATION);
+        alert.setTitle(App.getBundle().getString("local.uninstall.title"));
+        String header = MessageFormat.format(App.getBundle().getString("local.uninstall.header"),
+                model.getName() + ":" + model.getTag());
+        alert.setHeaderText(header);
+        alert.setContentText(App.getBundle().getString("local.uninstall.content"));
 
-            double value = Double.parseDouble(parts[0]);
-            String unit = parts[1].toUpperCase();
+        // Apply styling to dialog if we had a Utils method for it, or just rely on
+        // default for now.
+        // Ideally use Utils.showConfirmation(...) if it existed, but we'll stick to
+        // standard for speed unless requested.
 
-            long multiplier = 1;
-            switch (unit) {
-                case "KB":
-                    multiplier = 1024;
-                    break;
-                case "MB":
-                    multiplier = 1024 * 1024;
-                    break;
-                case "GB":
-                    multiplier = 1024 * 1024 * 1024;
-                    break;
-                case "TB":
-                    multiplier = 1024L * 1024 * 1024 * 1024;
-                    break;
+        alert.showAndWait().ifPresent(response -> {
+            if (response == javafx.scene.control.ButtonType.OK) {
+                modelManager.deleteModel(model.getName(), model.getTag());
             }
-
-            return (long) (value * multiplier);
-        } catch (Exception e) {
-            return 0L;
-        }
+        });
     }
+
+    // Helper not strictly needed if we use the model's formatted size,
+    // but kept just in case we need parsing later. The model.sizeProperty() usually
+    // sends formatted string.
 }

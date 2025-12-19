@@ -17,7 +17,7 @@
         <VBox fx:id="sidebarVBox" prefWidth="300.0" spacing="0.0" styleClass="sidebar" BorderPane.alignment="CENTER">
             <children>
                 <!-- TITLE -->
-                <Label styleClass="app-title" text="OllamaFX">
+                <Label styleClass="app-title" text="%app.title">
                     <font>
                         <Font name="System Regular" size="14.0" />
                     </font>
@@ -27,7 +27,7 @@
                 </Label>
 
                 <!-- NEW CHAT BUTTON (Prominent) -->
-                <Button fx:id="btnNewChat" alignment="BASELINE_LEFT" maxWidth="Infinity" mnemonicParsing="false" onAction="#createNewChat" styleClass="button, accent" text="  + Nuevo Chat">
+                <Button fx:id="btnNewChat" alignment="BASELINE_LEFT" maxWidth="Infinity" mnemonicParsing="false" onAction="#createNewChat" styleClass="button, accent" text="%sidebar.newChat">
                     <VBox.margin>
                         <Insets bottom="10.0" left="10.0" right="10.0" />
                     </VBox.margin>
@@ -37,7 +37,7 @@
                 </Button>
 
                 <!-- SECTION LABEL -->
-                <Label styleClass="sidebar-section-label" text="CHATS">
+                <Label styleClass="sidebar-section-label" text="%sidebar.chats">
                     <VBox.margin>
                         <Insets left="15.0" bottom="5.0"/>
                     </VBox.margin>
@@ -54,22 +54,22 @@
                         </VBox.margin>
                     </Separator>
                     
-                    <Button fx:id="btnAvailable" alignment="BASELINE_LEFT" maxWidth="Infinity" mnemonicParsing="false" onAction="#showAvailableModels" styleClass="button" text="Modelos Disponibles">
+                    <Button fx:id="btnAvailable" alignment="BASELINE_LEFT" maxWidth="Infinity" mnemonicParsing="false" onAction="#showAvailableModels" styleClass="button" text="%sidebar.availableModels">
                          <padding>
                             <Insets left="20.0" top="10.0" bottom="10.0"/>
                         </padding>
                     </Button>
-                    <Button fx:id="btnLocal" alignment="BASELINE_LEFT" maxWidth="Infinity" mnemonicParsing="false" onAction="#showLocalModels" styleClass="button" text="Modelos Locales">
+                    <Button fx:id="btnLocal" alignment="BASELINE_LEFT" maxWidth="Infinity" mnemonicParsing="false" onAction="#showLocalModels" styleClass="button" text="%sidebar.localModels">
                         <padding>
                             <Insets left="20.0" top="10.0" bottom="10.0"/>
                         </padding>
                     </Button>
-                    <Button fx:id="btnSettings" alignment="BASELINE_LEFT" maxWidth="Infinity" mnemonicParsing="false" onAction="#openSettings" styleClass="button" text="Configuración">
+                    <Button fx:id="btnSettings" alignment="BASELINE_LEFT" maxWidth="Infinity" mnemonicParsing="false" onAction="#openSettings" styleClass="button" text="%sidebar.settings">
                         <padding>
                             <Insets left="20.0" top="10.0" bottom="10.0"/>
                         </padding>
                     </Button>
-                    <Button fx:id="btnAbout" alignment="BASELINE_LEFT" maxWidth="Infinity" mnemonicParsing="false" onAction="#showAbout" styleClass="button" text="Acerca de">
+                    <Button fx:id="btnAbout" alignment="BASELINE_LEFT" maxWidth="Infinity" mnemonicParsing="false" onAction="#showAbout" styleClass="button" text="%sidebar.about">
                         <padding>
                             <Insets left="20.0" top="10.0" bottom="10.0"/>
                         </padding>
@@ -78,6 +78,33 @@
                         <Insets bottom="10.0" left="5.0" right="5.0" top="5.0" />
                     </padding>
                 </VBox>
+                
+                <!-- OLLAMA STATUS BAR (Refined) -->
+                <!-- OLLAMA STATUS BAR (Full Width Color) -->
+                <!-- OLLAMA STATUS BAR (Nano Banana - Minimalist Pulse) -->
+                <HBox fx:id="ollamaStatusBar" styleClass="status-bar-nano" alignment="CENTER_LEFT" spacing="12.0">
+                     <children>
+                         <!-- Pulse Dot -->
+                         <javafx.scene.layout.StackPane>
+                             <javafx.scene.shape.Circle fx:id="pulseEmitter" radius="6.0" styleClass="pulse-emitter" opacity="0.0"/>
+                             <javafx.scene.shape.Circle fx:id="statusDot" radius="4.0" styleClass="status-dot-nano" />
+                         </javafx.scene.layout.StackPane>
+                         
+                         <!-- Status Text -->
+                         <Label fx:id="statusLabel" text="System Operational" styleClass="status-label-nano" />
+                         
+                         <javafx.scene.layout.Region HBox.hgrow="ALWAYS" />
+
+                         <!-- Controls -->
+                         <HBox alignment="CENTER_RIGHT" spacing="15.0">
+                             <!-- Subtle Switch -->
+                             <javafx.scene.control.ToggleButton fx:id="btnControlOllama" text="" onAction="#toggleOllamaService" styleClass="toggle-switch-nano" />
+                         </HBox>
+                     </children>
+                     <padding>
+                        <Insets top="15.0" bottom="15.0" left="20.0" right="20.0"/>
+                     </padding>
+                </HBox>
             </children>
         </VBox>
     </left>

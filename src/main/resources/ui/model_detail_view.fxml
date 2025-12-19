@@ -16,92 +16,78 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<ScrollPane fitToWidth="true" hbarPolicy="NEVER" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.org.ollamafx.controller.ModelDetailController" styleClass="edge-to-edge">
-    <content>
-        <VBox fx:id="rootVBox" spacing="20.0">
-            <padding>
-                <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
-            </padding>
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.org.ollamafx.controller.ModelDetailController" styleClass="edge-to-edge" spacing="20.0">
+    <padding>
+        <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
+    </padding>
+    <children>
+        <!-- Top Header: Name + Command Box -->
+        <HBox alignment="CENTER_LEFT" spacing="20.0">
             <children>
-                <!-- Top Header: Name + Command Box -->
-                <HBox alignment="CENTER_LEFT" spacing="20.0">
-                    <children>
-                        <Label fx:id="modelNameLabel" styleClass="h1" text="Model Name" HBox.hgrow="ALWAYS" maxWidth="Infinity">
-                            <font>
-                                <Font name="System Bold" size="32.0" />
-                            </font>
-                        </Label>
-                        
-                        <!-- Spacer -->
-                        <Region HBox.hgrow="ALWAYS" />
+                <!-- Title class handled by Controller (apple-title-large) -->
+                <Label fx:id="modelNameLabel" text="Model Name" HBox.hgrow="ALWAYS" maxWidth="Infinity" wrapText="true" />
+                
+                <Region HBox.hgrow="ALWAYS" />
 
-                        <!-- Command Box -->
-                        <HBox fx:id="commandBox" alignment="CENTER_LEFT" spacing="10.0" styleClass="command-box">
-                            <padding>
-                                <Insets bottom="8.0" left="12.0" right="12.0" top="8.0" />
-                            </padding>
-                            <children>
-                                <Label fx:id="commandLabel" styleClass="command-text" text="ollama run model" />
-                                <Button fx:id="copyButton" styleClass="icon-button, copy-button">
-                                    <graphic>
-                                        <Region styleClass="icon-region, icon-copy" />
-                                    </graphic>
-                                    <tooltip>
-                                        <Tooltip text="Copy to clipboard" />
-                                    </tooltip>
-                                </Button>
-                            </children>
-                        </HBox>
+                <!-- Command Box -->
+                <HBox fx:id="commandBox" alignment="CENTER_LEFT" spacing="10.0" styleClass="command-box">
+                    <padding>
+                        <Insets bottom="6.0" left="10.0" right="10.0" top="6.0" />
+                    </padding>
+                    <children>
+                        <Label fx:id="commandLabel" styleClass="command-text" text="ollama run model" />
+                        <Button fx:id="copyButton" styleClass="icon-button, copy-button">
+                            <graphic>
+                                <Region styleClass="icon-region, icon-copy" />
+                            </graphic>
+                            <tooltip>
+                                <Tooltip text="Copy to clipboard" />
+                            </tooltip>
+                        </Button>
                     </children>
                 </HBox>
-
-                <!-- Metrics Row -->
-                <HBox spacing="24.0" alignment="CENTER_LEFT">
-                    <!-- Downloads -->
-                    <HBox spacing="8.0" alignment="CENTER_LEFT">
-                        <Region styleClass="icon-region, icon-download" />
-                        <Label fx:id="pullCountLabel" styleClass="metric-value" text="0" />
-                    </HBox>
-                    
-                    <!-- Updated -->
-                    <HBox spacing="8.0" alignment="CENTER_LEFT">
-                        <Region styleClass="icon-region, icon-time" />
-                        <Label styleClass="metric-value" text="Updated" />
-                        <Label fx:id="lastUpdatedLabel" styleClass="metric-value" text="Unknown" />
-                    </HBox>
-                    
-                    <!-- Parameter Size -->
-                    <HBox spacing="8.0" alignment="CENTER_LEFT">
-                        <Region styleClass="icon-region, icon-cube" />
-                        <Label fx:id="parameterSizeLabel" styleClass="metric-value" text="-" />
-                    </HBox>
-                </HBox>
-
-                <!-- Description -->
-                <Text fx:id="modelDescriptionText" strokeType="OUTSIDE" strokeWidth="0.0" text="Description..." wrappingWidth="800.0" styleClass="body-large" />
-
-                <!-- Badges -->
-                <FlowPane fx:id="badgesContainer" hgap="8.0" vgap="8.0" />
-
-                <Separator />
-
-                <!-- Models Table -->
-                <VBox spacing="10.0" VBox.vgrow="ALWAYS">
-                    <Label styleClass="h3" text="Models" />
-                    <TableView fx:id="tagsTable" VBox.vgrow="ALWAYS" styleClass="clean-table">
-                        <columns>
-                            <TableColumn fx:id="tagNameColumn" prefWidth="200.0" text="Name" />
-                            <TableColumn fx:id="tagSizeColumn" prefWidth="100.0" text="Size" />
-                            <TableColumn fx:id="tagContextColumn" prefWidth="100.0" text="Context" />
-                            <TableColumn fx:id="tagInputColumn" prefWidth="100.0" text="Input" />
-                            <TableColumn fx:id="tagActionColumn" prefWidth="100.0" text="" />
-                        </columns>
-                        <columnResizePolicy>
-                            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                        </columnResizePolicy>
-                    </TableView>
-                </VBox>
             </children>
+        </HBox>
+
+        <!-- Metrics Row -->
+        <HBox spacing="25.0" alignment="CENTER_LEFT">
+            <HBox spacing="6.0" alignment="CENTER_LEFT">
+                <Region styleClass="icon-region, icon-download" />
+                <Label fx:id="pullCountLabel" styleClass="metric-value" text="0" />
+            </HBox>
+            <HBox spacing="6.0" alignment="CENTER_LEFT">
+                <Region styleClass="icon-region, icon-time" />
+                <Label styleClass="metric-value" text="Updated" />
+                <Label fx:id="lastUpdatedLabel" styleClass="metric-value" text="Unknown" />
+            </HBox>
+            <HBox spacing="6.0" alignment="CENTER_LEFT">
+                <Region styleClass="icon-region, icon-cube" />
+                <Label fx:id="parameterSizeLabel" styleClass="metric-value" text="-" />
+            </HBox>
+        </HBox>
+
+        <!-- Description Area -->
+        <ScrollPane fitToWidth="true" VBox.vgrow="SOMETIMES" hbarPolicy="NEVER" style="-fx-background-color:transparent; -fx-background: transparent; -fx-border-color: transparent;" prefHeight="100.0" minHeight="50.0">
+             <content>
+                <!-- Body class handled by Controller (apple-text-body) -->
+                <Text fx:id="modelDescriptionText" strokeType="OUTSIDE" strokeWidth="0.0" text="Description..." wrappingWidth="700.0" />
+             </content>
+        </ScrollPane>
+
+        <!-- Badges -->
+        <FlowPane fx:id="badgesContainer" hgap="10.0" vgap="10.0" />
+
+        <Separator styleClass="apple-separator"/>
+
+        <!-- Models List Container -->
+        <VBox VBox.vgrow="ALWAYS" spacing="15.0">
+             <Label styleClass="apple-title-large" style="-fx-font-size: 22px;" text="Versions" />
+             <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" hbarPolicy="NEVER" style="-fx-background-color:transparent; -fx-background: transparent; -fx-border-color: transparent;">
+                <content>
+                    <!-- Transparent container for Cards -->
+                    <VBox fx:id="modelListContainer" spacing="0.0" style="-fx-background-color: transparent;" />
+                </content>
+             </ScrollPane>
         </VBox>
-    </content>
-</ScrollPane>
+    </children>
+</VBox>

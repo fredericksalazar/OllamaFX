@@ -35,7 +35,19 @@ public class ConfigManager {
         return prefs.get(KEY_THEME, DEFAULT_THEME);
     }
 
-    public void setTheme(String theme) {
-        prefs.put(KEY_THEME, theme);
+    private static final String KEY_LANGUAGE = "app_language";
+    private static final String DEFAULT_LANGUAGE = "es"; // Default to Spanish as requested
+
+    public String getLanguage() {
+        return prefs.get(KEY_LANGUAGE, DEFAULT_LANGUAGE);
+    }
+
+    public void setLanguage(String language) {
+        prefs.put(KEY_LANGUAGE, language);
+        try {
+            prefs.flush();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

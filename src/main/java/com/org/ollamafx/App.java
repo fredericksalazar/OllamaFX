@@ -1,10 +1,10 @@
 // src/main/java/com/org/ollamafx/App.java
 package com.org.ollamafx;
 
-import atlantafx.base.theme.CupertinoLight;
 import com.org.ollamafx.controller.MainController;
 import com.org.ollamafx.manager.ModelManager; // <-- AÑADE ESTE IMPORT
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -37,36 +37,100 @@ public class App extends Application {
         });
     }
 
+    public static java.util.ResourceBundle getBundle() {
+        // Create a new Locale each time to ensure we get the correct one based on
+        // current config/preference
+        String lang = com.org.ollamafx.manager.ConfigManager.getInstance().getLanguage();
+
+        java.util.Locale locale = new java.util.Locale(lang);
+        java.util.Locale.setDefault(locale); // CRITICAL: Force system default to match preference to avoid fallback
+                                             // issues
+
+        return java.util.ResourceBundle.getBundle("messages", locale);
+    }
+
+    private static Stage primaryStage;
+    private static ModelManager modelManager;
+
     @Override
-    public void start(Stage primaryStage) throws IOException { // Changed Exception to IOException
-        // Load chats
+    public void start(Stage stage) throws IOException {
+        // Global Exception Handler
+        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
+            System.err.println("CRITICAL UNCAUGHT EXCEPTION on thread " + thread.getName());
+            throwable.printStackTrace();
+            // Optional: Show error dialog safely
+            Platform.runLater(() -> {
+                com.org.ollamafx.util.Utils.showError("Critical Error", "An occurred error: " + throwable.getMessage());
+            });
+        });
+
+        primaryStage = stage;
+
         ChatManager.getInstance().loadChats();
 
-        // Log Hardware Details
+        // Hardware Information Logging
         System.out.println(com.org.ollamafx.manager.HardwareManager.getHardwareDetails());
 
-        // Load Fonts
-        javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/fonts/Ubuntu-Regular.ttf"), 12);
-        javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/fonts/Ubuntu-Bold.ttf"), 12);
+        // Load Fonts - DISABLED (Reverting to System Font for better native rendering)
+        // loadFonts();
 
+        // Check if fonts are loaded
+        System.out.println("Font being used family: " + javafx.scene.text.Font.getDefault().getFamily());
+
+        // Set AtlantaFX theme (adjust if needed to match previous styles)
         Application.setUserAgentStylesheet(new atlantafx.base.theme.CupertinoLight().getUserAgentStylesheet());
 
-        ModelManager modelManager = new ModelManager();
+        modelManager = new ModelManager();
         modelManager.loadAllModels();
 
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/main_view.fxml"));
-        javafx.scene.Parent root = loader.load();
-        root.getStyleClass().add("light"); // Force light mode CSS overrides
-        Scene scene = new Scene(root);
-        scene.getStylesheets().add(getClass().getResource("/css/ollama_active.css").toExternalForm());
+        reloadUI();
+    }
 
-        MainController mainController = loader.getController();
-        mainController.initModelManager(modelManager);
+    public static void reloadUI() {
+        try {
+            // Clear ResourceBundle cache to ensure new language is loaded
+            java.util.ResourceBundle.clearCache();
 
-        primaryStage.setTitle("OllamaFX");
-        primaryStage.setScene(scene);
-        primaryStage.setMaximized(true); // Start Maximized
-        primaryStage.show();
+            FXMLLoader loader = new FXMLLoader(App.class.getResource("/ui/main_view.fxml"));
+            loader.setResources(getBundle());
+            javafx.scene.Parent root = loader.load();
+
+            // Add custom style class
+            root.getStyleClass().add("light");
+
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(App.class.getResource("/css/ollama_active.css").toExternalForm());
+
+            // Inject ModelManager into MainController
+            MainController controller = loader.getController();
+            controller.initModelManager(modelManager);
+
+            primaryStage.setScene(scene);
+            primaryStage.setTitle(getBundle().getString("app.title"));
+
+            // Set App Icon
+            try {
+                primaryStage.getIcons()
+                        .add(new javafx.scene.image.Image(App.class.getResourceAsStream("/icons/icon.png")));
+                // For Mac Dock Icon in dev mode (often requires Taskbar usage in AWT or
+                // specific FX hooks, but Stage icon is the first step)
+                if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+                    java.awt.Taskbar.getTaskbar().setIconImage(
+                            java.awt.Toolkit.getDefaultToolkit().getImage(App.class.getResource("/icons/icon.png")));
+                }
+            } catch (Exception e) {
+                // Ignore icon load error
+                System.out.println("Failed to load icon: " + e.getMessage());
+            }
+
+            primaryStage.setMaximized(true); // Ensure maximized on reload
+
+            if (!primaryStage.isShowing()) {
+                primaryStage.show();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -81,6 +145,10 @@ public class App extends Application {
                 executorService.shutdownNow();
             }
         }
+
+        // Ensure we stop any managed Ollama process
+        com.org.ollamafx.manager.OllamaServiceManager.getInstance().stopOllama();
+
         ChatManager.getInstance().saveChats();
         super.stop();
     }

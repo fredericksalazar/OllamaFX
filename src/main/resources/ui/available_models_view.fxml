@@ -10,18 +10,18 @@
 <?import javafx.scene.layout.VBox?>
 
 
-<HBox xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.org.ollamafx.controller.AvailableModelsController">
+<HBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.org.ollamafx.controller.AvailableModelsController">
     <children>
         <VBox spacing="10.0" HBox.hgrow="NEVER" minWidth="250.0" prefWidth="300.0">
             <children>
                 <HBox alignment="CENTER_LEFT" spacing="5.0">
                     <children>
-                        <Label text="Library" styleClass="h4" />
+                        <Label text="%available.library" styleClass="h4" />
                         <Region HBox.hgrow="ALWAYS" />
-                        <MenuButton text="Sort" styleClass="flat">
+                        <MenuButton text="%available.sort" styleClass="flat">
                             <items>
-                                <MenuItem text="Name (A-Z)" onAction="#sortByNameAsc" />
-                                <MenuItem text="Name (Z-A)" onAction="#sortByNameDesc" />
+                                <MenuItem text="%available.sort.az" onAction="#sortByNameAsc" />
+                                <MenuItem text="%available.sort.za" onAction="#sortByNameDesc" />
                             </items>
                         </MenuButton>
                     </children>

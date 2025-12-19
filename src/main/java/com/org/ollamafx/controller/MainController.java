@@ -10,13 +10,20 @@ import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.BorderPane;
-import atlantafx.base.theme.CupertinoDark;
-import atlantafx.base.theme.CupertinoLight;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.application.Application;
+import javafx.animation.FadeTransition;
+import javafx.animation.Timeline;
+import javafx.animation.KeyFrame;
+import javafx.util.Duration;
+import com.org.ollamafx.manager.OllamaServiceManager;
+import javafx.application.Platform;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.layout.HBox;
+import javafx.scene.shape.Circle;
 
 public class MainController implements Initializable {
 
@@ -37,6 +44,20 @@ public class MainController implements Initializable {
     @FXML
     private javafx.scene.control.Button btnAbout;
 
+    @FXML
+    private HBox ollamaStatusBar;
+    @FXML
+    private Circle statusDot;
+    @FXML
+    private Circle pulseEmitter;
+    @FXML
+    private Label statusLabel;
+    @FXML
+    private ToggleButton btnControlOllama;
+
+    private Timeline statusPollingTimeline;
+    private FadeTransition pulseAnimation;
+
     private ChatManager chatManager;
     private ModelManager modelManager;
 
@@ -47,8 +68,14 @@ public class MainController implements Initializable {
 
     public void initModelManager(ModelManager modelManager) {
         this.modelManager = modelManager;
-        // Default View? Maybe available models or empty
-        // showAvailableModels();
+        // If Ollama is already running but models failed to load (list empty), retry
+        // now.
+        if (OllamaServiceManager.getInstance().isRunning()) {
+            if (modelManager.getLocalModels().isEmpty()) {
+                System.out.println("MainController: Ollama running but models missing. Retrying load...");
+                modelManager.loadAllModels();
+            }
+        }
     }
 
     @Override
@@ -58,6 +85,10 @@ public class MainController implements Initializable {
         if (centerContentPane == null) {
             System.err.println("centerContentPane is NULL! Check FXML fx:id");
         }
+
+        // Ollama Checks
+        checkOllamaInstallation();
+        startStatusPolling();
 
         chatListView.setItems(chatManager.getChatSessions());
 
@@ -113,24 +144,28 @@ public class MainController implements Initializable {
                                                                      // leave standard.
                     // Actually, let's stick to standard FLAT.
 
-                    javafx.scene.control.MenuItem renameItem = new javafx.scene.control.MenuItem("Rename");
+                    ResourceBundle bundle = com.org.ollamafx.App.getBundle();
+
+                    javafx.scene.control.MenuItem renameItem = new javafx.scene.control.MenuItem(
+                            bundle.getString("context.rename"));
                     renameItem.setOnAction(e -> {
                         javafx.scene.control.TextInputDialog dialog = new javafx.scene.control.TextInputDialog(
                                 item.getName());
-                        dialog.setTitle("Rename Chat");
-                        dialog.setHeaderText("Enter new name:");
+                        dialog.setTitle(bundle.getString("dialog.rename.title"));
+                        dialog.setHeaderText(bundle.getString("dialog.rename.header"));
                         dialog.showAndWait().ifPresent(newName -> {
                             chatManager.renameChat(item, newName);
                             getListView().refresh();
                         });
                     });
                     javafx.scene.control.MenuItem pinItem = new javafx.scene.control.MenuItem(
-                            item.isPinned() ? "Unpin" : "Pin");
+                            item.isPinned() ? bundle.getString("context.unpin") : bundle.getString("context.pin"));
                     pinItem.setOnAction(e -> {
                         chatManager.togglePin(item);
                         getListView().refresh();
                     });
-                    javafx.scene.control.MenuItem deleteItem = new javafx.scene.control.MenuItem("Delete");
+                    javafx.scene.control.MenuItem deleteItem = new javafx.scene.control.MenuItem(
+                            bundle.getString("context.delete"));
                     deleteItem.setStyle("-fx-text-fill: red;");
                     deleteItem.setOnAction(e -> chatManager.deleteChat(item));
                     menuButton.getItems().addAll(renameItem, pinItem, new javafx.scene.control.SeparatorMenuItem(),
@@ -191,6 +226,7 @@ public class MainController implements Initializable {
         setActiveTool(btnAvailable);
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/available_models_view.fxml"));
+            loader.setResources(com.org.ollamafx.App.getBundle());
             Parent view = loader.load();
             AvailableModelsController controller = loader.getController();
             controller.setModelManager(this.modelManager); // Inyección de dependencia.
@@ -208,6 +244,7 @@ public class MainController implements Initializable {
         setActiveTool(btnLocal);
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/local_models_view.fxml"));
+            loader.setResources(com.org.ollamafx.App.getBundle());
             Parent view = loader.load();
             LocalModelsController controller = loader.getController();
             controller.setModelManager(this.modelManager); // Inyección de dependencia.
@@ -222,6 +259,7 @@ public class MainController implements Initializable {
         setActiveTool(btnSettings);
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/settings_view.fxml"));
+            loader.setResources(com.org.ollamafx.App.getBundle());
             Parent view = loader.load();
             centerContentPane.getChildren().setAll(view); // Update StackPane content
         } catch (IOException e) {
@@ -234,6 +272,7 @@ public class MainController implements Initializable {
         setActiveTool(btnAbout);
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/about_view.fxml"));
+            loader.setResources(com.org.ollamafx.App.getBundle());
             Parent view = loader.load();
             centerContentPane.getChildren().setAll(view); // Update StackPane content
         } catch (IOException e) {
@@ -244,7 +283,10 @@ public class MainController implements Initializable {
     @FXML
     private void createNewChat() {
         System.out.println("Creating new chat...");
-        ChatSession newSession = chatManager.createChat("New Chat");
+        // Use a simple default name or fetch from bundle if desired.
+        // For now, let's keep it simple or use a localized "Chat"
+        ChatSession newSession = chatManager.createChat("Chat"); // Simplified
+
         chatListView.getSelectionModel().select(newSession);
         // Listener calls loadChatView -> which calls clearToolSelection
     }
@@ -255,6 +297,7 @@ public class MainController implements Initializable {
     private void loadChatView(ChatSession session) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/chat_view.fxml"));
+            loader.setResources(com.org.ollamafx.App.getBundle());
             Parent view = loader.load();
 
             ChatController controller = loader.getController();
@@ -285,5 +328,184 @@ public class MainController implements Initializable {
                 mainBorderPane.getScene().getRoot().getStyleClass().add("dark");
             }
         }
+    }
+
+    // --- OLLAMA STATUS LOGIC ---
+
+    private void checkOllamaInstallation() {
+        boolean installed = OllamaServiceManager.getInstance().isInstalled();
+        if (!installed) {
+            statusLabel.setText("Not Installed");
+            statusLabel.setStyle("-fx-text-fill: -color-danger-fg;"); // Use error color
+
+            // Reconfigure control button to be "Download"
+            btnControlOllama.setText("Download"); // Assuming button supports text/icon change
+            btnControlOllama.setSelected(false);
+            btnControlOllama.setDisable(false);
+            btnControlOllama.setTooltip(new javafx.scene.control.Tooltip("Download Ollama from ollama.com"));
+
+            btnControlOllama.setOnAction(e -> {
+                try {
+                    java.awt.Desktop.getDesktop().browse(new java.net.URI("https://ollama.com"));
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    // Fallback: copy to clipboard or show alert
+                }
+            });
+
+            // Optionally disable other interactions or show a modal
+        } else {
+            // Reset to default behavior (managed by updateStatusUI)
+            btnControlOllama.setText(null); // Clear text if icon only
+        }
+    }
+
+    private void startStatusPolling() {
+        // If not installed, don't poll or auto-start
+        if (!OllamaServiceManager.getInstance().isInstalled()) {
+            return;
+        }
+
+        statusPollingTimeline = new Timeline(new KeyFrame(Duration.seconds(5), event -> {
+            // Move blocking check to background thread
+            new Thread(() -> {
+                boolean running = OllamaServiceManager.getInstance().isRunning();
+                Platform.runLater(() -> updateStatusUI(running));
+            }).start();
+        }));
+        statusPollingTimeline.setCycleCount(Timeline.INDEFINITE);
+        statusPollingTimeline.play();
+
+        // Initial check immediately
+        boolean running = OllamaServiceManager.getInstance().isRunning();
+        if (!running) {
+            // Auto-Start Scenario
+            statusLabel.setText("Auto-starting...");
+            new Thread(() -> {
+                boolean started = OllamaServiceManager.getInstance().startOllama();
+                Platform.runLater(() -> {
+                    updateStatusUI(started);
+                    if (started && modelManager != null) {
+                        System.out.println("MainController: Auto-start success. Loading models...");
+                        modelManager.loadAllModels();
+                    }
+                });
+            }).start();
+        } else {
+            updateStatusUI(true);
+        }
+    }
+
+    private void updateStatusUI(boolean running) {
+        if (ollamaStatusBar == null || statusLabel == null || btnControlOllama == null)
+            return;
+
+        // Ensure Pulse Animation
+        if (pulseAnimation == null && pulseEmitter != null) {
+            pulseAnimation = new FadeTransition(Duration.seconds(1.5), pulseEmitter);
+            pulseAnimation.setFromValue(0.8);
+            pulseAnimation.setToValue(0.0);
+            pulseAnimation.setCycleCount(FadeTransition.INDEFINITE);
+        }
+
+        if (running) {
+            if (statusDot != null) {
+                statusDot.getStyleClass().removeAll("status-dot-stopped");
+                if (!statusDot.getStyleClass().contains("status-dot-running")) {
+                    statusDot.getStyleClass().add("status-dot-running");
+                }
+            }
+            if (pulseEmitter != null) {
+                pulseEmitter.setFill(javafx.scene.paint.Color.rgb(0, 255, 128)); // Neon Green
+                if (pulseAnimation.getStatus() != javafx.animation.Animation.Status.RUNNING) {
+                    pulseAnimation.play();
+                }
+            }
+
+            statusLabel.setText("Ollama Service");
+
+            // Switch State
+            btnControlOllama.setSelected(true);
+            btnControlOllama.setTooltip(new javafx.scene.control.Tooltip("Stop Service"));
+            btnControlOllama.setOnAction(this::toggleOllamaService);
+        } else {
+            if (statusDot != null) {
+                statusDot.getStyleClass().removeAll("status-dot-running");
+                if (!statusDot.getStyleClass().contains("status-dot-stopped")) {
+                    statusDot.getStyleClass().add("status-dot-stopped");
+                }
+            }
+            if (pulseEmitter != null) {
+                pulseEmitter.setFill(javafx.scene.paint.Color.rgb(255, 59, 48)); // Neon Red
+                // Pulse even when stopped? User image implies active pulse for "Operational".
+                // Maybe stop pulse if stopped.
+                pulseAnimation.stop();
+                pulseEmitter.setOpacity(0.0);
+            }
+
+            statusLabel.setText("Ollama Service");
+
+            // Switch State
+            btnControlOllama.setSelected(false);
+            btnControlOllama.setTooltip(new javafx.scene.control.Tooltip("Start Service"));
+            btnControlOllama.setOnAction(this::toggleOllamaService);
+        }
+    }
+
+    @FXML
+    private void toggleOllamaService(javafx.event.ActionEvent event) {
+        // Prevent double interactions while checking/toggling
+        btnControlOllama.setDisable(true);
+        statusLabel.setText("Checking...");
+
+        new Thread(() -> {
+            boolean isRunning = OllamaServiceManager.getInstance().isRunning();
+
+            Platform.runLater(() -> {
+                if (isRunning) {
+                    // STOPPING
+                    statusLabel.setText("Stopping...");
+                    new Thread(() -> {
+                        OllamaServiceManager.getInstance().stopOllama();
+                        Platform.runLater(() -> {
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException e) {
+                            }
+                            // Re-enable button and update UI
+                            // here inside
+                            // thread? No, need
+                            // to be careful.
+                            // Actually, let's just trigger an updateStatusUI logic via poll or explicit
+                            // check.
+                            // updateStatusUI is checking running status? No, it takes a boolean.
+                            // Let's do a quick check
+                            new Thread(() -> {
+                                boolean finalState = OllamaServiceManager.getInstance().isRunning();
+                                Platform.runLater(() -> {
+                                    updateStatusUI(finalState);
+                                    btnControlOllama.setDisable(false);
+                                });
+                            }).start();
+                        });
+                    }).start();
+                } else {
+                    // STARTING
+                    statusLabel.setText("Starting...");
+                    new Thread(() -> {
+                        boolean success = OllamaServiceManager.getInstance().startOllama();
+                        Platform.runLater(() -> {
+                            btnControlOllama.setDisable(false);
+                            if (success) {
+                                updateStatusUI(true);
+                            } else {
+                                statusLabel.setText("Start Failed");
+                                updateStatusUI(false);
+                            }
+                        });
+                    }).start();
+                }
+            });
+        }).start();
     }
 }

@@ -45,4 +45,21 @@ public class Utils {
         int digitGroups = (int) (Math.log10(size) / Math.log10(1024));
         return new DecimalFormat("#,##0.#").format(size / Math.pow(1024, digitGroups)) + " " + units[digitGroups];
     }
+
+    public static void showError(String title, String content) {
+        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+
+        // Add style if available
+        javafx.scene.control.DialogPane dialogPane = alert.getDialogPane();
+        dialogPane.getStyleClass().add("dialog");
+        String userAgentStylesheet = javafx.application.Application.getUserAgentStylesheet();
+        if (userAgentStylesheet != null && userAgentStylesheet.toLowerCase().contains("light")) {
+            dialogPane.getStyleClass().add("light");
+        }
+
+        alert.showAndWait();
+    }
 }

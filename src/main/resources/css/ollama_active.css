@@ -1,5 +1,9 @@
 /* ollama-custom.css */
 
+.root {
+    -fx-font-family: 'System', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
 /* --- Estilos para la Barra Lateral estilo macOS --- */
 .sidebar {
     -fx-background-color: -color-bg-subtle;
@@ -213,7 +217,7 @@
 .welcome-label {
     -fx-font-size: 54px;
     /* HUGE! */
-    -fx-font-weight: 700;
+    -fx-font-weight: 400;
     /* Bold */
     -fx-text-fill: -color-fg-default;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 2, 0, 0, 1);
@@ -348,7 +352,7 @@
 }
 
 .creativity-label {
-    -fx-font-weight: bold;
+    -fx-font-weight: normal;
     -fx-font-size: 13px;
     -fx-text-fill: -color-fg-default;
 }
@@ -356,7 +360,7 @@
 .creativity-value-label {
     -fx-font-family: "System";
     /* O la fuente que uses */
-    -fx-font-weight: 800;
+    -fx-font-weight: 400;
     -fx-text-fill: -color-accent-emphasis;
 }
 
@@ -368,7 +372,7 @@
 .creativity-mark-label {
     -fx-font-size: 10px;
     -fx-text-fill: -color-fg-subtle;
-    -fx-font-weight: 600;
+    -fx-font-weight: 400;
     -fx-text-transform: uppercase;
     -fx-letter-spacing: 1px;
 }
@@ -467,7 +471,610 @@
     -fx-background-color: transparent;
 }
 
-.body-large {
+
+
+/* --- NANO BANANA (LIGHT INTEGRATED) --- */
+.status-bar-nano {
+    -fx-background-color: transparent;
+    /* Seamless with sidebar */
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1px 0 0 0;
+}
+
+.status-dot-nano {
+    -fx-fill: -color-border-subtle;
+    /* Default off/loading */
+}
+
+.status-dot-running {
+    -fx-fill: #34c759;
+    /* iOS Green (Screenshot match) */
+    -fx-effect: dropshadow(gaussian, rgba(52, 199, 89, 0.3), 8, 0, 0, 0);
+}
+
+.status-dot-stopped {
+    -fx-fill: #8e8e93;
+    /* IOS Grey (Inactive) or Red if error */
+    /* Screenshot shows green when running. Assuming grey/neutral when off or red if error.
+       Let's stick to neutral grey for "stopped" to be clean like macOS. */
+}
+
+.status-label-nano {
+    -fx-font-family: system;
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-default;
+    /* Dark text */
+    -fx-font-weight: normal;
+}
+
+.status-latency-nano {
+    -fx-font-family: "Monospaced";
+    -fx-font-size: 10px;
+    -fx-text-fill: rgba(255, 255, 255, 0.5);
+}
+
+/* Toggle Switch Nano (Red/Green) */
+.toggle-switch-nano {
+    -fx-background-color: #ff3b30, white;
+    /* Red (Off) Track, White Knob */
+    -fx-background-insets: 0, 2 18 2 2;
+    /* Knob on Left (for Off state approx) - wait, width is 36. 
+                                           Knob size ~16. 
+                                           Insets: Top=2, Right=18, Bottom=2, Left=2. 
+                                           Right inset 18 means 36-18 = 18px from right. 
+                                           Knob width = 36 - 2 - 18 = 16. Correct. */
+    -fx-background-radius: 20, 20;
+    -fx-text-fill: transparent;
+    -fx-padding: 0;
+    /* Clear padding, use insets for graphic */
+    -fx-cursor: hand;
+    -fx-min-width: 36px;
+    -fx-max-width: 36px;
+    -fx-min-height: 20px;
+    -fx-max-height: 20px;
+}
+
+.toggle-switch-nano:selected {
+    -fx-background-color: #34c759, white;
+    /* Green (On) Track, White Knob */
+    -fx-background-insets: 0, 2 2 2 18;
+    /* Knob on Right.
+                                           Insets: Top=2, Right=2, Bottom=2, Left=18. */
+}
+
+.toggle-switch-nano:hover {
+    -fx-opacity: 0.9;
+}
+
+/* --- FULL WIDTH COLOR OLLAMA STATUS BAR --- */
+.status-bar-container {
+    -fx-padding: 12px 15px;
+    -fx-background-radius: 0;
+}
+
+/* Background Colors */
+.status-bar-stopped {
+    -fx-background-color: #d32f2f;
+    /* Muted Red (Material Red 700) - "Dry Red" */
+}
+
+.status-bar-running {
+    -fx-background-color: #388e3c;
+    /* Muted Green (Material Green 700) - "Dry Green" */
+}
+
+.status-label-white {
+    -fx-text-fill: white;
+    -fx-font-weight: normal;
+    -fx-font-size: 13px;
+}
+
+/* SWITCH BUTTON STYLING */
+.status-switch-button {
+    -fx-background-color: white;
+    -fx-text-fill: -color-fg-default;
+    -fx-background-radius: 15px;
+    /* Pill shape */
+    -fx-min-width: 50px;
+    -fx-padding: 3px 10px;
+    -fx-font-size: 11px;
+    -fx-font-weight: normal;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 3, 0, 0, 1);
+}
+
+.status-switch-button:selected {
+    -fx-background-color: white;
+    /* Keep white bg for the "knob" look if possible, or inverse */
+    -fx-text-fill: #388e3c;
+}
+
+
+/* Make it look more like a switch? 
+   Actually, standard ToggleButton with pills style is clean. 
+   User asked for "boton switch" shape.
+   Let's simulate a simpler toggle: White pill with text inside.
+*/
+
+/* --- REFINED OLLAMA STATUS BAR --- */
+.status-bar-refined {
+    -fx-padding: 10px 15px;
+    -fx-background-color: rgba(0, 0, 0, 0.03);
+    /* Subtle footer background */
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1px 0 0 0;
+}
+
+.status-indicator-dot {
+    -fx-min-width: 8px;
+    -fx-min-height: 8px;
+    -fx-max-width: 8px;
+    -fx-max-height: 8px;
+    -fx-background-radius: 5px;
+}
+
+/* Re-use active/inactive classes but with updated colors if needed */
+.status-dot-active {
+    -fx-background-color: #34c759;
+    /* iOS Green */
+    -fx-effect: dropshadow(gaussian, rgba(52, 199, 89, 0.4), 6, 0, 0, 0);
+}
+
+.status-dot-inactive {
+    -fx-background-color: #ff3b30;
+    /* iOS Red */
+}
+
+.status-title-small {
+    -fx-font-size: 11px;
+    -fx-font-weight: normal;
+    -fx-text-fill: -color-fg-default;
+}
+
+.status-subtitle-small {
+    -fx-font-size: 10px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+/* POWER BUTTON */
+.icon-button-power {
+    -fx-background-color: transparent;
+    -fx-padding: 5px;
+    -fx-cursor: hand;
+    -fx-border-radius: 50%;
+    -fx-background-radius: 50%;
+}
+
+.icon-button-power:hover {
+    -fx-background-color: rgba(0, 0, 0, 0.05);
+}
+
+.icon-button-power:pressed {
+    -fx-background-color: rgba(0, 0, 0, 0.1);
+}
+
+.power-icon-shape {
+    -fx-fill: -color-fg-muted;
+    /* Default Grey */
+    -fx-min-width: 16px;
+    -fx-min-height: 16px;
+    -fx-scale-x: 0.9;
+    -fx-scale-y: 0.9;
+}
+
+.icon-button-power:hover .power-icon-shape {
     -fx-fill: -color-fg-default;
-    -fx-font-size: 14px;
+}
+
+/* --- MARKDOWN STYLES (RichTextFX) --- */
+/* --- MARKDOWN STYLES (RichTextFX / BBCode) --- */
+.markdown-area {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0 10;
+}
+
+.markdown-area .content {
+    -fx-background-color: transparent;
+}
+
+/* Base Text */
+.markdown-area text {
+    -fx-fill: -color-fg-default;
+    -fx-font-family: "System";
+    -fx-font-size: 16px;
+    /* Increased from 14px for better readability */
+    -fx-font-smoothing-type: lcd;
+    /* Better anti-aliasing */
+}
+
+/* Headers - Gemini Style (Larger, Bolder) */
+/* Note: These classes depend on how BBCodeParser assigns styles to [h1] tags. 
+   Usually it maps to .heading1 etc. or we rely on the specific implementation. 
+   Assuming AtlantaFX BBCodeParser maps [h1] -> styleClass "h1" or similar?
+   Wait, looking at MarkdownOutput, it uses BBCodeParser.createLayout.
+   If specific classes aren't generated, we might be styling blindly if we rely solely on these names.
+   However, assuming standard implementation or that we can target them:
+*/
+
+/* If we can't be sure of the class names generated for H tags, we rely on what was there: .markdown-h1
+   If the previous CSS had it, presumably it works or was intended to work.
+   We will keep the names and just beef them up.
+*/
+
+/* Headers - Gemini Style (Larger, Bolder) */
+/* Aliasing widely used classes for headers */
+.markdown-h1,
+.h1,
+.header-1,
+.title-1 {
+    -fx-font-size: 32px;
+    /* Massive, bold */
+    -fx-font-weight: 400;
+    /* Extra Bold */
+    -fx-fill: -color-fg-default;
+    -fx-padding: 20px 0 10px 0;
+    -fx-font-smoothing-type: lcd;
+}
+
+.markdown-h2,
+.h2,
+.header-2,
+.title-2 {
+    -fx-font-size: 24px;
+    -fx-font-weight: normal;
+    -fx-fill: -color-fg-default;
+    -fx-padding: 15px 0 8px 0;
+    -fx-font-smoothing-type: lcd;
+}
+
+.markdown-h3,
+.h3,
+.header-3,
+.title-3 {
+    -fx-font-size: 20px;
+    -fx-font-weight: normal;
+    -fx-fill: -color-fg-default;
+    -fx-padding: 10px 0 5px 0;
+    -fx-font-smoothing-type: lcd;
+}
+
+.markdown-h4 {
+    -fx-font-size: 18px;
+    -fx-font-weight: normal;
+    -fx-fill: -color-fg-default;
+}
+
+.markdown-h5,
+.markdown-h6 {
+    -fx-font-size: 16px;
+    -fx-font-weight: normal;
+    -fx-fill: -color-fg-subtle;
+}
+
+/* Emphasis */
+.markdown-bold {
+    -fx-font-weight: normal;
+}
+
+.markdown-italic {
+    -fx-font-style: italic;
+}
+
+/* Code Blocks */
+/* Code Blocks (Paragraph Level) */
+.markdown-code-paragraph {
+    -fx-background-color: -color-bg-subtle;
+    -fx-background-radius: 4px;
+    -fx-border-width: 0;
+}
+
+.markdown-code-paragraph .text {
+    -fx-font-family: "Monospaced";
+    -fx-fill: -color-fg-default;
+}
+
+/* Inline Code (Span Level) */
+/* Syntax Highlighting */
+.keyword {
+    -fx-fill: #cc7832;
+    -fx-font-weight: normal;
+}
+
+.paren {
+    -fx-fill: #a9b7c6;
+}
+
+.brace {
+    -fx-fill: #a9b7c6;
+}
+
+.bracket {
+    -fx-fill: #a9b7c6;
+}
+
+.semicolon {
+    -fx-fill: #cc7832;
+}
+
+.string {
+
+    /* --- APPLE DIALOG REDESIGN --- */
+    .apple-dialog {
+        -fx-background-color: #ffffff;
+        /* Explicit White for Light Mode to float above grey */
+        -fx-background-radius: 20px;
+        -fx-border-radius: 20px;
+        -fx-border-color: rgba(0, 0, 0, 0.1);
+        /* Very subtle border */
+        -fx-border-width: 1px;
+        -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.25), 50, 0, 0, 15);
+        /* Deep, soft shadow */
+        -fx-padding: 30px;
+        -fx-alignment: CENTER;
+    }
+
+    /* Support both .root.dark nesting and direct .dark class on the dialog root */
+    .root.dark .apple-dialog,
+    .apple-dialog.dark {
+        -fx-background-color: #2c2c2e;
+        /* Secondary System Fill (Lighter than background) */
+        -fx-border-color: rgba(255, 255, 255, 0.15);
+        /* More visible border */
+        -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.8), 60, 0, 0, 20);
+        /* Stronger shadow for separation */
+    }
+
+    .apple-dialog-title {
+        -fx-font-size: 18px;
+        -fx-font-weight: normal;
+        -fx-text-fill: -color-fg-default;
+        -fx-font-family: "System";
+    }
+
+    .apple-dialog-status-large {
+        -fx-font-size: 32px;
+        -fx-font-weight: 400;
+        /* Extra bold */
+        -fx-text-fill: -color-fg-default;
+        -fx-font-family: "System";
+    }
+
+    .apple-dialog-status-subtle {
+        -fx-font-size: 14px;
+        -fx-text-fill: -color-fg-subtle;
+        -fx-font-family: "System";
+    }
+
+    .apple-button-secondary {
+        -fx-background-color: rgba(128, 128, 128, 0.15);
+        /* Neutral grey pill */
+        -fx-text-fill: -color-fg-default;
+        -fx-background-radius: 20px;
+        -fx-padding: 8px 24px;
+        -fx-cursor: hand;
+        -fx-font-size: 13px;
+        -fx-font-weight: normal;
+        -fx-border-width: 0;
+    }
+
+    .apple-button-secondary:hover {
+        -fx-background-color: rgba(128, 128, 128, 0.25);
+    }
+
+    .apple-button-secondary:pressed {
+        -fx-background-color: rgba(128, 128, 128, 0.35);
+    }
+
+
+    /* --- APPLE DESIGN REDESIGN (Premium Model Detail) --- */
+
+    /* 1. Typography */
+    .apple-title-large {
+        -fx-font-family: "System";
+        -fx-font-size: 38px;
+        -fx-font-weight: 400;
+        /* Extra Bold */
+        -fx-text-fill: -color-fg-default;
+        -fx-letter-spacing: -0.5px;
+        /* Tight tracking like Apple */
+    }
+
+    .apple-text-body {
+        -fx-font-family: "System";
+        -fx-font-size: 15px;
+        -fx-text-fill: -color-fg-default;
+        -fx-line-spacing: 4px;
+        -fx-opacity: 0.9;
+    }
+
+    .apple-text-subtle {
+        -fx-font-size: 13px;
+        -fx-text-fill: -color-fg-muted;
+        -fx-font-weight: normal;
+    }
+
+    /* 2. Cards (Inset Grouped Style) */
+    .apple-card-row {
+        -fx-background-color: -color-bg-default;
+        /* White on light, Dark on dark */
+        -fx-background-radius: 12px;
+        -fx-border-radius: 12px;
+        -fx-border-color: rgba(0, 0, 0, 0.06);
+        /* Very subtle border */
+        -fx-border-width: 1px;
+        -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.04), 10, 0, 0, 2);
+        /* Soft ambient shadow */
+        -fx-padding: 18px 20px;
+        -fx-cursor: hand;
+        -fx-alignment: CENTER_LEFT;
+    }
+
+    /* Hover Effect for Card */
+    .apple-card-row:hover {
+        -fx-background-color: -color-bg-subtle;
+        /* Slightly darker/lighter depending on theme */
+        -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.08), 15, 0, 0, 4);
+        /* Lift up */
+        -fx-translate-y: -1px;
+        /* Micro-interaction */
+    }
+
+    /* Dark Mode Adjustments */
+    .root.dark .apple-card-row {
+        -fx-background-color: #1c1c1e;
+        /* Secondary System Fill */
+        -fx-border-color: rgba(255, 255, 255, 0.1);
+        -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0, 0, 2);
+    }
+
+    .root.dark .apple-card-row:hover {
+        -fx-background-color: #2c2c2e;
+        /* Tertiary System Fill */
+    }
+
+
+    /* 3. Action Button (Get / Open) */
+    .apple-button-action {
+        -fx-background-color: #007AFF;
+        /* System Blue */
+        -fx-text-fill: white;
+        -fx-background-radius: 20px;
+        /* Pill shape */
+        -fx-font-weight: normal;
+        -fx-font-size: 13px;
+        -fx-padding: 6px 20px;
+        -fx-cursor: hand;
+        -fx-min-width: 70px;
+        -fx-alignment: CENTER;
+    }
+
+    .apple-button-action:hover {
+        -fx-background-color: #0062cc;
+        /* Darker Blue */
+        -fx-effect: dropshadow(gaussian, rgba(0, 122, 255, 0.4), 8, 0, 0, 2);
+    }
+
+    .apple-button-destructive {
+        -fx-background-color: transparent;
+        -fx-text-fill: #ff3b30;
+        /* System Red */
+        -fx-background-radius: 20px;
+        -fx-border-color: rgba(255, 59, 48, 0.3);
+        -fx-border-radius: 20px;
+        -fx-padding: 5px 15px;
+        -fx-cursor: hand;
+        -fx-font-size: 13px;
+        -fx-font-weight: normal;
+    }
+
+    .apple-button-destructive:hover {
+        -fx-background-color: rgba(255, 59, 48, 0.1);
+        -fx-border-color: #ff3b30;
+    }
+
+    /* 4. Badges (Refined) */
+    .apple-badge-pill {
+        -fx-background-radius: 6px;
+        -fx-padding: 4px 10px;
+        -fx-font-size: 12px;
+        -fx-font-weight: normal;
+        -fx-font-family: "Monospaced";
+        /* For tech specs */
+    }
+
+    .apple-stat-box {
+        -fx-alignment: CENTER_LEFT;
+        -fx-spacing: 5px;
+    }
+
+    .apple-stat-icon {
+        -fx-fill: -color-fg-muted;
+        -fx-min-width: 14px;
+        -fx-min-height: 14px;
+    }
+
+    /* 5. Separators */
+    .apple-separator {
+        -fx-background-color: -color-border-subtle;
+        -fx-min-height: 1px;
+        -fx-max-height: 1px;
+        -fx-opacity: 0.5;
+    }
+
+    -fx-fill: #808080;
+    -fx-font-style: italic;
+}
+
+.number {
+    -fx-fill: #6897bb;
+}
+
+/* Code Block Card */
+.code-block-card {
+    -fx-background-color: -color-bg-subtle;
+    -fx-background-radius: 8px;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-radius: 8px;
+    -fx-border-width: 1px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.05), 5, 0, 0, 2);
+}
+
+.code-block-header {
+    -fx-background-color: -color-bg-default;
+    -fx-background-radius: 8px 8px 0 0;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 0 1px 0;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.code-block-language {
+    -fx-font-weight: normal;
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.code-block-copy-btn {
+    -fx-font-size: 10px;
+    -fx-padding: 4px 8px;
+    -fx-cursor: hand;
+}
+
+.code-block-content {
+    -fx-font-family: "Monospaced";
+    -fx-font-size: 13px;
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-fg-default;
+}
+
+.code-block-content .content {
+    -fx-background-color: transparent;
+}
+
+/* --- Chat Message Footer Actions --- */
+.chat-copy-button {
+    -fx-background-color: -color-bg-default;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-min-width: 32px;
+    -fx-min-height: 32px;
+    -fx-padding: 6px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.08), 4, 0, 0, 2);
+    -fx-alignment: CENTER;
+}
+
+.chat-copy-button:hover {
+    -fx-background-color: -color-bg-subtle;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.12), 6, 0, 0, 3);
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+}
+
+.chat-copy-button:pressed {
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.05), 2, 0, 0, 1);
+    -fx-scale-x: 0.95;
+    -fx-scale-y: 0.95;
 }
