@@ -4,8 +4,8 @@ import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
 import javafx.stage.Stage;
+import atlantafx.base.controls.RingProgressIndicator;
 
 public class DownloadPopupController {
 
@@ -14,9 +14,9 @@ public class DownloadPopupController {
     @FXML
     private Label titleLabel;
     @FXML
-    private ProgressBar progressBar;
+    private RingProgressIndicator ringIndicator;
     @FXML
-    private Label percentageLabel;
+    private Label statusLabel;
     @FXML
     private Button cancelButton;
 
@@ -42,13 +42,8 @@ public class DownloadPopupController {
         this.downloadTask = task;
 
         // Bind UI elements to the task
-        progressBar.progressProperty().bind(task.progressProperty());
-
-        task.progressProperty().addListener((obs, oldVal, newVal) -> {
-            double progress = newVal.doubleValue();
-            int percentage = (int) (progress * 100);
-            percentageLabel.setText(percentage + "%");
-        });
+        ringIndicator.progressProperty().bind(task.progressProperty());
+        statusLabel.textProperty().bind(task.messageProperty());
 
         // Close window when task finishes (Succeeded, Failed, or Cancelled)
         task.stateProperty().addListener((obs, oldState, newState) -> {

@@ -12,10 +12,54 @@ public class ModelManager {
     private final ObservableList<OllamaModel> localModels = FXCollections.observableArrayList();
     private final ObservableList<OllamaModel> availableModels = FXCollections.observableArrayList();
     private final OllamaManager ollamaManager = OllamaManager.getInstance();
+    private final java.util.Set<String> installedModelsCache = new java.util.HashSet<>();
+
+    public ModelManager() {
+        // Keep cache in sync
+        localModels.addListener((javafx.collections.ListChangeListener<OllamaModel>) c -> {
+            while (c.next()) {
+                if (c.wasAdded()) {
+                    for (OllamaModel m : c.getAddedSubList()) {
+                        installedModelsCache.add(m.getName().toLowerCase() + ":" + m.getTag().toLowerCase());
+                    }
+                }
+                if (c.wasRemoved()) {
+                    for (OllamaModel m : c.getRemoved()) {
+                        installedModelsCache.remove(m.getName().toLowerCase() + ":" + m.getTag().toLowerCase());
+                    }
+                }
+            }
+        });
+    }
 
     public ObservableList<OllamaModel> getLocalModels() {
         return localModels;
     }
+
+    // ... (rest of getters)
+
+    // ... (loadAllModels remains same)
+
+    /**
+     * Verifica si un modelo específico (nombre y tag) está instalado localmente.
+     * Uses O(1) cache.
+     */
+    public boolean isModelInstalled(String name, String tag) {
+        if (name == null || tag == null)
+            return false;
+        return installedModelsCache.contains(name.toLowerCase() + ":" + tag.toLowerCase());
+    }
+
+    // ... (deleteModel and other methods remain same... ensure to keep the existing
+    // implementation just replacing what's needed)
+
+    // I need to use ReplaceFileContent carefully.
+    // I will replace the class start and constructor, and the isModelInstalled
+    // method.
+    // Wait, the tool requires contiguous blocks. I should do this in chunks or
+    // replace the whole file content helper parts.
+
+    // Let's replace the top part first to add the cache and constructor.
 
     public ObservableList<OllamaModel> getAvailableModels() {
         return availableModels;
@@ -53,21 +97,6 @@ public class ModelManager {
         });
 
         new Thread(loadTask).start();
-    }
-
-    /**
-     * Verifica si un modelo específico (nombre y tag) está instalado localmente.
-     */
-    public boolean isModelInstalled(String name, String tag) {
-        for (OllamaModel model : localModels) {
-            // La comparación debe ser robusta. Ollama suele normalizar nombres.
-            // Asumimos que 'name' es el base name (e.g. "llama3") y 'tag' es la versión
-            // (e.g. "latest").
-            if (model.getName().equalsIgnoreCase(name) && model.getTag().equalsIgnoreCase(tag)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public void deleteModel(String name, String tag) {

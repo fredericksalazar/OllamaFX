@@ -794,10 +794,203 @@
 }
 
 .string {
-    -fx-fill: #6a8759;
-}
 
-.comment {
+    /* --- APPLE DIALOG REDESIGN --- */
+    .apple-dialog {
+        -fx-background-color: -color-bg-default;
+        -fx-background-radius: 20px;
+        -fx-border-radius: 20px;
+        -fx-border-color: rgba(0, 0, 0, 0.1);
+        /* Very subtle border */
+        -fx-border-width: 1px;
+        -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.25), 50, 0, 0, 15);
+        /* Deep, soft shadow */
+        -fx-padding: 30px;
+        -fx-alignment: CENTER;
+    }
+
+    .root.dark .apple-dialog {
+        -fx-border-color: rgba(255, 255, 255, 0.1);
+        -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 50, 0, 0, 15);
+    }
+
+    .apple-dialog-title {
+        -fx-font-size: 18px;
+        -fx-font-weight: bold;
+        -fx-text-fill: -color-fg-default;
+        -fx-font-family: "System";
+    }
+
+    .apple-dialog-status-large {
+        -fx-font-size: 32px;
+        -fx-font-weight: 800;
+        /* Extra bold */
+        -fx-text-fill: -color-fg-default;
+        -fx-font-family: "System";
+    }
+
+    .apple-dialog-status-subtle {
+        -fx-font-size: 14px;
+        -fx-text-fill: -color-fg-subtle;
+        -fx-font-family: "System";
+    }
+
+    .apple-button-secondary {
+        -fx-background-color: rgba(128, 128, 128, 0.15);
+        /* Neutral grey pill */
+        -fx-text-fill: -color-fg-default;
+        -fx-background-radius: 20px;
+        -fx-padding: 8px 24px;
+        -fx-cursor: hand;
+        -fx-font-size: 13px;
+        -fx-font-weight: normal;
+        -fx-border-width: 0;
+    }
+
+    .apple-button-secondary:hover {
+        -fx-background-color: rgba(128, 128, 128, 0.25);
+    }
+
+    .apple-button-secondary:pressed {
+        -fx-background-color: rgba(128, 128, 128, 0.35);
+    }
+
+
+    /* --- APPLE DESIGN REDESIGN (Premium Model Detail) --- */
+
+    /* 1. Typography */
+    .apple-title-large {
+        -fx-font-family: "System";
+        -fx-font-size: 38px;
+        -fx-font-weight: 800;
+        /* Extra Bold */
+        -fx-text-fill: -color-fg-default;
+        -fx-letter-spacing: -0.5px;
+        /* Tight tracking like Apple */
+    }
+
+    .apple-text-body {
+        -fx-font-family: "System";
+        -fx-font-size: 15px;
+        -fx-text-fill: -color-fg-default;
+        -fx-line-spacing: 4px;
+        -fx-opacity: 0.9;
+    }
+
+    .apple-text-subtle {
+        -fx-font-size: 13px;
+        -fx-text-fill: -color-fg-muted;
+        -fx-font-weight: bold;
+    }
+
+    /* 2. Cards (Inset Grouped Style) */
+    .apple-card-row {
+        -fx-background-color: -color-bg-default;
+        /* White on light, Dark on dark */
+        -fx-background-radius: 12px;
+        -fx-border-radius: 12px;
+        -fx-border-color: rgba(0, 0, 0, 0.06);
+        /* Very subtle border */
+        -fx-border-width: 1px;
+        -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.04), 10, 0, 0, 2);
+        /* Soft ambient shadow */
+        -fx-padding: 18px 20px;
+        -fx-cursor: hand;
+        -fx-alignment: CENTER_LEFT;
+    }
+
+    /* Hover Effect for Card */
+    .apple-card-row:hover {
+        -fx-background-color: -color-bg-subtle;
+        /* Slightly darker/lighter depending on theme */
+        -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.08), 15, 0, 0, 4);
+        /* Lift up */
+        -fx-translate-y: -1px;
+        /* Micro-interaction */
+    }
+
+    /* Dark Mode Adjustments */
+    .root.dark .apple-card-row {
+        -fx-background-color: #1c1c1e;
+        /* Secondary System Fill */
+        -fx-border-color: rgba(255, 255, 255, 0.1);
+        -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0, 0, 2);
+    }
+
+    .root.dark .apple-card-row:hover {
+        -fx-background-color: #2c2c2e;
+        /* Tertiary System Fill */
+    }
+
+
+    /* 3. Action Button (Get / Open) */
+    .apple-button-action {
+        -fx-background-color: #007AFF;
+        /* System Blue */
+        -fx-text-fill: white;
+        -fx-background-radius: 20px;
+        /* Pill shape */
+        -fx-font-weight: bold;
+        -fx-font-size: 13px;
+        -fx-padding: 6px 20px;
+        -fx-cursor: hand;
+        -fx-min-width: 70px;
+        -fx-alignment: CENTER;
+    }
+
+    .apple-button-action:hover {
+        -fx-background-color: #0062cc;
+        /* Darker Blue */
+        -fx-effect: dropshadow(gaussian, rgba(0, 122, 255, 0.4), 8, 0, 0, 2);
+    }
+
+    .apple-button-destructive {
+        -fx-background-color: transparent;
+        -fx-text-fill: #ff3b30;
+        /* System Red */
+        -fx-background-radius: 20px;
+        -fx-border-color: rgba(255, 59, 48, 0.3);
+        -fx-border-radius: 20px;
+        -fx-padding: 5px 15px;
+        -fx-cursor: hand;
+        -fx-font-size: 13px;
+        -fx-font-weight: bold;
+    }
+
+    .apple-button-destructive:hover {
+        -fx-background-color: rgba(255, 59, 48, 0.1);
+        -fx-border-color: #ff3b30;
+    }
+
+    /* 4. Badges (Refined) */
+    .apple-badge-pill {
+        -fx-background-radius: 6px;
+        -fx-padding: 4px 10px;
+        -fx-font-size: 12px;
+        -fx-font-weight: bold;
+        -fx-font-family: "Monospaced";
+        /* For tech specs */
+    }
+
+    .apple-stat-box {
+        -fx-alignment: CENTER_LEFT;
+        -fx-spacing: 5px;
+    }
+
+    .apple-stat-icon {
+        -fx-fill: -color-fg-muted;
+        -fx-min-width: 14px;
+        -fx-min-height: 14px;
+    }
+
+    /* 5. Separators */
+    .apple-separator {
+        -fx-background-color: -color-border-subtle;
+        -fx-min-height: 1px;
+        -fx-max-height: 1px;
+        -fx-opacity: 0.5;
+    }
+
     -fx-fill: #808080;
     -fx-font-style: italic;
 }

@@ -10,12 +10,12 @@ import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.BorderPane;
-import atlantafx.base.theme.CupertinoDark;
-import atlantafx.base.theme.CupertinoLight;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
+import atlantafx.base.theme.CupertinoDark;
+import atlantafx.base.theme.CupertinoLight;
 import javafx.application.Application;
 import javafx.animation.FadeTransition;
 import javafx.animation.Timeline;
@@ -371,8 +371,11 @@ public class MainController implements Initializable {
         }
 
         statusPollingTimeline = new Timeline(new KeyFrame(Duration.seconds(5), event -> {
-            boolean running = OllamaServiceManager.getInstance().isRunning();
-            updateStatusUI(running);
+            // Move blocking check to background thread
+            new Thread(() -> {
+                boolean running = OllamaServiceManager.getInstance().isRunning();
+                Platform.runLater(() -> updateStatusUI(running));
+            }).start();
         }));
         statusPollingTimeline.setCycleCount(Timeline.INDEFINITE);
         statusPollingTimeline.play();
@@ -455,37 +458,58 @@ public class MainController implements Initializable {
 
     @FXML
     private void toggleOllamaService(javafx.event.ActionEvent event) {
-        boolean isRunning = OllamaServiceManager.getInstance().isRunning();
+        // Prevent double interactions while checking/toggling
+        btnControlOllama.setDisable(true);
+        statusLabel.setText("Checking...");
 
-        if (isRunning) {
-            // Stop
-            statusLabel.setText("Stopping...");
-            new Thread(() -> {
-                OllamaServiceManager.getInstance().stopOllama();
-                Platform.runLater(() -> {
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                    } // Wait a bit
-                    updateStatusUI(OllamaServiceManager.getInstance().isRunning());
-                });
-            }).start();
-        } else {
-            // Start
-            statusLabel.setText("Starting...");
-            btnControlOllama.setDisable(true); // Prevent double click
-            new Thread(() -> {
-                boolean success = OllamaServiceManager.getInstance().startOllama();
-                Platform.runLater(() -> {
-                    btnControlOllama.setDisable(false);
-                    if (success) {
-                        updateStatusUI(true);
-                    } else {
-                        statusLabel.setText("Start Failed");
-                        updateStatusUI(false);
-                    }
-                });
-            }).start();
-        }
+        new Thread(() -> {
+            boolean isRunning = OllamaServiceManager.getInstance().isRunning();
+
+            Platform.runLater(() -> {
+                if (isRunning) {
+                    // STOPPING
+                    statusLabel.setText("Stopping...");
+                    new Thread(() -> {
+                        OllamaServiceManager.getInstance().stopOllama();
+                        Platform.runLater(() -> {
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException e) {
+                            }
+                            // Re-enable button and update UI
+                            // here inside
+                            // thread? No, need
+                            // to be careful.
+                            // Actually, let's just trigger an updateStatusUI logic via poll or explicit
+                            // check.
+                            // updateStatusUI is checking running status? No, it takes a boolean.
+                            // Let's do a quick check
+                            new Thread(() -> {
+                                boolean finalState = OllamaServiceManager.getInstance().isRunning();
+                                Platform.runLater(() -> {
+                                    updateStatusUI(finalState);
+                                    btnControlOllama.setDisable(false);
+                                });
+                            }).start();
+                        });
+                    }).start();
+                } else {
+                    // STARTING
+                    statusLabel.setText("Starting...");
+                    new Thread(() -> {
+                        boolean success = OllamaServiceManager.getInstance().startOllama();
+                        Platform.runLater(() -> {
+                            btnControlOllama.setDisable(false);
+                            if (success) {
+                                updateStatusUI(true);
+                            } else {
+                                statusLabel.setText("Start Failed");
+                                updateStatusUI(false);
+                            }
+                        });
+                    }).start();
+                }
+            });
+        }).start();
     }
 }

@@ -5,6 +5,7 @@ import atlantafx.base.theme.CupertinoLight;
 import com.org.ollamafx.controller.MainController;
 import com.org.ollamafx.manager.ModelManager; // <-- AÑADE ESTE IMPORT
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -54,6 +55,16 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
+        // Global Exception Handler
+        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
+            System.err.println("CRITICAL UNCAUGHT EXCEPTION on thread " + thread.getName());
+            throwable.printStackTrace();
+            // Optional: Show error dialog safely
+            Platform.runLater(() -> {
+                com.org.ollamafx.util.Utils.showError("Critical Error", "An occurred error: " + throwable.getMessage());
+            });
+        });
+
         primaryStage = stage;
 
         ChatManager.getInstance().loadChats();
