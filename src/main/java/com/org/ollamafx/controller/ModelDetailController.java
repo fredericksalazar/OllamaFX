@@ -70,6 +70,10 @@ public class ModelDetailController {
             String userAgentStylesheet = Application.getUserAgentStylesheet();
             if (userAgentStylesheet != null && userAgentStylesheet.toLowerCase().contains("light")) {
                 root.getStyleClass().add("light");
+            } else {
+                // If not explicitly light, assume dark (or check for dark)
+                // This ensures .root.dark selectors work inside the popup
+                root.getStyleClass().add("dark");
             }
 
             Stage stage = new Stage();

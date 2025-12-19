@@ -14,8 +14,6 @@ import javafx.scene.layout.BorderPane;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
-import atlantafx.base.theme.CupertinoDark;
-import atlantafx.base.theme.CupertinoLight;
 import javafx.application.Application;
 import javafx.animation.FadeTransition;
 import javafx.animation.Timeline;

@@ -801,7 +801,8 @@
 
     /* --- APPLE DIALOG REDESIGN --- */
     .apple-dialog {
-        -fx-background-color: -color-bg-default;
+        -fx-background-color: #ffffff;
+        /* Explicit White for Light Mode to float above grey */
         -fx-background-radius: 20px;
         -fx-border-radius: 20px;
         -fx-border-color: rgba(0, 0, 0, 0.1);
@@ -813,9 +814,15 @@
         -fx-alignment: CENTER;
     }
 
-    .root.dark .apple-dialog {
-        -fx-border-color: rgba(255, 255, 255, 0.1);
-        -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 50, 0, 0, 15);
+    /* Support both .root.dark nesting and direct .dark class on the dialog root */
+    .root.dark .apple-dialog,
+    .apple-dialog.dark {
+        -fx-background-color: #2c2c2e;
+        /* Secondary System Fill (Lighter than background) */
+        -fx-border-color: rgba(255, 255, 255, 0.15);
+        /* More visible border */
+        -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.8), 60, 0, 0, 20);
+        /* Stronger shadow for separation */
     }
 
     .apple-dialog-title {
