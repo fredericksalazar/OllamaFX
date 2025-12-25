@@ -124,6 +124,47 @@ public class ChatSession {
         this.systemPrompt = systemPrompt;
     }
 
+    private int seed = -1; // -1 for random
+    private int numCtx = 4096;
+    private int topK = 40;
+    private double topP = 0.9;
+
+    @JsonProperty("seed")
+    public int getSeed() {
+        return seed;
+    }
+
+    public void setSeed(int seed) {
+        this.seed = seed;
+    }
+
+    @JsonProperty("numCtx")
+    public int getNumCtx() {
+        return numCtx;
+    }
+
+    public void setNumCtx(int numCtx) {
+        this.numCtx = numCtx;
+    }
+
+    @JsonProperty("topK")
+    public int getTopK() {
+        return topK;
+    }
+
+    public void setTopK(int topK) {
+        this.topK = topK;
+    }
+
+    @JsonProperty("topP")
+    public double getTopP() {
+        return topP;
+    }
+
+    public void setTopP(double topP) {
+        this.topP = topP;
+    }
+
     @Override
     public String toString() {
         return getName();
