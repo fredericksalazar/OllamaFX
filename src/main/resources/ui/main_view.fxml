@@ -16,22 +16,9 @@
 
         <VBox fx:id="sidebarVBox" prefWidth="300.0" spacing="0.0" styleClass="sidebar" BorderPane.alignment="CENTER">
             <children>
-                <!-- TITLE -->
-                <Label styleClass="app-title" text="%app.title">
-                    <font>
-                        <Font name="System Regular" size="14.0" />
-                    </font>
-                    <VBox.margin>
-                        <Insets bottom="15.0" left="15.0" top="15.0" />
-                    </VBox.margin>
-                </Label>
+                <!-- TITLE REMOVED -->
 
-                <!-- SECTION LABEL -->
-                <Label styleClass="sidebar-section-label" text="%sidebar.chats">
-                    <VBox.margin>
-                        <Insets left="15.0" bottom="5.0"/>
-                    </VBox.margin>
-                </Label>
+                <!-- SECTION LABEL REMOVED -->
 
                 <!-- CHAT LIST (Takes available space) -->
                 <ListView fx:id="chatListView" VBox.vgrow="ALWAYS" />

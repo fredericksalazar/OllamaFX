@@ -124,7 +124,7 @@
 }
 
 .model-icon-container {
-    -fx-background-color: linear-gradient(to bottom right, #FF9500, #FF2D55);
+    -fx-background-color: linear-gradient(to bottom right, #007AFF, #5856D6);
     -fx-background-radius: 18px;
     -fx-min-width: 64px;
     -fx-min-height: 64px;

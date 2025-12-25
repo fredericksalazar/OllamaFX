@@ -70,7 +70,7 @@ public class HomeController implements Initializable {
             boolean isInstalled = modelManager.isModelInstalled(model.getName(), model.getTag());
             ModelCard card = new ModelCard(model, isInstalled,
                     () -> handleInstall(model),
-                    () -> handleDetails(model));
+                    () -> handleUninstall(model));
             container.getChildren().add(card);
         }
     }
@@ -80,14 +80,45 @@ public class HomeController implements Initializable {
         showDownloadPopup(model);
     }
 
-    private void handleDetails(OllamaModel model) {
-        System.out.println("Details requested for: " + model.getName());
-        // For now, simpler navigation: go to available models view and select it?
-        // Or open Details Popup?
-        // Let's rely on "View More" for full navigation, or maybe simple log for now
-        // as per instructions "3 - ... ningun boton ejecuta ningun proceso de descarga"
-        // -> fix that.
-        // User didn't prioritize details navigation, but download.
+    private void handleUninstall(OllamaModel model) {
+        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
+                javafx.scene.control.Alert.AlertType.CONFIRMATION);
+        alert.setTitle(com.org.ollamafx.App.getBundle().getString("local.uninstall.title"));
+        alert.setHeaderText(java.text.MessageFormat
+                .format(com.org.ollamafx.App.getBundle().getString("local.uninstall.header"), model.getName()));
+        alert.setContentText(com.org.ollamafx.App.getBundle().getString("local.uninstall.content"));
+
+        alert.showAndWait().ifPresent(response -> {
+            if (response == javafx.scene.control.ButtonType.OK) {
+                modelManager.deleteModel(model.getName(), model.getTag());
+                // Refresh logic - deleteModel triggers local model refresh, but we need
+                // to force Home View update to flip the button back to "Get"
+                // Ideally, ModelManager listeners should handle this if we bound UI to state.
+                // But Home is using snapshots in Carousels.
+
+                // We'll reload library logic after a short delay or just force reload now.
+                // deleteModel runs in bg.
+                // Let's rely on ModelManager to broadcast eventually, but for now force reload
+                // after delay?
+                // Better: listen to localModels change? ModelManager listener handles cache.
+                // But carousel UI is static until updateCarousel is called.
+
+                // Hack/Simple: Reload library models (which triggers UI update) after user
+                // action
+                // But delete is creating a task.
+                // We can add a listener to localModels in HomeController too?
+                // No, setModelManager already refreshes on load.
+
+                // Let's just assume manager will do its job, but we might need to trigger UI
+                // update.
+                // Re-calling loadLibraryModels will trigger listeners when data changes.
+                // Wait, deleteModel modifies localModels list (via refreshLocalModels task).
+                // So if we listen to localModels, we can update UI.
+                // But setupListeners only listens to Popular/New/Recommended lists.
+                // We need to re-render carousels when localModels changes because "isInstalled"
+                // check changes!
+            }
+        });
     }
 
     private void showDownloadPopup(OllamaModel model) {

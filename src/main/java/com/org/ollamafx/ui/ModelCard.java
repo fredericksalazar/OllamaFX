@@ -77,9 +77,9 @@ public class ModelCard extends VBox {
         Button actionBtn = new Button();
         actionBtn.setMaxWidth(Double.MAX_VALUE);
         if (isInstalled) {
-            actionBtn.setText(com.org.ollamafx.App.getBundle().getString("model.action.details"));
-            actionBtn.getStyleClass().addAll("button", "outlined");
-            actionBtn.setOnAction(e -> onDetails.run());
+            actionBtn.setText(com.org.ollamafx.App.getBundle().getString("model.action.uninstall"));
+            actionBtn.getStyleClass().addAll("button", "danger", "outlined");
+            actionBtn.setOnAction(e -> onDetails.run()); // This is now uninstall action
         } else {
             actionBtn.setText(com.org.ollamafx.App.getBundle().getString("model.action.get"));
             actionBtn.getStyleClass().addAll("button", "accent", "pill");
