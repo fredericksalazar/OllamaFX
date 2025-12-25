@@ -7,9 +7,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.scene.shape.SVGPath;
 
 public class ModelCard extends VBox {
 
@@ -79,11 +77,11 @@ public class ModelCard extends VBox {
         Button actionBtn = new Button();
         actionBtn.setMaxWidth(Double.MAX_VALUE);
         if (isInstalled) {
-            actionBtn.setText("Details");
+            actionBtn.setText(com.org.ollamafx.App.getBundle().getString("model.action.details"));
             actionBtn.getStyleClass().addAll("button", "outlined");
             actionBtn.setOnAction(e -> onDetails.run());
         } else {
-            actionBtn.setText("Get");
+            actionBtn.setText(com.org.ollamafx.App.getBundle().getString("model.action.get"));
             actionBtn.getStyleClass().addAll("button", "accent", "pill");
             actionBtn.setOnAction(e -> onInstall.run());
         }

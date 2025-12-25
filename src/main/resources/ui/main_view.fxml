@@ -26,29 +26,6 @@
                     </VBox.margin>
                 </Label>
 
-                <!-- HOME BUTTON (Top Navigation) -->
-                <Button fx:id="btnHome" alignment="BASELINE_LEFT" maxWidth="Infinity" mnemonicParsing="false" onAction="#showHome" styleClass="button" text="Home">
-                    <VBox.margin>
-                        <Insets bottom="5.0" left="10.0" right="10.0" />
-                    </VBox.margin>
-                     <padding>
-                        <Insets bottom="10.0" left="15.0" right="10.0" top="10.0" />
-                    </padding>
-                    <graphic>
-                        <!-- Optional Icon if needed -->
-                    </graphic>
-                </Button>
-
-                <!-- NEW CHAT BUTTON (Prominent) -->
-                <Button fx:id="btnNewChat" alignment="BASELINE_LEFT" maxWidth="Infinity" mnemonicParsing="false" onAction="#createNewChat" styleClass="button, accent" text="%sidebar.newChat">
-                    <VBox.margin>
-                        <Insets bottom="10.0" left="10.0" right="10.0" />
-                    </VBox.margin>
-                    <padding>
-                         <Insets bottom="10.0" left="15.0" right="10.0" top="10.0" />
-                    </padding>
-                </Button>
-
                 <!-- SECTION LABEL -->
                 <Label styleClass="sidebar-section-label" text="%sidebar.chats">
                     <VBox.margin>
@@ -66,6 +43,12 @@
                             <Insets bottom="5.0" top="5.0" />
                         </VBox.margin>
                     </Separator>
+                    
+                    <Button fx:id="btnHome" alignment="BASELINE_LEFT" maxWidth="Infinity" mnemonicParsing="false" onAction="#showHome" styleClass="button" text="Home">
+                        <padding>
+                            <Insets left="20.0" top="10.0" bottom="10.0"/>
+                        </padding>
+                    </Button>
                     
                     <Button fx:id="btnAvailable" alignment="BASELINE_LEFT" maxWidth="Infinity" mnemonicParsing="false" onAction="#showAvailableModels" styleClass="button" text="%sidebar.availableModels">
                          <padding>

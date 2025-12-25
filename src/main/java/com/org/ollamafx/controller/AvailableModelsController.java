@@ -4,7 +4,6 @@ import com.org.ollamafx.manager.ModelManager;
 import com.org.ollamafx.manager.OllamaManager;
 import com.org.ollamafx.model.OllamaModel;
 
-import io.github.ollama4j.models.response.LibraryModelDetail;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;

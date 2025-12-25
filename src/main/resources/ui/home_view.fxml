@@ -26,9 +26,12 @@
                         
                         <VBox spacing="15.0" styleClass="hero-content">
                            <children>
-                              <Label styleClass="hero-title" text="Discover Intelligence." wrapText="true" />
-                              <Label styleClass="hero-subtitle" text="Explore the latest local LLMs, optimized for your hardware." wrapText="true" />
-                              <Button fx:id="btnExplore" mnemonicParsing="false" onAction="#scrollToPopular" styleClass="button, hero-button" text="Start Exploring" />
+                              <Label styleClass="hero-title" text="%home.hero.title" wrapText="true" />
+                              <Label styleClass="hero-subtitle" text="%home.hero.subtitle" wrapText="true" />
+                              <HBox spacing="10.0">
+                                  <Button fx:id="btnNewChat" mnemonicParsing="false" onAction="#createNewChat" styleClass="button, accent, hero-button" text="%home.action.newchat" />
+                                  <Button fx:id="btnLoadFile" mnemonicParsing="false" onAction="#loadFile" styleClass="button, hero-button" text="%home.action.loadfile" />
+                              </HBox>
                            </children>
                            <StackPane.margin>
                               <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
@@ -37,11 +40,30 @@
                      </children>
                   </StackPane>
 
+                   <!-- RECENT CHATS SECTION -->
+                  <VBox spacing="15.0" styleClass="section-container">
+                     <children>
+                        <Label styleClass="section-title" text="%home.section.recent.title" />
+                        <ScrollPane fitToHeight="true" hbarPolicy="AS_NEEDED" vbarPolicy="NEVER" styleClass="carousel-scroll-pane">
+                           <content>
+                              <HBox fx:id="recentChatsContainer" spacing="20.0" styleClass="carousel-container">
+                                 <padding>
+                                    <Insets bottom="10.0" left="5.0" right="5.0" top="10.0" />
+                                 </padding>
+                              </HBox>
+                           </content>
+                        </ScrollPane>
+                     </children>
+                     <padding>
+                        <Insets bottom="0" left="0" right="0" top="0" />
+                     </padding>
+                  </VBox>
+
                    <!-- RECOMMENDED SECTION -->
                   <VBox spacing="15.0" styleClass="section-container">
                      <children>
-                        <Label styleClass="section-title" text="Recommended for Your Mac" />
-                        <Label styleClass="section-subtitle" text="Models that run perfectly on your hardware." />
+                        <Label styleClass="section-title" text="%home.section.recommended.title" />
+                        <Label styleClass="section-subtitle" text="%home.section.recommended.subtitle" />
                         <ScrollPane fitToHeight="true" hbarPolicy="AS_NEEDED" vbarPolicy="NEVER" styleClass="carousel-scroll-pane">
                            <content>
                               <HBox fx:id="recommendedContainer" spacing="20.0" styleClass="carousel-container">
@@ -62,8 +84,8 @@
                      <children>
                         <HBox alignment="CENTER_LEFT" spacing="20.0">
                            <children>
-                              <Label maxWidth="1.7976931348623157E308" styleClass="section-title" text="Top Rated &amp; Popular" HBox.hgrow="ALWAYS" />
-                              <Button mnemonicParsing="false" onAction="#viewMore" styleClass="button, link-button" text="View More" />
+                              <Label maxWidth="1.7976931348623157E308" styleClass="section-title" text="%home.section.popular.title" HBox.hgrow="ALWAYS" />
+                              <Button mnemonicParsing="false" onAction="#viewMore" styleClass="button, link-button" text="%home.button.viewmore" />
                            </children>
                         </HBox>
                         <ScrollPane fitToHeight="true" hbarPolicy="AS_NEEDED" vbarPolicy="NEVER" styleClass="carousel-scroll-pane">
@@ -83,8 +105,8 @@
                      <children>
                         <HBox alignment="CENTER_LEFT" spacing="20.0">
                            <children>
-                              <Label maxWidth="1.7976931348623157E308" styleClass="section-title" text="Fresh from the Community" HBox.hgrow="ALWAYS" />
-                              <Button mnemonicParsing="false" onAction="#viewMore" styleClass="button, link-button" text="View More" />
+                              <Label maxWidth="1.7976931348623157E308" styleClass="section-title" text="%home.section.new.title" HBox.hgrow="ALWAYS" />
+                              <Button mnemonicParsing="false" onAction="#viewMore" styleClass="button, link-button" text="%home.button.viewmore" />
                            </children>
                         </HBox>
                          <ScrollPane fitToHeight="true" hbarPolicy="AS_NEEDED" vbarPolicy="NEVER" styleClass="carousel-scroll-pane">

@@ -112,8 +112,6 @@ public class OllamaManager {
                 String name = href.replace("/library/", "");
 
                 // Extract title/name
-                Element titleEl = item.selectFirst("h2");
-                String displayName = (titleEl != null) ? titleEl.text() : name;
 
                 // Extract description
                 Element descEl = item.selectFirst("p");
@@ -239,10 +237,9 @@ public class OllamaManager {
                 }
             }
 
-            String tagName = fullTagName.contains(":") ? fullTagName.split(":")[1] : fullTagName;
-
-            modelTags.add(new OllamaModel(modelName, description, pullCount, tagName, size, lastUpdatedGlobal, context,
-                    input, badges, readmeContent));
+            modelTags.add(new OllamaModel(modelName, description, pullCount,
+                    fullTagName.contains(":") ? fullTagName.split(":")[1] : fullTagName,
+                    size, lastUpdatedGlobal, context, input, badges, readmeContent));
         }
         return modelTags;
     }
