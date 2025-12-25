@@ -25,6 +25,7 @@ import javafx.scene.shape.SVGPath;
 import javafx.animation.Timeline;
 import javafx.animation.KeyFrame;
 import javafx.util.Duration;
+import atlantafx.base.controls.ProgressSliderSkin;
 
 import java.util.List;
 import java.util.concurrent.Future;
@@ -89,6 +90,24 @@ public class ChatController {
     @FXML
     private TextArea systemPromptField;
 
+    // Advanced Params
+    @FXML
+    private ComboBox<String> presetSelector;
+    @FXML
+    private Slider ctxSlider;
+    @FXML
+    private Label ctxValueLabel;
+    @FXML
+    private Slider topKSlider;
+    @FXML
+    private Label topKValueLabel;
+    @FXML
+    private Slider topPSlider;
+    @FXML
+    private Label topPValueLabel;
+    @FXML
+    private javafx.scene.control.TextField seedField;
+
     @FXML
     public void initialize() {
         // Handle Enter key to send message
@@ -117,27 +136,18 @@ public class ChatController {
             }
         });
 
-        // Parameters listeners
+        // Creativity (Temperature)
         tempSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
-            double val = Math.round(newVal.doubleValue() * 10.0) / 10.0;
-
-            // Map value to Creativity Label
-            String creativityText;
-            if (val <= 0.3) {
-                creativityText = App.getBundle().getString("chat.creativity.precise");
-            } else if (val <= 0.7) {
-                creativityText = App.getBundle().getString("chat.creativity.balanced");
-            } else {
-                creativityText = App.getBundle().getString("chat.creativity.imaginative");
-            }
-
-            tempValueLabel.setText(creativityText);
+            updateCreativityLabel(newVal.doubleValue());
+            // Save logic if needed directly or on release
 
             if (currentSession != null) {
-                currentSession.setTemperature(val);
+                currentSession.setTemperature(newVal.doubleValue());
                 ChatManager.getInstance().saveChats();
             }
         });
+
+        // Initialize color for default
 
         // System Prompt Listener
         systemPromptField.textProperty().addListener((obs, oldVal, newVal) -> {
@@ -148,6 +158,9 @@ public class ChatController {
                 ChatManager.getInstance().saveChats();
             }
         });
+
+        // Initialize Advanced Parameters
+        initializeAdvancedParameters();
 
         updateUIState(true); // Initial state is welcome screen
     }
@@ -302,19 +315,16 @@ public class ChatController {
                 setModelName(session.getModelName());
             }
 
-            // Restore parameters
+            // Restore Parameters
             double temp = session.getTemperature();
             tempSlider.setValue(temp);
+            updateCreativityLabel(temp);
 
-            String creativityText;
-            if (temp <= 0.3)
-                creativityText = App.getBundle().getString("chat.creativity.precise");
-            else if (temp <= 0.7)
-                creativityText = App.getBundle().getString("chat.creativity.balanced");
-            else
-                creativityText = App.getBundle().getString("chat.creativity.imaginative");
+            ctxSlider.setValue(session.getNumCtx());
+            topKSlider.setValue(session.getTopK());
+            topPSlider.setValue(session.getTopP());
 
-            tempValueLabel.setText(creativityText);
+            seedField.setText(session.getSeed() == -1 ? "" : String.valueOf(session.getSeed()));
 
             // Restore System Prompt
             systemPromptField.setText(session.getSystemPrompt() != null ? session.getSystemPrompt() : "");
@@ -384,12 +394,28 @@ public class ChatController {
         currentGenerationTask = App.getExecutorService().submit(() -> {
             try {
                 StringBuilder responseBuilder = new StringBuilder();
-                double temperature = tempSlider.getValue();
+
+                // Collect Options
+                java.util.Map<String, Object> options = new java.util.HashMap<>();
+                options.put("temperature", tempSlider.getValue());
+                options.put("num_ctx", (int) ctxSlider.getValue());
+                options.put("top_k", (int) topKSlider.getValue());
+                options.put("top_p", topPSlider.getValue());
+
+                try {
+                    String seedText = seedField.getText().trim();
+                    if (!seedText.isEmpty()) {
+                        options.put("seed", Integer.parseInt(seedText));
+                    }
+                } catch (NumberFormatException e) {
+                    // Ignore invalid seed
+                }
+
                 // Use the session's prompt or the field's current value (should be synced)
                 String systemPrompt = targetSession != null ? targetSession.getSystemPrompt()
                         : systemPromptField.getText();
 
-                OllamaManager.getInstance().askModelStream(targetModel, text, temperature,
+                OllamaManager.getInstance().askModelStream(targetModel, text, options,
                         systemPrompt,
                         new OllamaStreamHandler() {
                             @Override
@@ -452,6 +478,145 @@ public class ChatController {
                 });
             }
         });
+    }
+
+    private void updateCreativityLabel(double val) {
+        String label = "";
+        // Colors: Precise (Blue), Balanced (Green), Creative (Orange/Red)
+        if (val < 0.3) {
+            label = App.getBundle().getString("chat.creativity.precise");
+        } else if (val < 0.7) {
+            label = App.getBundle().getString("chat.creativity.balanced");
+        } else {
+            label = App.getBundle().getString("chat.creativity.imaginative");
+        }
+        tempValueLabel.setText(label);
+    }
+
+    private void initializeAdvancedParameters() {
+        // Presets
+        ObservableList<String> presets = FXCollections.observableArrayList(
+                App.getBundle().getString("chat.preset.default"),
+                App.getBundle().getString("chat.preset.writer"), // Creative
+                App.getBundle().getString("chat.preset.precise"), // Dev
+                App.getBundle().getString("chat.preset.lawyer"),
+                App.getBundle().getString("chat.preset.doctor"),
+                App.getBundle().getString("chat.preset.student"));
+        presetSelector.setItems(presets);
+
+        presetSelector.setOnAction(e -> applyPreset());
+
+        // Context Window
+        ctxSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+            int val = newVal.intValue();
+            ctxValueLabel.setText(String.valueOf(val));
+            // Just use a static accent for context or maybe based on size?
+            // Let's keep context blue/neutral or maybe subtle scale.
+            // For now, let's just colorize Temp/TopP as they are "vibe" params.
+            if (currentSession != null) {
+                currentSession.setNumCtx(val);
+                ChatManager.getInstance().saveChats();
+            }
+        });
+
+        // Top-K
+        topKSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+            int val = newVal.intValue();
+            topKValueLabel.setText(String.valueOf(val));
+            // Maybe Green for low K (narrow)?
+            // updateSliderColor(topKSlider, val, 1, 100);
+            if (currentSession != null) {
+                currentSession.setTopK(val);
+                ChatManager.getInstance().saveChats();
+            }
+        });
+
+        // Top-P
+        topPSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+            double val = Math.round(newVal.doubleValue() * 100.0) / 100.0;
+            topPValueLabel.setText(String.format("%.2f", val));
+
+            if (currentSession != null) {
+                currentSession.setTopP(val);
+                ChatManager.getInstance().saveChats();
+            }
+        });
+
+        // Init colors
+
+        // Seed (Numeric only)
+        seedField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.matches("-?\\d*")) {
+                seedField.setText(newValue.replaceAll("[^-?\\d]", ""));
+            }
+            // Save logic
+            if (currentSession != null) {
+                try {
+                    int seed = newValue.isEmpty() || newValue.equals("-") ? -1 : Integer.parseInt(newValue);
+                    currentSession.setSeed(seed);
+                    ChatManager.getInstance().saveChats();
+                } catch (NumberFormatException ignored) {
+                }
+            }
+        });
+
+        // Apply AtlantaFX ProgressSliderSkin
+        tempSlider.setSkin(new ProgressSliderSkin(tempSlider));
+        topPSlider.setSkin(new ProgressSliderSkin(topPSlider));
+        topKSlider.setSkin(new ProgressSliderSkin(topKSlider));
+        ctxSlider.setSkin(new ProgressSliderSkin(ctxSlider));
+    }
+
+    private void applyPreset() {
+        String selected = presetSelector.getValue();
+        if (selected == null)
+            return;
+
+        // Reset Styles
+        rightSidebar.getStyleClass().removeAll("theme-creative", "theme-precise", "theme-professional",
+                "theme-academic", "theme-medical");
+
+        if (selected.equals(App.getBundle().getString("chat.preset.writer"))) {
+            // Creative Writer
+            tempSlider.setValue(0.9);
+            topPSlider.setValue(0.95);
+            topKSlider.setValue(50);
+            ctxSlider.setValue(8192); // More context for stories
+            rightSidebar.getStyleClass().add("theme-creative"); // Green
+        } else if (selected.equals(App.getBundle().getString("chat.preset.precise"))) {
+            // Developer
+            tempSlider.setValue(0.2);
+            topPSlider.setValue(0.3);
+            topKSlider.setValue(20);
+            ctxSlider.setValue(16384); // High context for codebases
+            rightSidebar.getStyleClass().add("theme-precise"); // Blue
+        } else if (selected.equals(App.getBundle().getString("chat.preset.lawyer"))) {
+            // Lawyer
+            tempSlider.setValue(0.3); // Low creativity, high accuracy
+            topPSlider.setValue(0.4);
+            ctxSlider.setValue(32768); // Max context for legal docs
+            rightSidebar.getStyleClass().add("theme-professional"); // Purple
+        } else if (selected.equals(App.getBundle().getString("chat.preset.doctor"))) {
+            // Doctor
+            tempSlider.setValue(0.1); // Extremely factual
+            topPSlider.setValue(0.2);
+            ctxSlider.setValue(16384);
+            rightSidebar.getStyleClass().add("theme-medical"); // Red
+        } else if (selected.equals(App.getBundle().getString("chat.preset.student"))) {
+            // Student
+            tempSlider.setValue(0.6); // Balanced, slightly creative
+            topPSlider.setValue(0.8);
+            ctxSlider.setValue(4096);
+            rightSidebar.getStyleClass().add("theme-academic"); // Orange
+        } else {
+            // Default
+            tempSlider.setValue(0.7);
+            topPSlider.setValue(0.9);
+            topKSlider.setValue(40);
+            ctxSlider.setValue(4096);
+            // No theme class implies default border
+        }
+
     }
 
     private void updateLastMessage(String text) {

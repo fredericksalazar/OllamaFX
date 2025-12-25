@@ -370,7 +370,7 @@ public class OllamaManager {
         return result.getResponse();
     }
 
-    public void askModelStream(String modelName, String prompt, double temperature, String systemPrompt,
+    public void askModelStream(String modelName, String prompt, Map<String, Object> requestOptions, String systemPrompt,
             io.github.ollama4j.models.generate.OllamaStreamHandler handler)
             throws Exception {
 
@@ -393,9 +393,16 @@ public class OllamaManager {
 
         payload.put("messages", messages);
 
-        Map<String, Object> options = new HashMap<>();
-        options.put("temperature", temperature);
-        payload.put("options", options);
+        // Options: Merge any defaults if needed, but here we assume requestOptions is
+        // complete or null
+        if (requestOptions != null) {
+            payload.put("options", requestOptions);
+        } else {
+            // Fallback default
+            Map<String, Object> defaultOptions = new HashMap<>();
+            defaultOptions.put("temperature", 0.7);
+            payload.put("options", defaultOptions);
+        }
 
         ObjectMapper mapper = new ObjectMapper();
         String jsonBody = mapper.writeValueAsString(payload);

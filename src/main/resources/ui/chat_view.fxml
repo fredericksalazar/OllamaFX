@@ -2,9 +2,12 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Slider?>
 <?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
@@ -91,48 +94,95 @@
            <right>
                 <VBox fx:id="rightSidebar" prefWidth="280.0" styleClass="chat-sidebar-right" BorderPane.alignment="CENTER">
                     <children>
-                        <Label text="%chat.creativity" styleClass="sidebar-section-label">
-                            <VBox.margin>
-                                <Insets bottom="10.0" left="5.0" />
-                            </VBox.margin>
-                        </Label>
+
                         
                         <VBox spacing="5.0" styleClass="sidebar-card">
                             <padding>
                                 <Insets top="15.0" right="15.0" bottom="15.0" left="15.0"/>
                             </padding>
                             <children>
-                                 <HBox alignment="CENTER_LEFT" spacing="10.0">
-                                     <Label fx:id="tempValueLabel" text="%chat.creativity.balanced" styleClass="creativity-value-label"/>
-                                     <Region HBox.hgrow="ALWAYS" />
-                                     <Label text="(0.7)" fx:id="tempNumericLabel" styleClass="creativity-numeric-subtle"/> 
-                                 </HBox>
-                                 <javafx.scene.control.Slider fx:id="tempSlider" min="0.0" max="1.0" value="0.7" blockIncrement="0.1" majorTickUnit="0.1" minorTickCount="0" 
-                                                            snapToTicks="true" showTickMarks="false" styleClass="creativity-slider"/>
-                                 <HBox alignment="CENTER" spacing="10.0">
-                                     <Label text="%chat.creativity.precise" styleClass="creativity-mark-label"/>
-                                     <Region HBox.hgrow="ALWAYS" />
-                                     <Label text="%chat.creativity.imaginative" styleClass="creativity-mark-label"/>
-                                 </HBox>
-                            </children>
+                        <VBox spacing="25" VBox.vgrow="ALWAYS">
+                            <!-- PRESETS -->
+                            <VBox spacing="2">
+                                <Label text="%chat.presets" styleClass="sidebar-section-label" />
+                                <ComboBox fx:id="presetSelector" promptText="Select Preset" maxWidth="Infinity" styleClass="sidebar-combo-box" />
+                            </VBox>
+
+                            <!-- CREATIVITY (Temperature) -->
+                            <VBox spacing="5">
+                                <VBox spacing="0">
+                                    <HBox alignment="CENTER_LEFT" spacing="10">
+                                        <Label text="%chat.creativity" styleClass="sidebar-section-label" />
+                                        <Region HBox.hgrow="ALWAYS" />
+                                        <Label fx:id="tempValueLabel" text="%chat.creativity.balanced" styleClass="sidebar-value-label" />
+                                    </HBox>
+                                    <Label text="%chat.creativity.desc" styleClass="sidebar-description-label" wrapText="true" maxWidth="200"/>
+                                </VBox>
+                                <Slider fx:id="tempSlider" min="0" max="1" value="0.7" blockIncrement="0.1" majorTickUnit="0.5" minorTickCount="4" showTickMarks="true" showTickLabels="true" />
+                            </VBox>
+
+                            <!-- CONTEXT WINDOW -->
+                            <VBox spacing="5">
+                                <VBox spacing="0">
+                                    <HBox alignment="CENTER_LEFT" spacing="10">
+                                        <Label text="%chat.context" styleClass="sidebar-section-label" />
+                                        <Region HBox.hgrow="ALWAYS" />
+                                        <Label fx:id="ctxValueLabel" text="4096" styleClass="sidebar-value-label" />
+                                    </HBox>
+                                    <Label text="%chat.context.desc" styleClass="sidebar-description-label" wrapText="true" maxWidth="200"/>
+                                </VBox>
+                                <Slider fx:id="ctxSlider" min="2048" max="32768" value="4096" blockIncrement="1024" snapToTicks="true" majorTickUnit="16384" minorTickCount="4" showTickMarks="true" showTickLabels="true" />
+                            </VBox>
+
+                            <!-- Top-K -->
+                            <VBox spacing="5">
+                                <VBox spacing="0">
+                                    <HBox alignment="CENTER_LEFT" spacing="10">
+                                        <Label text="Top-K" styleClass="sidebar-section-label" />
+                                        <Region HBox.hgrow="ALWAYS" />
+                                        <Label fx:id="topKValueLabel" text="40" styleClass="sidebar-value-label" />
+                                    </HBox>
+                                    <Label text="%chat.topk.desc" styleClass="sidebar-description-label" wrapText="true" maxWidth="200" minHeight="-Infinity"/>
+                                </VBox>
+                                <Slider fx:id="topKSlider" min="1" max="100" value="40" blockIncrement="1" majorTickUnit="20" minorTickCount="4" showTickMarks="true" showTickLabels="true" snapToTicks="true" />
+                            </VBox>
+
+                            <!-- Top-P -->
+                            <VBox spacing="5">
+                                <VBox spacing="0">
+                                    <HBox alignment="CENTER_LEFT" spacing="10">
+                                        <Label text="Top-P" styleClass="sidebar-section-label" />
+                                        <Region HBox.hgrow="ALWAYS" />
+                                        <Label fx:id="topPValueLabel" text="0.9" styleClass="sidebar-value-label" />
+                                    </HBox>
+                                    <Label text="%chat.topp.desc" styleClass="sidebar-description-label" wrapText="true" maxWidth="200" minHeight="-Infinity"/>
+                                </VBox>
+                                <Slider fx:id="topPSlider" min="0.0" max="1.0" value="0.9" blockIncrement="0.1" majorTickUnit="0.5" minorTickCount="4" showTickMarks="true" showTickLabels="true" />
+                            </VBox>
+
+                            <!-- SEED -->
+                            <VBox spacing="5">
+                                <VBox spacing="2">
+                                    <Label text="%chat.seed" styleClass="sidebar-section-label" />
+                                    <Label text="%chat.seed.desc" styleClass="sidebar-description-label" wrapText="true" maxWidth="200"/>
+                                </VBox>
+                                <TextField fx:id="seedField" promptText="Random (-1)" styleClass="sidebar-text-field" />
+                            </VBox>
+
+                            <!-- SYSTEM PROMPT -->
+                            <VBox spacing="5" VBox.vgrow="ALWAYS">
+                                <Label text="%chat.systemInstructions" styleClass="sidebar-section-label" />
+                                <TextArea fx:id="systemPromptField" wrapText="true" styleClass="sidebar-text-area" promptText="You are a helpful assistant..." VBox.vgrow="ALWAYS" />
+                            </VBox>
                         </VBox>
-        
-                        <Region minHeight="20.0" />
-        
-                        <Label text="%chat.systemInstructions" styleClass="sidebar-section-label">
-                            <VBox.margin>
-                                <Insets bottom="10.0" left="5.0" />
-                            </VBox.margin>
-                        </Label>
-                        
-                        <TextArea fx:id="systemPromptField" promptText="%chat.systemInstructions.placeholder" 
-                                  wrapText="true" VBox.vgrow="ALWAYS" styleClass="sidebar-text-area"/>
                     </children>
                     <padding>
                         <Insets top="20.0" right="15.0" bottom="20.0" left="15.0"/>
                     </padding>
                 </VBox>
-           </right>
+            </children>
+        </VBox>
+    </right>
            <!-- Bottom Removed (Input moved to Center) -->
         </BorderPane>
         

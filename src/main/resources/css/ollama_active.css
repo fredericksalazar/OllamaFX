@@ -12,8 +12,40 @@
     -fx-alignment: top-center;
     -fx-spacing: 4px;
     /* Tighter spacing for cohesive feel */
-    -fx-border-width: 0 1px 0 0;
+    -fx-border-width: 0 0 0 1px;
     -fx-border-color: -color-border-subtle;
+    /* transition: border-color 0.3s ease; (JavaFX CSS doesn't support transition prop directly like this, but we'll use timeline in code or just instant switch) */
+}
+
+/* Sidebar Themes - Border Feedback */
+.chat-sidebar-right.theme-creative {
+    -fx-border-color: -color-success-fg;
+    /* Green/Vibrant */
+    -fx-border-width: 0 0 0 2px;
+}
+
+.chat-sidebar-right.theme-precise {
+    -fx-border-color: #4A90E2;
+    /* Blue */
+    -fx-border-width: 0 0 0 2px;
+}
+
+.chat-sidebar-right.theme-professional {
+    -fx-border-color: #9013fe;
+    /* Purple */
+    -fx-border-width: 0 0 0 2px;
+}
+
+.chat-sidebar-right.theme-academic {
+    -fx-border-color: #f5a623;
+    /* Orange/Gold */
+    -fx-border-width: 0 0 0 2px;
+}
+
+.chat-sidebar-right.theme-medical {
+    -fx-border-color: #d0021b;
+    /* Red */
+    -fx-border-width: 0 0 0 2px;
 }
 
 /* --- SIDEBAR LIST VIEW (Finder Style) --- */
@@ -1061,12 +1093,56 @@ t beef them up. */
 }
 
 .chat-sidebar-right .sidebar-section-label {
-    -fx-font-size: 11px;
-    -fx-font-weight: 700;
+    -fx-font-size: 13px;
+    -fx-font-family: "Inter", "System";
+    -fx-font-weight: normal;
     -fx-text-fill: -color-fg-muted;
     -fx-padding: 0 0 5 0;
     -fx-alignment: center-left;
+    -fx-opacity: 0.9;
+}
+
+.sidebar-value-label {
+    -fx-font-size: 13px;
+    -fx-font-family: "Inter", "System";
+    -fx-font-weight: 700;
+    -fx-text-fill: -color-fg-default;
+    -fx-alignment: center-right;
+}
+
+.sidebar-description-label {
+    -fx-font-size: 11px;
+    -fx-font-family: "Inter", "System";
+    -fx-text-fill: -color-fg-muted;
     -fx-opacity: 0.8;
+    -fx-padding: 2 0 4 0;
+}
+
+.sidebar-slider .track {
+    -fx-background-color: -color-border-default;
+    -fx-background-radius: 4px;
+    -fx-pref-height: 4px;
+}
+
+.sidebar-slider:hover .track {
+    -fx-background-color: -color-border-active;
+}
+
+.sidebar-slider .thumb {
+    -fx-background-color: -fx-accent;
+    /* Controlled by Java */
+    -fx-background-radius: 50%;
+    -fx-pref-width: 18px;
+    -fx-pref-height: 18px;
+    /* Colored glow effect using the accent color */
+    -fx-effect: dropshadow(three-pass-box, -fx-accent, 8, 0.4, 0, 0);
+    -fx-cursor: hand;
+}
+
+.sidebar-slider:pressed .thumb {
+    -fx-scale-x: 0.9;
+    -fx-scale-y: 0.9;
+    -fx-effect: dropshadow(three-pass-box, -fx-accent, 5, 0.6, 0, 0);
 }
 
 .chat-sidebar-right .sidebar-card {
