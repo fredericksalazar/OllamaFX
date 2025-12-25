@@ -8,96 +8,142 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.org.ollamafx.controller.ChatController">
-   <!-- Header Removed as per user request -->
-   <center>
-      <javafx.scene.layout.StackPane BorderPane.alignment="CENTER" styleClass="stack-pane-content">
-         <children>
-             <ScrollPane fx:id="scrollPane" fitToWidth="true" hbarPolicy="NEVER" styleClass="chat-scroll-pane">
-                 <content>
-                    <VBox fx:id="messagesContainer" spacing="15.0" styleClass="chat-area">
-                       <padding>
-                          <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-                       </padding>
-                    </VBox>
-                 </content>
-             </ScrollPane>
-             
-             <!-- Welcome Container for New Chats -->
-             <VBox fx:id="welcomeContainer" alignment="CENTER" spacing="40.0" visible="false">
-                <children>
-                    <Label fx:id="welcomeLabel" text="" styleClass="welcome-label" style="-fx-font-size: 36px; -fx-font-weight: 300; -fx-text-fill: -color-fg-default;"/> <!-- Text set by animation -->
-                    
-                    <!-- Step 1: Model Selection Setup -->
-                    <VBox fx:id="setupContainer" alignment="CENTER" spacing="20.0">
-                        <javafx.scene.control.ComboBox fx:id="initialModelSelector" promptText="%chat.selectModel" 
-                                                     styleClass="big-combo-box" prefWidth="350.0" onAction="#onInitialModelSelected"/>
-                    </VBox>
-                    
-                    <!-- Input Capsule will be injected here dynamically, but HIDDEN initially -->
-                </children>
-             </VBox>
-         </children>
-      </javafx.scene.layout.StackPane>
-   </center>
-   <bottom>
-      <VBox fx:id="bottomInputContainer" styleClass="input-container-wrapper" alignment="BOTTOM_CENTER" BorderPane.alignment="CENTER">
-         <children>
-            <!-- Creativity Panel (Contextual Popover) -->
-            <VBox fx:id="settingsPane" visible="false" managed="false" maxWidth="600.0" styleClass="creativity-panel">
-               <HBox alignment="CENTER_LEFT" spacing="15.0">
-                   <Label text="%chat.creativity" styleClass="creativity-label"/>
-                   <Label fx:id="tempValueLabel" text="%chat.creativity.balanced" styleClass="creativity-value-label"/>
-                   <Region HBox.hgrow="ALWAYS" />
-                   <Label text="(0.7)" fx:id="tempNumericLabel" styleClass="creativity-numeric-subtle"/> 
-               </HBox>
-               <javafx.scene.control.Slider fx:id="tempSlider" min="0.0" max="1.0" value="0.7" blockIncrement="0.1" majorTickUnit="0.1" minorTickCount="0" 
-                                          snapToTicks="true" showTickMarks="false" styleClass="creativity-slider"/>
-               <HBox alignment="CENTER" spacing="50.0">
-                   <Label text="%chat.creativity.precise" styleClass="creativity-mark-label"/>
-                   <Region HBox.hgrow="ALWAYS" />
-                   <Label text="%chat.creativity.imaginative" styleClass="creativity-mark-label"/>
-               </HBox>
-            </VBox>
-
-            <!-- Floating Input Card (Big VBox) -->
-            <VBox fx:id="inputCapsule" styleClass="input-card" maxWidth="800.0" spacing="10.0">
-               <children>
-                  <!-- Top Row: Input Text -->
-                  <TextArea fx:id="inputField" maxHeight="200.0" minHeight="50.0" prefHeight="50.0" prefRowCount="2" 
-                            promptText="%chat.inputPrompt" wrapText="true" VBox.vgrow="ALWAYS" styleClass="transparent-area"/>
-                  
-                  <!-- Bottom Row: Tools & Actions -->
-                  <HBox alignment="CENTER_LEFT" spacing="15.0">
-                      <children>
-                          <Button fx:id="settingsButton" text="+" onAction="#toggleSettings" styleClass="capsule-icon-button">
-                             <tooltip><javafx.scene.control.Tooltip text="Creativity/Tools" /></tooltip>
-                          </Button>
-                          
-                          <Label text="%chat.tools" style="-fx-text-fill: -color-fg-subtle; -fx-font-size: 13px;" />
-                          
-                          <Region HBox.hgrow="ALWAYS" />
-                          
-                          <javafx.scene.control.ComboBox fx:id="modelSelector" promptText="%chat.selectModel" styleClass="capsule-combo-box" prefWidth="150.0" />
-                          
-                          <javafx.scene.layout.StackPane alignment="CENTER_RIGHT">
-                              <Button fx:id="sendButton" onAction="#sendMessage" styleClass="send-button-icon" text="➤" />
-                              <Button fx:id="cancelButton" onAction="#onCancelClicked" styleClass="send-button-icon" text="⏹" visible="false" managed="false" style="-fx-text-fill: white; -fx-font-size: 16px; -fx-background-color: #ff4444;" />
-                          </javafx.scene.layout.StackPane>
-                      </children>
-                  </HBox>
-               </children>
-               <padding>
-                  <Insets bottom="15.0" left="20.0" right="15.0" top="15.0" />
-               </padding>
-            </VBox>
-         </children>
-         <padding>
-            <Insets bottom="20.0" left="20.0" right="20.0" top="10.0" />
-         </padding>
-      </VBox>
-   </bottom>
-</BorderPane>
+<StackPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.org.ollamafx.controller.ChatController">
+    <children>
+        <BorderPane>
+           <center>
+              <!-- VBox wrapper to stack Chat Area (Top) and Input Area (Bottom) in the Center Column -->
+              <VBox spacing="0"> 
+                  <children>
+                      <javafx.scene.layout.StackPane VBox.vgrow="ALWAYS" styleClass="stack-pane-content">
+                         <children>
+                             <ScrollPane fx:id="scrollPane" fitToWidth="true" hbarPolicy="NEVER" styleClass="chat-scroll-pane">
+                                 <content>
+                                    <VBox fx:id="messagesContainer" spacing="15.0" styleClass="chat-area">
+                                       <padding>
+                                          <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                                       </padding>
+                                    </VBox>
+                                 </content>
+                             </ScrollPane>
+                             
+                             <!-- Welcome Container for New Chats -->
+                             <VBox fx:id="welcomeContainer" alignment="CENTER" spacing="40.0" visible="false">
+                                <children>
+                                    <Label fx:id="welcomeLabel" text="" styleClass="welcome-label" style="-fx-font-size: 36px; -fx-font-weight: 300; -fx-text-fill: -color-fg-default;"/> <!-- Text set by animation -->
+                                    
+                                    <!-- Step 1: Model Selection Setup -->
+                                    <VBox fx:id="setupContainer" alignment="CENTER" spacing="20.0">
+                                        <javafx.scene.control.ComboBox fx:id="initialModelSelector" promptText="%chat.selectModel" 
+                                                                     styleClass="big-combo-box" prefWidth="350.0" onAction="#onInitialModelSelected"/>
+                                    </VBox>
+                                    
+                                    <!-- Input Capsule will be injected here dynamically, but HIDDEN initially -->
+                                </children>
+                             </VBox>
+                         </children>
+                      </javafx.scene.layout.StackPane>
+        
+                      <!-- Input Container (Formerly in Bottom) -->
+                      <VBox fx:id="bottomInputContainer" styleClass="input-container-wrapper" alignment="BOTTOM_CENTER">
+                         <children>
+                            <!-- Floating Input Card (Big VBox) -->
+                            <VBox fx:id="inputCapsule" styleClass="input-card" maxWidth="800.0" spacing="10.0">
+                               <children>
+                                  <!-- Top Row: Input Text -->
+                                  <TextArea fx:id="inputField" maxHeight="200.0" minHeight="50.0" prefHeight="50.0" prefRowCount="2" 
+                                            promptText="%chat.inputPrompt" wrapText="true" VBox.vgrow="ALWAYS" styleClass="transparent-area"/>
+                                  
+                                  <!-- Bottom Row: Tools & Actions -->
+                                  <HBox alignment="CENTER_LEFT" spacing="15.0">
+                                      <children>
+                                          <Label text="%chat.tools" style="-fx-text-fill: -color-fg-subtle; -fx-font-size: 13px;" />
+                                          
+                                          <Region HBox.hgrow="ALWAYS" />
+                                          
+                                          <javafx.scene.control.ComboBox fx:id="modelSelector" promptText="%chat.selectModel" styleClass="capsule-combo-box" prefWidth="150.0" />
+                                          
+                                          <!-- Sidebar Toggle Removed from Here -->
+        
+                                          <javafx.scene.layout.StackPane alignment="CENTER_RIGHT">
+                                              <Button fx:id="sendButton" onAction="#sendMessage" styleClass="send-button-icon" text="➤" />
+                                              <Button fx:id="cancelButton" onAction="#onCancelClicked" styleClass="send-button-icon" text="⏹" visible="false" managed="false" style="-fx-text-fill: white; -fx-font-size: 16px; -fx-background-color: #ff4444;" />
+                                          </javafx.scene.layout.StackPane>
+                                      </children>
+                                  </HBox>
+                               </children>
+                               <padding>
+                                  <Insets bottom="15.0" left="20.0" right="15.0" top="15.0" />
+                               </padding>
+                            </VBox>
+                         </children>
+                         <padding>
+                            <Insets bottom="20.0" left="20.0" right="20.0" top="10.0" />
+                         </padding>
+                      </VBox>
+                  </children>
+              </VBox>
+           </center>
+           <right>
+                <VBox fx:id="rightSidebar" prefWidth="280.0" styleClass="chat-sidebar-right" BorderPane.alignment="CENTER">
+                    <children>
+                        <Label text="%chat.creativity" styleClass="sidebar-section-label">
+                            <VBox.margin>
+                                <Insets bottom="10.0" left="5.0" />
+                            </VBox.margin>
+                        </Label>
+                        
+                        <VBox spacing="5.0" styleClass="sidebar-card">
+                            <padding>
+                                <Insets top="15.0" right="15.0" bottom="15.0" left="15.0"/>
+                            </padding>
+                            <children>
+                                 <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                     <Label fx:id="tempValueLabel" text="%chat.creativity.balanced" styleClass="creativity-value-label"/>
+                                     <Region HBox.hgrow="ALWAYS" />
+                                     <Label text="(0.7)" fx:id="tempNumericLabel" styleClass="creativity-numeric-subtle"/> 
+                                 </HBox>
+                                 <javafx.scene.control.Slider fx:id="tempSlider" min="0.0" max="1.0" value="0.7" blockIncrement="0.1" majorTickUnit="0.1" minorTickCount="0" 
+                                                            snapToTicks="true" showTickMarks="false" styleClass="creativity-slider"/>
+                                 <HBox alignment="CENTER" spacing="10.0">
+                                     <Label text="%chat.creativity.precise" styleClass="creativity-mark-label"/>
+                                     <Region HBox.hgrow="ALWAYS" />
+                                     <Label text="%chat.creativity.imaginative" styleClass="creativity-mark-label"/>
+                                 </HBox>
+                            </children>
+                        </VBox>
+        
+                        <Region minHeight="20.0" />
+        
+                        <Label text="%chat.systemInstructions" styleClass="sidebar-section-label">
+                            <VBox.margin>
+                                <Insets bottom="10.0" left="5.0" />
+                            </VBox.margin>
+                        </Label>
+                        
+                        <TextArea fx:id="systemPromptField" promptText="%chat.systemInstructions.placeholder" 
+                                  wrapText="true" VBox.vgrow="ALWAYS" styleClass="sidebar-text-area"/>
+                    </children>
+                    <padding>
+                        <Insets top="20.0" right="15.0" bottom="20.0" left="15.0"/>
+                    </padding>
+                </VBox>
+           </right>
+           <!-- Bottom Removed (Input moved to Center) -->
+        </BorderPane>
+        
+        <!-- Floating Action Button for Sidebar Toggle -->
+        <Button fx:id="sidebarToggleButton" onAction="#toggleSidebar" styleClass="floating-settings-button" text="⚙" StackPane.alignment="BOTTOM_RIGHT">
+            <StackPane.margin>
+                <Insets bottom="30.0" right="30.0"/>
+            </StackPane.margin>
+            <tooltip>
+                <javafx.scene.control.Tooltip text="%chat.toggleSidebar" />
+            </tooltip>
+        </Button>
+    </children>
+</StackPane>

@@ -17,8 +17,18 @@ public class OllamaModel {
     private final java.util.List<String> badges;
     private final StringProperty readmeContent;
 
-    public OllamaModel(String name, String description, String pullCount, String tag, String size, String lastUpdated,
-            String contextLength, String inputType, java.util.List<String> badges, String readmeContent) {
+    @com.fasterxml.jackson.annotation.JsonCreator
+    public OllamaModel(
+            @com.fasterxml.jackson.annotation.JsonProperty("name") String name,
+            @com.fasterxml.jackson.annotation.JsonProperty("description") String description,
+            @com.fasterxml.jackson.annotation.JsonProperty("pull_count") String pullCount,
+            @com.fasterxml.jackson.annotation.JsonProperty("tag") String tag,
+            @com.fasterxml.jackson.annotation.JsonProperty("size") String size,
+            @com.fasterxml.jackson.annotation.JsonProperty("last_updated") String lastUpdated,
+            @com.fasterxml.jackson.annotation.JsonProperty("context_length") String contextLength,
+            @com.fasterxml.jackson.annotation.JsonProperty("input_type") String inputType,
+            @com.fasterxml.jackson.annotation.JsonProperty("badges") java.util.List<String> badges,
+            @com.fasterxml.jackson.annotation.JsonProperty("readme_content") String readmeContent) {
         this.name = new SimpleStringProperty(name);
         this.description = new SimpleStringProperty(description);
         this.pullCount = new SimpleStringProperty(pullCount);
