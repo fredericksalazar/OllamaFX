@@ -43,6 +43,8 @@ public class MainController implements Initializable {
     private javafx.scene.control.Button btnSettings;
     @FXML
     private javafx.scene.control.Button btnAbout;
+    @FXML
+    private javafx.scene.control.Button btnHome;
 
     @FXML
     private HBox ollamaStatusBar;
@@ -78,6 +80,25 @@ public class MainController implements Initializable {
         }
     }
 
+    private Parent homeView;
+    private HomeController homeController;
+
+    private void preloadHomeView() {
+        if (homeView == null) {
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/home_view.fxml"));
+                loader.setResources(com.org.ollamafx.App.getBundle());
+                homeView = loader.load();
+                homeController = loader.getController();
+                // We inject modelManager later if initModelManager hasn't run yet,
+                // but usually initModelManager runs after constructor/before UI show.
+                // Safest to inject if modelManager is ready, otherwise showHome will do it.
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         System.out.println("MainController initialized!");
@@ -86,11 +107,20 @@ public class MainController implements Initializable {
             System.err.println("centerContentPane is NULL! Check FXML fx:id");
         }
 
+        // Eager load Home View
+        preloadHomeView();
+
         // Ollama Checks
+        checkOllamaInstallation();
         checkOllamaInstallation();
         startStatusPolling();
 
+        // Default to Home View
+        Platform.runLater(this::showHome);
+
         chatListView.setItems(chatManager.getChatSessions());
+
+        // ... (rest of initialize)
 
         chatListView.setCellFactory(lv -> new javafx.scene.control.ListCell<>() {
             @Override
@@ -176,17 +206,28 @@ public class MainController implements Initializable {
                     setGraphic(container);
                 }
             }
+
         });
 
         chatListView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
-                clearToolSelection(); // Unselect bottom buttons
+                clearToolSelection(); // Unselect
+                                      // bottom
+                                      // buttons
                 loadChatView(newVal);
             }
         });
     }
 
     // --- Helper to handle Active State Visuals ---
+
+    public void openChat(ChatSession session) {
+        if (session != null) {
+            chatListView.getSelectionModel().select(session);
+            // The listener on selection model calls loadChatView
+        }
+    }
+
     private void setActiveTool(javafx.scene.control.Button activeButton) {
         // Clear active class from all tools
         if (btnAvailable != null)
@@ -221,8 +262,11 @@ public class MainController implements Initializable {
     /**
      * Carga la vista de modelos disponibles y le inyecta el gestor de modelos.
      */
+    /**
+     * Carga la vista de modelos disponibles y le inyecta el gestor de modelos.
+     */
     @FXML
-    private void showAvailableModels() {
+    public void showAvailableModels() {
         setActiveTool(btnAvailable);
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/available_models_view.fxml"));
@@ -234,6 +278,23 @@ public class MainController implements Initializable {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @FXML
+    private void showHome() {
+        if (btnHome != null)
+            setActiveTool(btnHome); // Ensure btnHome is defined in Controller
+
+        if (homeView == null) {
+            preloadHomeView();
+        }
+
+        if (homeController != null && this.modelManager != null) {
+            homeController.setModelManager(this.modelManager);
+            homeController.setMainController(this);
+        }
+
+        centerContentPane.getChildren().setAll(homeView);
     }
 
     /**
@@ -281,7 +342,7 @@ public class MainController implements Initializable {
     }
 
     @FXML
-    private void createNewChat() {
+    public void createNewChat() {
         System.out.println("Creating new chat...");
         // Use a simple default name or fetch from bundle if desired.
         // For now, let's keep it simple or use a localized "Chat"

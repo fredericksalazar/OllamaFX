@@ -16,32 +16,9 @@
 
         <VBox fx:id="sidebarVBox" prefWidth="300.0" spacing="0.0" styleClass="sidebar" BorderPane.alignment="CENTER">
             <children>
-                <!-- TITLE -->
-                <Label styleClass="app-title" text="%app.title">
-                    <font>
-                        <Font name="System Regular" size="14.0" />
-                    </font>
-                    <VBox.margin>
-                        <Insets bottom="15.0" left="15.0" top="15.0" />
-                    </VBox.margin>
-                </Label>
+                <!-- TITLE REMOVED -->
 
-                <!-- NEW CHAT BUTTON (Prominent) -->
-                <Button fx:id="btnNewChat" alignment="BASELINE_LEFT" maxWidth="Infinity" mnemonicParsing="false" onAction="#createNewChat" styleClass="button, accent" text="%sidebar.newChat">
-                    <VBox.margin>
-                        <Insets bottom="10.0" left="10.0" right="10.0" />
-                    </VBox.margin>
-                    <padding>
-                         <Insets bottom="10.0" left="15.0" right="10.0" top="10.0" />
-                    </padding>
-                </Button>
-
-                <!-- SECTION LABEL -->
-                <Label styleClass="sidebar-section-label" text="%sidebar.chats">
-                    <VBox.margin>
-                        <Insets left="15.0" bottom="5.0"/>
-                    </VBox.margin>
-                </Label>
+                <!-- SECTION LABEL REMOVED -->
 
                 <!-- CHAT LIST (Takes available space) -->
                 <ListView fx:id="chatListView" VBox.vgrow="ALWAYS" />
@@ -53,6 +30,12 @@
                             <Insets bottom="5.0" top="5.0" />
                         </VBox.margin>
                     </Separator>
+                    
+                    <Button fx:id="btnHome" alignment="BASELINE_LEFT" maxWidth="Infinity" mnemonicParsing="false" onAction="#showHome" styleClass="button" text="Home">
+                        <padding>
+                            <Insets left="20.0" top="10.0" bottom="10.0"/>
+                        </padding>
+                    </Button>
                     
                     <Button fx:id="btnAvailable" alignment="BASELINE_LEFT" maxWidth="Infinity" mnemonicParsing="false" onAction="#showAvailableModels" styleClass="button" text="%sidebar.availableModels">
                          <padding>

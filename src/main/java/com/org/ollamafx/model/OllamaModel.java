@@ -102,4 +102,20 @@ public class OllamaModel {
     public String getReadmeContent() {
         return readmeContent.get();
     }
+
+    public String getDescription() {
+        return description.get();
+    }
+
+    public String getPullCount() {
+        return pullCount.get();
+    }
+
+    public String getSize() {
+        return size.get();
+    }
+
+    public String getLastUpdated() {
+        return lastUpdated.get();
+    }
 }

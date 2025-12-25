@@ -62,4 +62,75 @@ public class Utils {
 
         alert.showAndWait();
     }
+
+    public static long parseDownloadCount(String downloadStr) {
+        if (downloadStr == null || downloadStr.isEmpty() || downloadStr.equals("N/A")) {
+            return 0;
+        }
+
+        String raw = downloadStr.toUpperCase().replace("DOWNLOADS", "").replace("PULLS", "").trim();
+        double multiplier = 1;
+
+        if (raw.endsWith("M")) {
+            multiplier = 1_000_000;
+            raw = raw.substring(0, raw.length() - 1);
+        } else if (raw.endsWith("K")) {
+            multiplier = 1_000;
+            raw = raw.substring(0, raw.length() - 1);
+        } else if (raw.endsWith("B")) { // Billion, unlikely but possible
+            multiplier = 1_000_000_000;
+            raw = raw.substring(0, raw.length() - 1);
+        }
+
+        try {
+            return (long) (Double.parseDouble(raw) * multiplier);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    /**
+     * Parses a relative date string (e.g. "2 days ago", "1 month ago") into a
+     * timestamp for sorting.
+     * Returns current time minus the offset.
+     */
+    public static long parseRelativeDate(String dateStr) {
+        if (dateStr == null || dateStr.isEmpty() || dateStr.equals("N/A")) {
+            return 0;
+        }
+
+        // Very basic parsing for sorting purposes
+        long now = System.currentTimeMillis();
+        long oneHour = 3600 * 1000L;
+        long oneDay = 24 * oneHour;
+        long oneMonth = 30 * oneDay;
+        long oneYear = 365 * oneDay;
+
+        String lower = dateStr.toLowerCase();
+        try {
+            String[] parts = lower.split("\\s+");
+            if (parts.length < 2)
+                return 0;
+
+            long val = Long.parseLong(parts[0]);
+            String unit = parts[1]; // hours, days, months
+
+            if (unit.startsWith("second") || unit.startsWith("minute"))
+                return now; // Very new
+            if (unit.startsWith("hour"))
+                return now - (val * oneHour);
+            if (unit.startsWith("day"))
+                return now - (val * oneDay);
+            if (unit.startsWith("week"))
+                return now - (val * 7 * oneDay); // approx
+            if (unit.startsWith("month"))
+                return now - (val * oneMonth);
+            if (unit.startsWith("year"))
+                return now - (val * oneYear);
+
+            return 0;
+        } catch (Exception e) {
+            return 0;
+        }
+    }
 }
