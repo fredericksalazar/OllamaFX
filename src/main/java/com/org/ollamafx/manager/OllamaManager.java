@@ -85,7 +85,74 @@ public class OllamaManager {
         }
     }
 
-    // --- MÉTODO DE SCRAPING FINAL Y CORREGIDO ---
+    // --- SCRAPING LIBRARY LISTS ---
+
+    public List<OllamaModel> getLibraryModels(String sort) {
+        List<OllamaModel> models = new ArrayList<>();
+        String url = "https://ollama.com/library" + (sort != null && !sort.isEmpty() ? "?sort=" + sort : "");
+
+        try {
+            Document doc = Jsoup.connect(url).get();
+            Elements items = doc.select("li a.group"); // Selector based on observation or standard list item structure
+
+            // If the structure is different, let's use a more generic selector for the list
+            // items
+            // Based on view_content_chunk, it seems to be a list of links.
+            // Let's suspect "li" or "div" containers. Re-checking chunk 20-30...
+            // Actually, I'll use a robust selector strategy below.
+
+            if (items.isEmpty()) {
+                // Fallback: try different selector if the first one fails, or just elements
+                // with specific classes
+                items = doc.select("ul li a[href^='/library/']");
+            }
+
+            for (Element item : items) {
+                String href = item.attr("href");
+                String name = href.replace("/library/", "");
+
+                // Extract title/name
+                Element titleEl = item.selectFirst("h2");
+                String displayName = (titleEl != null) ? titleEl.text() : name;
+
+                // Extract description
+                Element descEl = item.selectFirst("p");
+                String description = (descEl != null) ? descEl.text() : "";
+
+                // Extract pull count and badges
+                String pullCount = "N/A";
+                String lastUpdated = "N/A";
+                List<String> badges = new ArrayList<>();
+
+                Elements spans = item.select("span");
+                for (Element span : spans) {
+                    String text = span.text();
+                    if (text.contains("Provides") || text.contains("param") || text.contains("B")) { // Likely a badge
+                                                                                                     // like "7B" or
+                                                                                                     // "Text"
+                        badges.add(text);
+                    }
+                    if (text.matches(".*[kKmMbB]$") || text.contains("pulls")) { // Likely pull count
+                        pullCount = text.replace("pulls", "").trim();
+                    }
+                    if (text.contains("ago")) {
+                        lastUpdated = text;
+                    }
+                }
+
+                // Create a model object. Using name as base. Tag we can assume "latest" or
+                // leave generic.
+                OllamaModel model = new OllamaModel(name, description, pullCount, "latest", "N/A", lastUpdated,
+                        "Unknown", "Text", badges, "");
+                models.add(model);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return models;
+    }
+
+    // --- MÉTODO DE SCRAPING FINAL Y CORREGIDO (DETALLES) ---
 
     /**
      * VERSIÓN FINAL con selectores de CSS ajustados al HTML real.

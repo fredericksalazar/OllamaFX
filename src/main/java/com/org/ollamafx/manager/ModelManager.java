@@ -1,6 +1,7 @@
 package com.org.ollamafx.manager;
 
 import com.org.ollamafx.model.OllamaModel;
+import oshi.SystemInfo;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -53,50 +54,198 @@ public class ModelManager {
     // ... (deleteModel and other methods remain same... ensure to keep the existing
     // implementation just replacing what's needed)
 
-    // I need to use ReplaceFileContent carefully.
-    // I will replace the class start and constructor, and the isModelInstalled
-    // method.
-    // Wait, the tool requires contiguous blocks. I should do this in chunks or
-    // replace the whole file content helper parts.
+    // --- DATA LISTS ---
+    private final ObservableList<OllamaModel> popularModels = FXCollections.observableArrayList();
+    private final ObservableList<OllamaModel> newModels = FXCollections.observableArrayList();
+    private final ObservableList<OllamaModel> recommendedModels = FXCollections.observableArrayList();
 
-    // Let's replace the top part first to add the cache and constructor.
+    public ObservableList<OllamaModel> getPopularModels() {
+        return popularModels;
+    }
 
-    public ObservableList<OllamaModel> getAvailableModels() {
-        return availableModels;
+    public ObservableList<OllamaModel> getNewModels() {
+        return newModels;
+    }
+
+    public ObservableList<OllamaModel> getRecommendedModels() {
+        return recommendedModels;
     }
 
     /**
-     * Inicia la carga de todos los modelos en un hilo de fondo (background thread).
+     * Carga modelos desde el caché local o inicia una actualización en background
+     * si es necesario.
      */
-    public void loadAllModels() {
-        Task<Void> loadTask = new Task<>() {
+    public void loadLibraryModels() {
+        Task<Void> task = new Task<>() {
             @Override
             protected Void call() throws Exception {
-                // Carga de modelos locales
-                System.out.println("ModelManager: Iniciando carga de modelos locales...");
-                final List<OllamaModel> fetchedLocalModels = ollamaManager.getLocalModels();
-                Platform.runLater(() -> localModels.setAll(fetchedLocalModels));
-                System.out.println("ModelManager: Carga de modelos locales finalizada.");
+                // 1. Load from cache immediately
+                com.org.ollamafx.model.LibraryCache cache = LibraryCacheManager.getInstance().loadCache();
 
-                // Carga de modelos disponibles (la versión rápida)
-                System.out.println("ModelManager: Iniciando carga de modelos base disponibles...");
-                final List<OllamaModel> fetchedAvailableModels = ollamaManager.getAvailableBaseModels(); // <-- LÍNEA
-                                                                                                         // CORREGIDA
-                Platform.runLater(() -> availableModels.setAll(fetchedAvailableModels));
-                System.out.println("ModelManager: Carga de modelos base disponibles finalizada.");
+                if (cache != null) {
+                    System.out.println("ModelManager: Loaded data from local cache.");
+                    Platform.runLater(() -> {
+                        if (cache.getPopularModels() != null)
+                            popularModels.setAll(cache.getPopularModels());
+                        if (cache.getNewModels() != null)
+                            newModels.setAll(cache.getNewModels());
+                        if (cache.getAllModels() != null)
+                            availableModels.setAll(cache.getAllModels());
+                    });
+
+                    // Generate recommendations immediately from cached data
+                    ModelManager.this.generateRecommendations(cache.getPopularModels(), cache.getNewModels());
+                } else {
+                    System.out.println("ModelManager: No local cache found.");
+                }
+
+                // 2. Check if update is needed (expired or missing)
+                if (!LibraryCacheManager.getInstance().isCacheValid(cache)) {
+                    System.out.println("ModelManager: Cache invalid or missing. Starting background refresh...");
+                    ModelManager.this.refreshLibraryCache();
+                }
 
                 return null;
             }
         };
+        new Thread(task).start();
+    }
 
-        loadTask.setOnFailed(workerStateEvent -> {
-            System.err.println("La tarea de carga de modelos ha fallado.");
-            if (loadTask.getException() != null) {
-                loadTask.getException().printStackTrace();
+    private void refreshLibraryCache() {
+        Task<Void> task = new Task<>() {
+            @Override
+            protected Void call() throws Exception {
+                // Fetch all data
+                System.out.println("ModelManager: Scraping fresh data...");
+                List<OllamaModel> popular = ollamaManager.getLibraryModels("popular");
+                List<OllamaModel> newest = ollamaManager.getLibraryModels("newest");
+
+                // SORTING & LIMITING LOGIC
+                // Popular: Sort by downloads descending
+                popular.sort((m1, m2) -> {
+                    long d1 = com.org.ollamafx.util.Utils.parseDownloadCount(m1.getPullCount());
+                    long d2 = com.org.ollamafx.util.Utils.parseDownloadCount(m2.getPullCount());
+                    return Long.compare(d2, d1); // Descending
+                });
+
+                // Newest: Sort by date descending (using scraped relative date)
+                newest.sort((m1, m2) -> {
+                    long t1 = com.org.ollamafx.util.Utils.parseRelativeDate(m1.getLastUpdated());
+                    long t2 = com.org.ollamafx.util.Utils.parseRelativeDate(m2.getLastUpdated());
+                    return Long.compare(t2, t1); // Descending
+                });
+
+                // Helper to limit list
+                List<OllamaModel> topPopular = popular.size() > 10 ? new java.util.ArrayList<>(popular.subList(0, 10))
+                        : popular;
+                List<OllamaModel> topNewest = newest.size() > 10 ? new java.util.ArrayList<>(newest.subList(0, 10))
+                        : newest;
+
+                // Available base models (names only, but maybe we can enrich them later)
+                List<OllamaModel> available = ollamaManager.getAvailableBaseModels();
+
+                // Update UI
+                Platform.runLater(() -> {
+                    popularModels.setAll(topPopular);
+                    newModels.setAll(topNewest);
+                    availableModels.setAll(available);
+                });
+
+                // Save to cache (Store FULL lists or just TOP? User asked for Top 10 display.
+                // Let's store full lists in cache so we don't lose data if we change logic
+                // later,
+                // BUT we update UI with top 10. Wait, effectively if we save full list,
+                // loadLibraryModels needs to limit too. Let's save filtered lists for now
+                // to keep cache small and fast as per "performance" request).
+                // Actually, saving Top 10 makes cache very small. Good.
+
+                com.org.ollamafx.model.LibraryCache newCache = new com.org.ollamafx.model.LibraryCache();
+                newCache.setPopularModels(topPopular);
+                newCache.setNewModels(topNewest);
+                newCache.setAllModels(available);
+
+                LibraryCacheManager.getInstance().saveCache(newCache);
+
+                // Regenerate recommendations with fresh data
+                ModelManager.this.generateRecommendations(topPopular, topNewest);
+
+                return null;
             }
-        });
+        };
+        new Thread(task).start();
+    }
 
+    // Keep this for ABI compatibility if needed, but direct it to the new logic
+    public void loadAllModels() {
+        Task<Void> loadTask = new Task<>() {
+            @Override
+            protected Void call() throws Exception {
+                // Carga de modelos locales (Real-time check)
+                System.out.println("ModelManager: Iniciando carga de modelos locales...");
+                final List<OllamaModel> fetchedLocalModels = ollamaManager.getLocalModels();
+                Platform.runLater(() -> localModels.setAll(fetchedLocalModels));
+
+                // Load library models (Cached/Scraped)
+                loadLibraryModels();
+
+                return null;
+            }
+        };
         new Thread(loadTask).start();
+    }
+
+    private void generateRecommendations(List<OllamaModel> popular, List<OllamaModel> newest) {
+        // Simple logic based on RAM
+        long totalRam = new SystemInfo().getHardware().getMemory().getTotal();
+        double gb = totalRam / (1024.0 * 1024.0 * 1024.0);
+
+        System.out.println("ModelManager: Generating recommendations for " + String.format("%.2f", gb) + " GB RAM");
+
+        List<OllamaModel> recs = new java.util.ArrayList<>();
+
+        // Source pool: Popular + Newest (deduplicated)
+        java.util.Set<String> seen = new java.util.HashSet<>();
+        List<OllamaModel> pool = new java.util.ArrayList<>();
+        if (popular != null)
+            pool.addAll(popular);
+        if (newest != null)
+            pool.addAll(newest);
+
+        for (OllamaModel m : pool) {
+            if (seen.contains(m.getName()))
+                continue;
+            seen.add(m.getName());
+
+            boolean suitable = false;
+            String lowerName = m.getName().toLowerCase();
+
+            // Heuristic filtering
+            if (gb < 8.0) {
+                if (lowerName.contains("phi") || lowerName.contains("tiny") || lowerName.contains("qwen")
+                        || lowerName.contains("gemmanano")) {
+                    suitable = true;
+                }
+            } else if (gb <= 16.0) {
+                if (lowerName.contains("llama3") || lowerName.contains("mistral") || lowerName.contains("gemma")
+                        || lowerName.contains("phi")) {
+                    suitable = true;
+                }
+            } else {
+                suitable = true;
+            }
+
+            if (suitable) {
+                recs.add(m);
+            }
+            if (recs.size() >= 10)
+                break;
+        }
+
+        Platform.runLater(() -> recommendedModels.setAll(recs));
+    }
+
+    public ObservableList<OllamaModel> getAvailableModels() {
+        return availableModels;
     }
 
     public void deleteModel(String name, String tag) {

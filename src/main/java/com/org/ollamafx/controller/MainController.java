@@ -43,6 +43,8 @@ public class MainController implements Initializable {
     private javafx.scene.control.Button btnSettings;
     @FXML
     private javafx.scene.control.Button btnAbout;
+    @FXML
+    private javafx.scene.control.Button btnHome;
 
     @FXML
     private HBox ollamaStatusBar;
@@ -88,7 +90,11 @@ public class MainController implements Initializable {
 
         // Ollama Checks
         checkOllamaInstallation();
+        checkOllamaInstallation();
         startStatusPolling();
+
+        // Default to Home View
+        Platform.runLater(this::showHome);
 
         chatListView.setItems(chatManager.getChatSessions());
 
@@ -221,8 +227,11 @@ public class MainController implements Initializable {
     /**
      * Carga la vista de modelos disponibles y le inyecta el gestor de modelos.
      */
+    /**
+     * Carga la vista de modelos disponibles y le inyecta el gestor de modelos.
+     */
     @FXML
-    private void showAvailableModels() {
+    public void showAvailableModels() {
         setActiveTool(btnAvailable);
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/available_models_view.fxml"));
@@ -231,6 +240,23 @@ public class MainController implements Initializable {
             AvailableModelsController controller = loader.getController();
             controller.setModelManager(this.modelManager); // Inyección de dependencia.
             centerContentPane.getChildren().setAll(view); // Update StackPane content
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void showHome() {
+        if (btnHome != null)
+            setActiveTool(btnHome); // Ensure btnHome is defined in Controller
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/home_view.fxml"));
+            loader.setResources(com.org.ollamafx.App.getBundle());
+            Parent view = loader.load();
+            HomeController controller = loader.getController();
+            controller.setModelManager(this.modelManager);
+            controller.setMainController(this); // Inject MainController for navigation
+            centerContentPane.getChildren().setAll(view);
         } catch (IOException e) {
             e.printStackTrace();
         }

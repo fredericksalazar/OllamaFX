@@ -1,0 +1,185 @@
+/* home.css */
+
+.home-container {
+    -fx-background-color: -color-bg-default;
+    -fx-padding: 0 0 50px 0;
+}
+
+/* SECTION BACKGROUNDS (Alternating bands) */
+.section-container-alt {
+    -fx-background-color: -color-bg-subtle;
+    /* Subtle band */
+    -fx-padding: 30px 0;
+}
+
+.section-container {
+    -fx-background-color: transparent;
+    -fx-padding: 20px 0;
+}
+
+.edge-to-edge-scroll-pane {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+}
+
+.edge-to-edge-scroll-pane>.viewport {
+    -fx-background-color: transparent;
+}
+
+/* HERO SECTION */
+.hero-section {
+    -fx-pref-height: 400px;
+    -fx-alignment: center-left;
+    -fx-background-color: linear-gradient(to bottom right, #f5f5f7 0%, #e5e5ea 100%);
+    /* Light grey gradient */
+}
+
+/* Dark mode override via contextual root class if available, or just standard colors */
+.root.dark .hero-section {
+    -fx-background-color: linear-gradient(to bottom right, #1c1c1e 0%, #2c2c2e 100%);
+}
+
+.hero-background {
+    /* Optional overlay pattern */
+    -fx-opacity: 0.1;
+}
+
+.hero-title {
+    -fx-font-size: 54px;
+    /* Larger */
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.05), 5, 0, 0, 1);
+}
+
+.hero-subtitle {
+    -fx-font-size: 22px;
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-weight: normal;
+}
+
+.hero-button {
+    -fx-font-size: 16px;
+    -fx-padding: 12px 30px;
+    -fx-background-radius: 30px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 5, 0, 0, 2);
+}
+
+/* CAROUSELS */
+.carousel-scroll-pane {
+    -fx-background-color: transparent;
+    -fx-pannable: true;
+}
+
+.carousel-scroll-pane>.viewport {
+    -fx-background-color: transparent;
+}
+
+.carousel-container {
+    -fx-spacing: 25px;
+    /* More spacing */
+    -fx-padding: 10px 40px;
+    /* Padding inside scroll */
+}
+
+/* TITLES */
+.section-title {
+    -fx-font-size: 28px;
+    /* Larger */
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+    -fx-padding: 0 40px;
+    /* Align with content */
+}
+
+.section-subtitle {
+    -fx-font-size: 15px;
+    -fx-text-fill: -color-fg-muted;
+    -fx-padding: 0 40px;
+}
+
+/* MODEL CARD */
+.model-card {
+    -fx-background-color: -color-bg-default;
+    /* Solid background (White in light, dark in dark) */
+    -fx-background-radius: 16px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.08), 15, 0, 0, 4);
+    /* Stronger shadow for depth */
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1px;
+    -fx-border-radius: 16px;
+    -fx-cursor: hand;
+    -fx-padding: 20px;
+    -fx-min-width: 240px;
+    /* Wider */
+}
+
+.model-card:hover {
+    -fx-scale-x: 1.03;
+    -fx-scale-y: 1.03;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 20, 0, 0, 6);
+    /* Pop effect */
+    -fx-border-color: -color-accent-emphasis;
+    /* Highlight border */
+}
+
+.model-icon-container {
+    -fx-background-color: linear-gradient(to bottom right, #FF9500, #FF2D55);
+    -fx-background-radius: 18px;
+    -fx-min-width: 64px;
+    -fx-min-height: 64px;
+    -fx-max-width: 64px;
+    -fx-max-height: 64px;
+    -fx-alignment: center;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 5, 0, 0, 2);
+}
+
+.model-icon-text {
+    -fx-font-size: 28px;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.model-card-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+}
+
+.model-card-desc {
+    -fx-font-size: 13px;
+    -fx-text-fill: -color-fg-muted;
+    -fx-line-spacing: 2px;
+}
+
+.model-card-stats {
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-subtle;
+    -fx-font-weight: bold;
+    -fx-opacity: 0.8;
+}
+
+.model-badge-small {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: transparent;
+    -fx-text-fill: -color-accent-emphasis;
+    /* Color text */
+    -fx-font-weight: bold;
+    -fx-background-radius: 6px;
+    -fx-padding: 3px 8px;
+    -fx-font-size: 10px;
+}
+
+/* LINK BUTTON */
+.link-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-accent-emphasis;
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+    -fx-padding: 5px 10px;
+}
+
+.link-button:hover {
+    -fx-background-color: -color-bg-subtle;
+    -fx-background-radius: 6px;
+}
