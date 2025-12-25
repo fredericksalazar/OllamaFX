@@ -694,13 +694,63 @@
    Assuming AtlantaFX BBCodeParser maps [h1] -> styleClass "h1" or similar?
    Wait, looking at MarkdownOutput, it uses BBCodeParser.createLayout.
    If specific classes aren't generated, we might be styling blindly if we rely solely on these names.
-   However, assuming standard implementation or that we can target them:
-*/
+   However, as
+/* --- Right Sidebar (Inspector Panel) --- */
+.chat-sidebar-right {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 0 0 1px;
+    /* Border Left only */
+    -fx-effect: null;
+}
 
-/* If we can't be sure of the class names generated for H tags, we rely on what was there: .markdown-h1
-   If the previous CSS had it, presumably it works or was intended to work.
-   We will keep the names and just beef them up.
-*/
+.input-card {
+    -fx-background-color: -color-bg-default;
+    -fx-background-radius: 20px;
+    /* More rounded */
+    -fx-border-color: -color-border-subtle;
+    -fx-border-radius: 20px;
+    -fx-border-width: 1px;
+
+    /* Premium "Float" Shadow */
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.08), 20, 0.0, 0, 5);
+}
+
+.sidebar-card {
+    -fx-background-color: -color-bg-default;
+    -fx-background-radius: 8px;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-radius: 8px;
+    -fx-border-width: 1px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.02), 2, 0, 0, 1);
+}
+
+.sidebar-text-area {
+    -fx-background-color: -color-bg-default;
+    -fx-text-fill: -color-fg-default;
+    -fx-prompt-text-fill: -color-fg-muted;
+    -fx-background-radius: 8px;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-radius: 8px;
+    -fx-border-width: 1px;
+    -fx-padding: 8px;
+    -fx-font-size: 13px;
+    -fx-font-family: "System";
+    -fx-highlight-fill: -color-accent-emphasis;
+    -fx-highlight-text-fill: white;
+}
+
+.sidebar-text-area:focused {
+    -fx-background-color: -color-bg-default;
+    -fx-border-color: -color-accent-emphasis;
+    -fx-effect: dropshadow(gaussian, rgba(0, 122, 255, 0.2), 5, 0, 0, 0);
+}
+
+.sidebar-text-area .content {
+    -fx-background-color: transparent;
+}
+
+t beef them up. */
 
 /* Headers - Gemini Style (Larger, Bolder) */
 /* Aliasing widely used classes for headers */
@@ -1010,6 +1060,75 @@
     -fx-fill: #6897bb;
 }
 
+.chat-sidebar-right .sidebar-section-label {
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-text-fill: -color-fg-muted;
+    -fx-padding: 0 0 5 0;
+    -fx-alignment: center-left;
+    -fx-opacity: 0.8;
+}
+
+.chat-sidebar-right .sidebar-card {
+    -fx-background-color: -color-bg-subtle;
+    -fx-background-radius: 10px;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-radius: 10px;
+    -fx-border-width: 1px;
+    -fx-effect: none;
+    /* Cleaner look */
+}
+
+.chat-sidebar-right .sidebar-text-area {
+    -fx-background-color: -color-bg-subtle;
+    -fx-background-radius: 10px;
+    -fx-border-color: -color-border-default;
+    -fx-border-radius: 10px;
+    -fx-text-fill: -color-fg-default;
+    -fx-prompt-text-fill: -color-fg-muted;
+    -fx-font-family: "System";
+    /* Native feel */
+}
+
+/* Floating Action Button - Glass/Utility Style */
+.floating-settings-button {
+    -fx-background-color: -color-bg-default;
+    /* Match theme background */
+    -fx-text-fill: -color-fg-default;
+    -fx-background-radius: 50%;
+    -fx-min-width: 48px;
+    -fx-min-height: 48px;
+    -fx-max-width: 48px;
+    -fx-max-height: 48px;
+    -fx-font-size: 24px;
+    -fx-padding: 0;
+
+    /* Subtle border for definition */
+    -fx-border-color: -color-border-default;
+    -fx-border-radius: 50%;
+    -fx-border-width: 1px;
+
+    /* Soft, diffuse shadow */
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 10, 0, 0, 4);
+
+    -fx-cursor: hand;
+    -fx-alignment: center;
+}
+
+.floating-settings-button:hover {
+    -fx-background-color: -color-bg-subtle;
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.15), 12, 0, 0, 6);
+}
+
+.floating-settings-button:pressed {
+    -fx-background-color: -color-bg-subtle;
+    -fx-scale-x: 0.95;
+    -fx-scale-y: 0.95;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.05), 5, 0, 0, 2);
+}
+
 /* Code Block Card */
 .code-block-card {
     -fx-background-color: -color-bg-subtle;
@@ -1077,4 +1196,28 @@
     -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.05), 2, 0, 0, 1);
     -fx-scale-x: 0.95;
     -fx-scale-y: 0.95;
+}
+
+/* --- System Prompt Text Area --- */
+.capsule-text-area {
+    -fx-background-color: -color-bg-subtle;
+    -fx-text-fill: -color-fg-default;
+    -fx-prompt-text-fill: -color-fg-muted;
+    -fx-background-radius: 8px;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-radius: 8px;
+    -fx-border-width: 1px;
+    -fx-padding: 8px;
+    -fx-font-size: 13px;
+    -fx-font-family: "System";
+}
+
+.capsule-text-area:focused {
+    -fx-background-color: -color-bg-default;
+    -fx-border-color: -color-accent-emphasis;
+    -fx-effect: dropshadow(gaussian, rgba(0, 122, 255, 0.2), 5, 0, 0, 0);
+}
+
+.capsule-text-area .content {
+    -fx-background-color: transparent;
 }

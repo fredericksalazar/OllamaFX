@@ -83,14 +83,11 @@ public class ChatController {
     private ComboBox<String> initialModelSelector;
 
     @FXML
-    private Button settingsButton;
-    @FXML
-    private VBox settingsPane;
-
-    @FXML
     private Slider tempSlider;
     @FXML
     private Label tempValueLabel;
+    @FXML
+    private TextArea systemPromptField;
 
     @FXML
     public void initialize() {
@@ -142,6 +139,16 @@ public class ChatController {
             }
         });
 
+        // System Prompt Listener
+        systemPromptField.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (currentSession != null) {
+                currentSession.setSystemPrompt(newVal);
+                // We might want to save immediately or distinct logic.
+                // Saving immediately ensures persistence.
+                ChatManager.getInstance().saveChats();
+            }
+        });
+
         updateUIState(true); // Initial state is welcome screen
     }
 
@@ -159,6 +166,12 @@ public class ChatController {
                 setupContainer.setVisible(true);
                 setupContainer.setManaged(true);
                 animateWelcomeText(); // Trigger Typewriter
+            }
+
+            // Default: Show Sidebar for New Chat
+            if (rightSidebar != null && !rightSidebar.isVisible()) {
+                rightSidebar.setVisible(true);
+                rightSidebar.setManaged(true);
             }
 
             // Move Input Capsule to Welcome Container BUT HIDE IT initially
@@ -303,6 +316,9 @@ public class ChatController {
 
             tempValueLabel.setText(creativityText);
 
+            // Restore System Prompt
+            systemPromptField.setText(session.getSystemPrompt() != null ? session.getSystemPrompt() : "");
+
             for (ChatMessage msg : session.getMessages()) {
                 addMessage(msg.getContent(), "user".equals(msg.getRole()));
             }
@@ -369,7 +385,9 @@ public class ChatController {
             try {
                 StringBuilder responseBuilder = new StringBuilder();
                 double temperature = tempSlider.getValue();
-                String systemPrompt = "";
+                // Use the session's prompt or the field's current value (should be synced)
+                String systemPrompt = targetSession != null ? targetSession.getSystemPrompt()
+                        : systemPromptField.getText();
 
                 OllamaManager.getInstance().askModelStream(targetModel, text, temperature,
                         systemPrompt,
@@ -511,8 +529,13 @@ public class ChatController {
             bubble.setWrapText(true);
             bubble.getStyleClass().add("chat-bubble");
             bubble.getStyleClass().add("chat-bubble-user");
-            // Ensure the label doesn't grow indefinitely
-            bubble.setMaxWidth(600);
+
+            // Dynamic Max Width: Min(600, Container Width - Padding)
+            bubble.maxWidthProperty().bind(
+                    javafx.beans.binding.Bindings.min(
+                            600.0,
+                            messagesContainer.widthProperty().subtract(60) // Safety padding
+                    ));
 
             bubbleContainer.getChildren().add(bubble);
             messagesContainer.getChildren().add(bubbleContainer);
@@ -526,7 +549,14 @@ public class ChatController {
             VBox contentWrapper = new VBox();
             contentWrapper.setStyle("-fx-background-color: transparent;");
             HBox.setHgrow(contentWrapper, Priority.ALWAYS);
-            contentWrapper.setMaxWidth(800); // Strict max width
+
+            // Dynamic Max Width: Min(800, Container Width - Padding)
+            // Container Padding (20+20) + MessageContainer Padding (20+20) = 80. Use 100
+            // for safety.
+            contentWrapper.maxWidthProperty().bind(
+                    javafx.beans.binding.Bindings.min(
+                            800.0,
+                            messagesContainer.widthProperty().subtract(100)));
 
             try {
                 MarkdownOutput markdownOutput = new MarkdownOutput();
@@ -581,6 +611,20 @@ public class ChatController {
         }
     }
 
+    @FXML
+    private void toggleSidebar() {
+        if (rightSidebar != null) {
+            boolean isVisible = rightSidebar.isVisible();
+            rightSidebar.setVisible(!isVisible);
+            rightSidebar.setManaged(!isVisible);
+        }
+    }
+
+    @FXML
+    private VBox rightSidebar;
+    @FXML
+    private Button sidebarToggleButton;
+
     private boolean modelListLoaded = false;
     private String pendingModelSelection = null;
 
@@ -598,10 +642,6 @@ public class ChatController {
         }
     }
 
-    @FXML
-    private void toggleSettings() {
-        boolean isVisible = settingsPane.isVisible();
-        settingsPane.setVisible(!isVisible);
-        settingsPane.setManaged(!isVisible);
-    }
+    // Default Sidebar state logic moved to setChatSession and initialize
+
 }
