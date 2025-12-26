@@ -40,6 +40,16 @@ public class ModelLibraryManager {
     }
 
     /**
+     * Invalidates the in-memory cache, forcing OUTDATED_HARD status on next
+     * getUpdateStatus() call.
+     * Used when refreshing library from Settings.
+     */
+    public void invalidateCache() {
+        this.currentLibrary = new LibraryCache();
+        System.out.println("ModelLibraryManager: Cache invalidated - will trigger fresh download");
+    }
+
+    /**
      * Enum for update advice.
      */
     public enum UpdateStatus {

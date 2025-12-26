@@ -141,7 +141,7 @@ public class OllamaManager {
                 // Create a model object. Using name as base. Tag we can assume "latest" or
                 // leave generic.
                 OllamaModel model = new OllamaModel(name, description, pullCount, "latest", "N/A", lastUpdated,
-                        "Unknown", "Text", badges, "");
+                        "Unknown", "Text", badges, "", null);
                 models.add(model);
             }
         } catch (IOException e) {
@@ -212,7 +212,7 @@ public class OllamaManager {
 
         if (tagsContainer == null) {
             modelTags.add(new OllamaModel(modelName, description, pullCount, "latest", "N/A", lastUpdatedGlobal,
-                    "Unknown", "Text", badges, readmeContent));
+                    "Unknown", "Text", badges, readmeContent, null));
             return modelTags;
         }
 
@@ -239,7 +239,7 @@ public class OllamaManager {
 
             modelTags.add(new OllamaModel(modelName, description, pullCount,
                     fullTagName.contains(":") ? fullTagName.split(":")[1] : fullTagName,
-                    size, lastUpdatedGlobal, context, input, badges, readmeContent));
+                    size, lastUpdatedGlobal, context, input, badges, readmeContent, null));
         }
         return modelTags;
     }

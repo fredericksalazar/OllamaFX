@@ -41,7 +41,8 @@ public class OllamaModel {
             @com.fasterxml.jackson.annotation.JsonProperty("context_length") String contextLength,
             @com.fasterxml.jackson.annotation.JsonProperty("input_type") String inputType,
             @com.fasterxml.jackson.annotation.JsonProperty("badges") java.util.List<String> badges,
-            @com.fasterxml.jackson.annotation.JsonProperty("readme_content") String readmeContent) {
+            @com.fasterxml.jackson.annotation.JsonProperty("readme_content") String readmeContent,
+            @com.fasterxml.jackson.annotation.JsonProperty("compatibility_status") CompatibilityStatus status) {
         this.name = new SimpleStringProperty(name);
         this.description = new SimpleStringProperty(description);
         this.pullCount = new SimpleStringProperty(pullCount);
@@ -52,16 +53,20 @@ public class OllamaModel {
         this.inputType = new SimpleStringProperty(inputType);
         this.badges = badges != null ? badges : new java.util.ArrayList<>();
         this.readmeContent = new SimpleStringProperty(readmeContent != null ? readmeContent : "");
+        if (status != null) {
+            this.compatibilityStatus.set(status);
+        }
     }
 
     public OllamaModel(String name, String description, String pullCount, String tag, String size, String lastUpdated,
             String contextLength, String inputType) {
         this(name, description, pullCount, tag, size, lastUpdated, contextLength, inputType,
-                new java.util.ArrayList<>(), "");
+                new java.util.ArrayList<>(), "", null);
     }
 
     public OllamaModel(String name, String description, String pullCount, String tag, String size, String lastUpdated) {
-        this(name, description, pullCount, tag, size, lastUpdated, "Unknown", "Text", new java.util.ArrayList<>(), "");
+        this(name, description, pullCount, tag, size, lastUpdated, "Unknown", "Text", new java.util.ArrayList<>(), "",
+                null);
     }
 
     // Getters para las propiedades de JavaFX (esenciales para las TableView)
@@ -163,6 +168,7 @@ public class OllamaModel {
         return compatibilityStatus;
     }
 
+    @com.fasterxml.jackson.annotation.JsonProperty("compatibility_status")
     public CompatibilityStatus getCompatibilityStatus() {
         return compatibilityStatus.get();
     }

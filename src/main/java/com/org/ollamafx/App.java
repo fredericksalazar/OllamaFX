@@ -158,18 +158,30 @@ public class App extends Application {
      */
     public static void reloadFromSplash() {
         try {
+            // Delete details cache file
+            java.io.File detailsCache = new java.io.File(System.getProperty("user.home"),
+                    ".ollamafx/details_cache.json");
+            if (detailsCache.exists()) {
+                detailsCache.delete();
+                System.out.println("App: Deleted details_cache.json for refresh");
+            }
+
+            // CRITICAL: Invalidate in-memory cache to force OUTDATED_HARD status
+            com.org.ollamafx.manager.ModelLibraryManager.getInstance().invalidateCache();
+
             FXMLLoader loader = new FXMLLoader(App.class.getResource("/ui/splash_view.fxml"));
+            loader.setResources(getBundle());
             javafx.scene.Parent root = loader.load();
 
             Scene scene = new Scene(root);
+            scene.getStylesheets().add(App.class.getResource("/css/splash.css").toExternalForm());
             scene.getStylesheets().add(App.class.getResource("/css/ollama_active.css").toExternalForm());
 
             primaryStage.setScene(scene);
             primaryStage.setTitle(getBundle().getString("app.title"));
+            primaryStage.show();
 
-            if (!primaryStage.isShowing()) {
-                primaryStage.show();
-            }
+            System.out.println("App: Loaded Splash Screen for library refresh");
         } catch (IOException e) {
             e.printStackTrace();
         }

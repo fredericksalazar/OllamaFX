@@ -436,29 +436,59 @@ public class ModelManager {
 
     /**
      * Gets details (tags) for a model from LOCAL CACHE ONLY.
-     * No scraping - data must be in cache from initial download.
+     * Classification is already persisted in cache from initial download.
+     * No scraping, no re-classification - just return cached data.
      */
     public List<OllamaModel> getModelDetails(String modelName) throws Exception {
         // Check Cache ONLY - no expiry check, just presence
         com.org.ollamafx.model.ModelDetailsEntry entry = ModelDetailsCacheManager.getInstance().getDetails(modelName);
 
         if (entry != null && entry.getTags() != null && !entry.getTags().isEmpty()) {
-            System.out.println("ModelManager: Cache HIT for " + modelName);
-            List<OllamaModel> cached = entry.getTags();
-            // RE-Apply Classification (Computing is cheap, ensures hardware changes are
-            // respected)
-            for (OllamaModel m : cached) {
-                classifyModel(m);
-            }
-            return cached;
+            System.out.println("ModelManager: Cache HIT for " + modelName + " (" + entry.getTags().size() + " tags)");
+            // Return directly - classification is already persisted
+            return entry.getTags();
         }
 
         // If not in cache, return basic info (no scraping)
-        System.out.println("ModelManager: Cache MISS for " + modelName + ". Returning basic info (no scraping).");
+        System.out.println("ModelManager: Cache MISS for " + modelName + ". Returning basic info.");
         List<OllamaModel> basicInfo = new java.util.ArrayList<>();
         OllamaModel basic = new OllamaModel(modelName, "Detalles no disponibles en caché local", "", "latest", "", "");
-        classifyModel(basic);
         basicInfo.add(basic);
         return basicInfo;
+    }
+
+    /**
+     * Classify multiple models with a single HardwareManager.getStats() call.
+     * Much faster than calling classifyModel() individually.
+     */
+    private void classifyModelsBatch(List<OllamaModel> models) {
+        // Get hardware stats ONCE
+        HardwareManager.HardwareStats stats = HardwareManager.getStats();
+        long osOverhead = 4L * 1024 * 1024 * 1024;
+        long safeRamLimit = stats.totalRamBytes - osOverhead;
+        long vramLimit = stats.isUnifiedMemory ? safeRamLimit : stats.totalVramBytes;
+
+        for (OllamaModel model : models) {
+            long modelSizeBytes = parseModelSizeBytes(model.getSize());
+
+            // Fallback: Estimate from parameters if size is unknown
+            if (modelSizeBytes == 0) {
+                double billionsParams = extractParameterCount(model);
+                if (billionsParams > 0) {
+                    modelSizeBytes = (long) (billionsParams * 0.65 * 1024 * 1024 * 1024);
+                }
+            }
+
+            // Classify based on size
+            if (modelSizeBytes == 0) {
+                model.setCompatibilityStatus(OllamaModel.CompatibilityStatus.CAUTION);
+            } else if (modelSizeBytes <= vramLimit) {
+                model.setCompatibilityStatus(OllamaModel.CompatibilityStatus.RECOMMENDED);
+            } else if (modelSizeBytes <= (safeRamLimit * 0.9)) {
+                model.setCompatibilityStatus(OllamaModel.CompatibilityStatus.CAUTION);
+            } else {
+                model.setCompatibilityStatus(OllamaModel.CompatibilityStatus.INCOMPATIBLE);
+            }
+        }
     }
 }
