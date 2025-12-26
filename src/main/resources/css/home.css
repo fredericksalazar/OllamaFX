@@ -47,7 +47,7 @@
 .hero-title {
     -fx-font-size: 54px;
     /* Larger */
-    -fx-font-weight: bold;
+    -fx-font-weight: 500;
     -fx-text-fill: -color-fg-default;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.05), 5, 0, 0, 1);
 }
@@ -86,7 +86,7 @@
 .section-title {
     -fx-font-size: 28px;
     /* Larger */
-    -fx-font-weight: bold;
+    -fx-font-weight: 500;
     -fx-text-fill: -color-fg-default;
     -fx-padding: 0 40px;
     /* Align with content */
@@ -137,12 +137,12 @@
 .model-icon-text {
     -fx-font-size: 28px;
     -fx-text-fill: white;
-    -fx-font-weight: bold;
+    -fx-font-weight: 600;
 }
 
 .model-card-title {
     -fx-font-size: 18px;
-    -fx-font-weight: bold;
+    -fx-font-weight: 500;
     -fx-text-fill: -color-fg-default;
 }
 
@@ -155,7 +155,7 @@
 .model-card-stats {
     -fx-font-size: 11px;
     -fx-text-fill: -color-fg-subtle;
-    -fx-font-weight: bold;
+    -fx-font-weight: 500;
     -fx-opacity: 0.8;
 }
 
@@ -164,7 +164,7 @@
     -fx-border-color: transparent;
     -fx-text-fill: -color-accent-emphasis;
     /* Color text */
-    -fx-font-weight: bold;
+    -fx-font-weight: 500;
     -fx-background-radius: 6px;
     -fx-padding: 3px 8px;
     -fx-font-size: 10px;

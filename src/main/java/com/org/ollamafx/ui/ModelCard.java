@@ -55,6 +55,16 @@ public class ModelCard extends VBox {
             });
         }
 
+        // INSTALLED BADGE (if model is locally installed)
+        if (isInstalled) {
+            Label installedBadge = new Label(
+                    "✓ " + com.org.ollamafx.App.getBundle().getString("model.installed.badge"));
+            installedBadge.getStyleClass().add("model-badge-small");
+            installedBadge
+                    .setStyle("-fx-background-color: -color-accent-subtle; -fx-text-fill: -color-accent-emphasis;");
+            badgesBox.getChildren().add(installedBadge);
+        }
+
         // STATUS BADGE (Hardware Compatibility)
         Label statusBadge = new Label();
         statusBadge.getStyleClass().add("model-badge-small");
@@ -66,15 +76,15 @@ public class ModelCard extends VBox {
 
         switch (status) {
             case RECOMMENDED:
-                statusBadge.setText("Recommended"); // Localization later?
+                statusBadge.setText(com.org.ollamafx.App.getBundle().getString("model.status.recommended"));
                 statusBadge.setStyle("-fx-background-color: -color-success-subtle; -fx-text-fill: -color-success-fg;");
                 break;
             case CAUTION:
-                statusBadge.setText("Standard");
+                statusBadge.setText(com.org.ollamafx.App.getBundle().getString("model.status.standard"));
                 statusBadge.setStyle("-fx-background-color: -color-warning-subtle; -fx-text-fill: -color-warning-fg;");
                 break;
             case INCOMPATIBLE:
-                statusBadge.setText("Not Recommended");
+                statusBadge.setText(com.org.ollamafx.App.getBundle().getString("model.status.notRecommended"));
                 statusBadge.setStyle("-fx-background-color: -color-danger-subtle; -fx-text-fill: -color-danger-fg;");
                 break;
         }

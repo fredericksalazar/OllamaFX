@@ -10,7 +10,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
-// import java.text.DecimalFormat; // Unused
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -33,16 +32,21 @@ public class OllamaManager {
 
     private static OllamaManager instance;
     private final OllamaAPI client;
+    private final HttpClient httpClient;
+    private final ObjectMapper mapper;
     private volatile java.io.InputStream activeStream; // To support forceful cancellation
 
     private OllamaManager() {
         String host = ConfigManager.getInstance().getOllamaHost();
-        // Ensure host is valid or default if empty
         if (host == null || host.isEmpty()) {
             host = "http://localhost:11434";
         }
         this.client = new OllamaAPI(host);
-        this.client.setRequestTimeoutSeconds(60); // Set a reasonable timeout
+        this.client.setRequestTimeoutSeconds(60);
+        this.httpClient = HttpClient.newBuilder()
+                .connectTimeout(java.time.Duration.ofSeconds(10))
+                .build();
+        this.mapper = new ObjectMapper();
     }
 
     public static synchronized OllamaManager getInstance() {
@@ -88,22 +92,17 @@ public class OllamaManager {
     // --- SCRAPING LIBRARY LISTS ---
 
     public List<OllamaModel> getLibraryModels(String sort) {
+        if (sort != null && !sort.isEmpty() && !com.org.ollamafx.util.SecurityUtils.isValidModelName(sort)) {
+            return new ArrayList<>();
+        }
         List<OllamaModel> models = new ArrayList<>();
         String url = "https://ollama.com/library" + (sort != null && !sort.isEmpty() ? "?sort=" + sort : "");
 
         try {
             Document doc = Jsoup.connect(url).get();
-            Elements items = doc.select("li a.group"); // Selector based on observation or standard list item structure
-
-            // If the structure is different, let's use a more generic selector for the list
-            // items
-            // Based on view_content_chunk, it seems to be a list of links.
-            // Let's suspect "li" or "div" containers. Re-checking chunk 20-30...
-            // Actually, I'll use a robust selector strategy below.
+            Elements items = doc.select("li a.group");
 
             if (items.isEmpty()) {
-                // Fallback: try different selector if the first one fails, or just elements
-                // with specific classes
                 items = doc.select("ul li a[href^='/library/']");
             }
 
@@ -160,6 +159,9 @@ public class OllamaManager {
      * @throws IOException Si la conexión a la página web falla.
      */
     public List<OllamaModel> scrapeModelDetails(String modelName) throws IOException {
+        if (!com.org.ollamafx.util.SecurityUtils.isValidModelName(modelName)) {
+            throw new IllegalArgumentException("Invalid model name.");
+        }
         String url = "https://ollama.com/library/" + modelName;
 
         Document doc = Jsoup.connect(url).get();
@@ -323,17 +325,14 @@ public class OllamaManager {
             throw new IllegalArgumentException("Invalid model name or tag.");
         }
         String fullName = modelName + ":" + tag;
-        System.out.println("OllamaManager: Executing 'ollama rm "
-                + com.org.ollamafx.util.SecurityUtils.sanitizeForLog(fullName) + "'");
         ProcessBuilder builder = new ProcessBuilder("ollama", "rm", fullName);
         builder.redirectErrorStream(true);
         Process process = builder.start();
 
         try (java.io.BufferedReader reader = new java.io.BufferedReader(
                 new java.io.InputStreamReader(process.getInputStream()))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                System.out.println("Ollama rm output: " + line);
+            while (reader.readLine() != null) {
+                // Drain the buffer
             }
         }
 
@@ -341,7 +340,6 @@ public class OllamaManager {
         if (exitCode != 0) {
             throw new Exception("Ollama rm failed with exit code: " + exitCode);
         }
-        System.out.println("OllamaManager: Model " + fullName + " deleted successfully.");
     }
 
     /**
@@ -354,7 +352,6 @@ public class OllamaManager {
      * @throws Exception If the request fails
      */
     public String askModel(String modelName, String prompt) throws Exception {
-        System.out.println("OllamaManager: Asking " + modelName + ": " + prompt);
 
         // Create a chat message object
         // We need to use the Chat API, not Generate, for better compatibility and
@@ -404,10 +401,8 @@ public class OllamaManager {
             payload.put("options", defaultOptions);
         }
 
-        ObjectMapper mapper = new ObjectMapper();
         String jsonBody = mapper.writeValueAsString(payload);
 
-        HttpClient httpClient = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(ConfigManager.getInstance().getOllamaHost() + "/api/chat"))
                 .header("Content-Type", "application/json")
@@ -452,11 +447,8 @@ public class OllamaManager {
                     }
                 } catch (RuntimeException re) {
                     // Re-throw (e.g., Cancelled by user)
-                    System.out.println(
-                            "OllamaManager: RuntimeException caught in loop (likely cancel): " + re.getMessage());
                     throw re;
                 } catch (Exception e) {
-                    System.out.println("OllamaManager: Parsing error ignored: " + e.getMessage());
                 }
             }
         } finally {

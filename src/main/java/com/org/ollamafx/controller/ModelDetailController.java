@@ -107,7 +107,6 @@ public class ModelDetailController {
             };
 
             task.setOnSucceeded(e -> {
-                System.out.println("Download complete!");
                 if (modelManager != null) {
                     String date = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
                             .format(LocalDateTime.now());

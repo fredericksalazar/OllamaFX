@@ -2,7 +2,6 @@ package com.org.ollamafx.manager;
 
 import com.org.ollamafx.model.LibraryCache;
 import com.org.ollamafx.model.OllamaModel;
-import com.org.ollamafx.util.Utils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -46,7 +45,6 @@ public class ModelLibraryManager {
      */
     public void invalidateCache() {
         this.currentLibrary = new LibraryCache();
-        System.out.println("ModelLibraryManager: Cache invalidated - will trigger fresh download");
     }
 
     /**
@@ -123,7 +121,6 @@ public class ModelLibraryManager {
 
         // --- FASE 1: DESCUBRIMIENTO ---
         currentStatus = "Descubriendo catálogo...";
-        System.out.println("ModelLibraryManager: Iniciando Fase de Descubrimiento...");
 
         java.util.Set<String> uniqueModels = discoverAllModelNames();
 
@@ -134,7 +131,6 @@ public class ModelLibraryManager {
         }
 
         int total = uniqueModels.size();
-        System.out.println("ModelLibraryManager: Descubrimiento Finalizado. Total: " + total);
 
         // --- FASE 2: PROCESAMIENTO ---
         List<OllamaModel> allFoundModels = new ArrayList<>();

@@ -70,7 +70,7 @@
         <ScrollPane fitToWidth="true" VBox.vgrow="SOMETIMES" hbarPolicy="NEVER" style="-fx-background-color:transparent; -fx-background: transparent; -fx-border-color: transparent;" prefHeight="100.0" minHeight="50.0">
              <content>
                 <!-- Body class handled by Controller (apple-text-body) -->
-                <Text fx:id="modelDescriptionText" strokeType="OUTSIDE" strokeWidth="0.0" text="Description..." wrappingWidth="700.0" />
+                <Text fx:id="modelDescriptionText" strokeType="OUTSIDE" strokeWidth="0.0" text="Description..." />
              </content>
         </ScrollPane>
 

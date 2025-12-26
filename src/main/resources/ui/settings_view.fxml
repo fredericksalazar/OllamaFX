@@ -55,17 +55,17 @@
                     <Button text="%settings.viewHardwareLogic" onAction="#showHardwareLogic" styleClass="button-outlined" style="-fx-font-size: 11px;" />
                 </HBox>
                 
-                <VBox spacing="5.0" style="-fx-background-color: -color-bg-subtle; -fx-padding: 10; -fx-background-radius: 5;">
-                    <Label text="%settings.ram" style="-fx-font-weight: bold;" />
+            <VBox spacing="5.0" style="-fx-background-color: -color-bg-subtle; -fx-padding: 10; -fx-background-radius: 5;">
+                    <Label text="%settings.ram" />
                     <Label fx:id="ramLabel" text="%settings.loading" textFill="#888888" />
 
-                    <Label text="%settings.vram" style="-fx-font-weight: bold;" />
+                    <Label text="%settings.vram" />
                     <Label fx:id="vramLabel" text="%settings.loading" textFill="#888888" />
                     
-                    <Label text="%settings.cpu" style="-fx-font-weight: bold;" />
+                    <Label text="%settings.cpu" />
                     <Label fx:id="cpuLabel" text="%settings.loading" textFill="#888888" wrapText="true" />
                     
-                    <Label text="%settings.os" style="-fx-font-weight: bold;" />
+                    <Label text="%settings.os" />
                     <Label fx:id="osLabel" text="%settings.loading" textFill="#888888" />
                 </VBox>
             </VBox>
@@ -81,19 +81,19 @@
                 </HBox>
                 
                 <VBox spacing="5.0" style="-fx-background-color: -color-bg-subtle; -fx-padding: 10; -fx-background-radius: 5;">
-                    <Label text="%settings.library.filename" style="-fx-font-weight: bold;" />
+                    <Label text="%settings.library.filename" />
                     <Label fx:id="cacheFileLabel" text="%settings.loading" textFill="#888888" />
                     
-                    <Label text="%settings.library.location" style="-fx-font-weight: bold;" />
+                    <Label text="%settings.library.location" />
                     <Label fx:id="cacheLocationLabel" text="%settings.loading" textFill="#888888" wrapText="true" style="-fx-font-size: 11px;" />
                     
-                    <Label text="%settings.library.size" style="-fx-font-weight: bold;" />
+                    <Label text="%settings.library.size" />
                     <Label fx:id="cacheSizeLabel" text="%settings.loading" textFill="#888888" />
                     
-                    <Label text="%settings.library.lastupdate" style="-fx-font-weight: bold;" />
+                    <Label text="%settings.library.lastupdate" />
                     <Label fx:id="cacheLastUpdateLabel" text="%settings.loading" textFill="#888888" />
                     
-                    <Label text="%settings.library.daysago" style="-fx-font-weight: bold;" />
+                    <Label text="%settings.library.daysago" />
                     <Label fx:id="cacheDaysLabel" text="%settings.loading" textFill="#888888" />
                 </VBox>
             </VBox>

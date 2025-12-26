@@ -53,11 +53,9 @@ public class OllamaServiceManager {
      */
     public boolean startOllama() {
         if (isRunning()) {
-            System.out.println("OllamaServiceManager: Service already running. No action needed.");
             return true;
         }
 
-        System.out.println("OllamaServiceManager: Attempting to start Ollama...");
         try {
             ProcessBuilder pb = new ProcessBuilder("ollama", "serve");
             pb.redirectErrorStream(true);
@@ -78,7 +76,6 @@ public class OllamaServiceManager {
                 }
 
                 if (isRunning()) {
-                    System.out.println("OllamaServiceManager: Ollama started successfully.");
                     return true;
                 }
                 Retries--;
@@ -95,11 +92,9 @@ public class OllamaServiceManager {
      */
     public void stopOllama() {
         if (this.ollamaProcess != null && this.ollamaProcess.isAlive()) {
-            System.out.println("OllamaServiceManager: Stopping local Ollama process...");
             this.ollamaProcess.destroy(); // SIGTERM
         } else {
-            System.out.println(
-                    "OllamaServiceManager: No local child process to stop. System service may still be running.");
+            // No process to stop
         }
     }
 }

@@ -22,6 +22,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.SVGPath;
+import javafx.scene.control.TextField;
 import javafx.animation.Timeline;
 import javafx.animation.KeyFrame;
 import javafx.util.Duration;
@@ -106,7 +107,7 @@ public class ChatController {
     @FXML
     private Label topPValueLabel;
     @FXML
-    private javafx.scene.control.TextField seedField;
+    private TextField seedField;
 
     @FXML
     public void initialize() {

@@ -20,6 +20,8 @@ import java.text.MessageFormat;
 
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 
 public class LocalModelsController implements Initializable {
 
@@ -107,8 +109,7 @@ public class LocalModelsController implements Initializable {
     }
 
     private void confirmAndDelete(OllamaModel model) {
-        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
-                javafx.scene.control.Alert.AlertType.CONFIRMATION);
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle(App.getBundle().getString("local.uninstall.title"));
         String header = MessageFormat.format(App.getBundle().getString("local.uninstall.header"),
                 model.getName() + ":" + model.getTag());
@@ -121,7 +122,7 @@ public class LocalModelsController implements Initializable {
         // standard for speed unless requested.
 
         alert.showAndWait().ifPresent(response -> {
-            if (response == javafx.scene.control.ButtonType.OK) {
+            if (response == ButtonType.OK) {
                 modelManager.deleteModel(model.getName(), model.getTag());
             }
         });

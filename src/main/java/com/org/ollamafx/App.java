@@ -54,7 +54,6 @@ public class App extends Application {
         primaryStage = stage;
 
         ChatManager.getInstance().loadChats();
-        System.out.println(com.org.ollamafx.manager.HardwareManager.getHardwareDetails());
         Application.setUserAgentStylesheet(new atlantafx.base.theme.CupertinoLight().getUserAgentStylesheet());
 
         modelManager = ModelManager.getInstance();
@@ -64,7 +63,6 @@ public class App extends Application {
 
         boolean needsSplash = (cacheStatus == ModelLibraryManager.UpdateStatus.OUTDATED_HARD);
 
-        System.out.println("App: Cache status = " + cacheStatus + ", needsSplash = " + needsSplash);
 
         if (needsSplash) {
             // Cache is missing or expired (> 10 days) -> Show Splash Screen
@@ -140,7 +138,6 @@ public class App extends Application {
                             java.awt.Toolkit.getDefaultToolkit().getImage(App.class.getResource("/icons/icon.png")));
                 }
             } catch (Exception e) {
-                System.out.println("Failed to load icon: " + e.getMessage());
             }
 
             primaryStage.setMaximized(true);
@@ -163,7 +160,6 @@ public class App extends Application {
                     ".ollamafx/details_cache.json");
             if (detailsCache.exists()) {
                 detailsCache.delete();
-                System.out.println("App: Deleted details_cache.json for refresh");
             }
 
             // CRITICAL: Invalidate in-memory cache to force OUTDATED_HARD status
@@ -181,7 +177,6 @@ public class App extends Application {
             primaryStage.setTitle(getBundle().getString("app.title"));
             primaryStage.show();
 
-            System.out.println("App: Loaded Splash Screen for library refresh");
         } catch (IOException e) {
             e.printStackTrace();
         }

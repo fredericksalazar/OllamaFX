@@ -18,7 +18,7 @@
                     <children>
                         <Label text="%available.library" styleClass="h4" />
                         <Region HBox.hgrow="ALWAYS" />
-                        <MenuButton text="%available.sort" styleClass="flat">
+                        <MenuButton text="%available.sort" styleClass="flat" mnemonicParsing="false">
                             <items>
                                 <MenuItem text="%available.sort.az" onAction="#sortByNameAsc" />
                                 <MenuItem text="%available.sort.za" onAction="#sortByNameDesc" />
@@ -26,6 +26,7 @@
                         </MenuButton>
                     </children>
                 </HBox>
+                <javafx.scene.control.TextField fx:id="searchField" promptText="%available.search" styleClass="search-field" />
                 <ListView fx:id="modelListView" VBox.vgrow="ALWAYS" />
             </children>
         </VBox>

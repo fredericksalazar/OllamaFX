@@ -19,6 +19,7 @@ public class ModelManager {
     private final ObservableList<OllamaModel> popularModels = FXCollections.observableArrayList();
     private final ObservableList<OllamaModel> newModels = FXCollections.observableArrayList();
     private final ObservableList<OllamaModel> recommendedModels = FXCollections.observableArrayList();
+    private final HardwareManager.HardwareStats hardwareStats = HardwareManager.getStats();
 
     private ModelManager() {
         // Keep cache in sync
@@ -87,7 +88,6 @@ public class ModelManager {
                 com.org.ollamafx.model.LibraryCache cache = ModelLibraryManager.getInstance().getLibrary();
 
                 if (cache != null && cache.getAllModels() != null && !cache.getAllModels().isEmpty()) {
-                    System.out.println("ModelManager: Loading from cache. Models: " + cache.getAllModels().size());
 
                     // Sort POPULAR by pull count (most downloads first)
                     List<OllamaModel> sortedPopular = new java.util.ArrayList<>(cache.getAllModels());
@@ -120,7 +120,6 @@ public class ModelManager {
                     // Generate recommendations
                     ModelManager.this.generateRecommendations(top20Popular, top20New);
                 } else {
-                    System.out.println("ModelManager: No valid cache found. Data should be loaded via Splash Screen.");
                 }
 
                 return null;
@@ -184,7 +183,6 @@ public class ModelManager {
             @Override
             protected Void call() throws Exception {
                 // Carga de modelos locales (Real-time check)
-                System.out.println("ModelManager: Iniciando carga de modelos locales...");
                 final List<OllamaModel> fetchedLocalModels = ollamaManager.getLocalModels();
                 Platform.runLater(() -> localModels.setAll(fetchedLocalModels));
 
@@ -199,7 +197,7 @@ public class ModelManager {
 
     // --- CLASSIFICATION LOGIC ---
     public void classifyModel(OllamaModel model) {
-        HardwareManager.HardwareStats stats = HardwareManager.getStats();
+        HardwareManager.HardwareStats stats = hardwareStats;
         long osOverhead = 4L * 1024 * 1024 * 1024;
         long safeRamLimit = stats.totalRamBytes - osOverhead;
         long vramLimit = stats.isUnifiedMemory ? safeRamLimit : stats.totalVramBytes;
@@ -290,12 +288,10 @@ public class ModelManager {
 
     private void generateRecommendations(List<OllamaModel> popular, List<OllamaModel> newest) {
         // Get hardware stats ONCE for performance
-        HardwareManager.HardwareStats stats = HardwareManager.getStats();
+        HardwareManager.HardwareStats stats = hardwareStats;
         long osOverhead = 4L * 1024 * 1024 * 1024;
         long safeRamLimit = stats.totalRamBytes - osOverhead;
         long vramLimit = stats.isUnifiedMemory ? safeRamLimit : stats.totalVramBytes;
-
-        System.out.println("ModelManager: Generating recommendations...");
 
         List<OllamaModel> recs = new java.util.ArrayList<>();
 
@@ -339,7 +335,6 @@ public class ModelManager {
                 break;
         }
 
-        System.out.println("ModelManager: Generated " + recs.size() + " recommendations");
         Platform.runLater(() -> recommendedModels.setAll(recs));
     }
 
@@ -374,7 +369,6 @@ public class ModelManager {
         };
 
         deleteTask.setOnSucceeded(e -> {
-            System.out.println("Model deleted successfully: " + name + ":" + tag);
             refreshLocalModels();
         });
 
@@ -389,7 +383,6 @@ public class ModelManager {
     }
 
     public void refreshLocalModels() {
-        System.out.println("ModelManager: Refreshing local models...");
         Task<List<OllamaModel>> refreshTask = new Task<>() {
             @Override
             protected List<OllamaModel> call() throws Exception {
@@ -399,9 +392,7 @@ public class ModelManager {
 
         refreshTask.setOnSucceeded(e -> {
             List<OllamaModel> models = refreshTask.getValue();
-            System.out.println("ModelManager: Local models refreshed. Count: " + models.size());
             for (OllamaModel m : models) {
-                System.out.println(" - Found: " + m.getName() + ":" + m.getTag());
                 classifyModel(m); // Classify installed models too
             }
             Platform.runLater(() -> localModels.setAll(models));
@@ -419,7 +410,6 @@ public class ModelManager {
 
     public void addLocalModel(OllamaModel model) {
         Platform.runLater(() -> {
-            System.out.println("ModelManager: Attempting to add model: " + model.getName() + ":" + model.getTag());
             // Check if it already exists to avoid duplicates
             boolean exists = localModels.stream()
                     .anyMatch(m -> m.getName().equalsIgnoreCase(model.getName())
@@ -427,9 +417,7 @@ public class ModelManager {
 
             if (!exists) {
                 localModels.add(model);
-                System.out.println("ModelManager: Added new model directly. List size now: " + localModels.size());
             } else {
-                System.out.println("ModelManager: Model already exists in list. Not adding.");
             }
         });
     }
@@ -444,51 +432,14 @@ public class ModelManager {
         com.org.ollamafx.model.ModelDetailsEntry entry = ModelDetailsCacheManager.getInstance().getDetails(modelName);
 
         if (entry != null && entry.getTags() != null && !entry.getTags().isEmpty()) {
-            System.out.println("ModelManager: Cache HIT for " + modelName + " (" + entry.getTags().size() + " tags)");
             // Return directly - classification is already persisted
             return entry.getTags();
         }
 
         // If not in cache, return basic info (no scraping)
-        System.out.println("ModelManager: Cache MISS for " + modelName + ". Returning basic info.");
         List<OllamaModel> basicInfo = new java.util.ArrayList<>();
         OllamaModel basic = new OllamaModel(modelName, "Detalles no disponibles en caché local", "", "latest", "", "");
         basicInfo.add(basic);
         return basicInfo;
-    }
-
-    /**
-     * Classify multiple models with a single HardwareManager.getStats() call.
-     * Much faster than calling classifyModel() individually.
-     */
-    private void classifyModelsBatch(List<OllamaModel> models) {
-        // Get hardware stats ONCE
-        HardwareManager.HardwareStats stats = HardwareManager.getStats();
-        long osOverhead = 4L * 1024 * 1024 * 1024;
-        long safeRamLimit = stats.totalRamBytes - osOverhead;
-        long vramLimit = stats.isUnifiedMemory ? safeRamLimit : stats.totalVramBytes;
-
-        for (OllamaModel model : models) {
-            long modelSizeBytes = parseModelSizeBytes(model.getSize());
-
-            // Fallback: Estimate from parameters if size is unknown
-            if (modelSizeBytes == 0) {
-                double billionsParams = extractParameterCount(model);
-                if (billionsParams > 0) {
-                    modelSizeBytes = (long) (billionsParams * 0.65 * 1024 * 1024 * 1024);
-                }
-            }
-
-            // Classify based on size
-            if (modelSizeBytes == 0) {
-                model.setCompatibilityStatus(OllamaModel.CompatibilityStatus.CAUTION);
-            } else if (modelSizeBytes <= vramLimit) {
-                model.setCompatibilityStatus(OllamaModel.CompatibilityStatus.RECOMMENDED);
-            } else if (modelSizeBytes <= (safeRamLimit * 0.9)) {
-                model.setCompatibilityStatus(OllamaModel.CompatibilityStatus.CAUTION);
-            } else {
-                model.setCompatibilityStatus(OllamaModel.CompatibilityStatus.INCOMPATIBLE);
-            }
-        }
     }
 }
