@@ -67,6 +67,15 @@ public class HomeController implements Initializable {
     private void updateCarousel(HBox container, java.util.List<? extends OllamaModel> models) {
         container.getChildren().clear();
 
+        if (models.isEmpty()) {
+            javafx.scene.control.Label emptyLbl = new javafx.scene.control.Label(
+                    com.org.ollamafx.App.getBundle().getString("home.noModels"));
+            emptyLbl.getStyleClass().add("apple-text-subtle");
+            emptyLbl.setPadding(new javafx.geometry.Insets(20));
+            container.getChildren().add(emptyLbl);
+            return;
+        }
+
         // Limit to top 20 models to reduce CPU/memory usage
         int limit = Math.min(models.size(), 20);
 
@@ -81,7 +90,6 @@ public class HomeController implements Initializable {
     }
 
     private void handleInstall(OllamaModel model) {
-        System.out.println("Install requested for: " + model.getName());
         showDownloadPopup(model);
     }
 
@@ -174,7 +182,6 @@ public class HomeController implements Initializable {
             };
 
             task.setOnSucceeded(e -> {
-                System.out.println("Download complete!");
                 if (modelManager != null) {
                     String date = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
                             .format(java.time.LocalDateTime.now());
@@ -217,7 +224,6 @@ public class HomeController implements Initializable {
 
     @FXML
     private void loadFile() {
-        System.out.println("Load File action triggered!");
         // TODO: Implement file loading logic (Document Manager?)
     }
 

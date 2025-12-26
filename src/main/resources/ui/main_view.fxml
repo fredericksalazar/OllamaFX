@@ -9,6 +9,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.text.Font?>
 
 <BorderPane fx:id="mainBorderPane" prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.org.ollamafx.controller.MainController">
@@ -31,28 +32,58 @@
                         </VBox.margin>
                     </Separator>
                     
-                    <Button fx:id="btnHome" alignment="BASELINE_LEFT" maxWidth="Infinity" mnemonicParsing="false" onAction="#showHome" styleClass="button" text="Home">
+                    <Button fx:id="btnHome" alignment="BASELINE_LEFT" maxWidth="Infinity" mnemonicParsing="false" onAction="#showHome" styleClass="button" text="%sidebar.home">
+                        <graphic>
+                            <Region styleClass="icon-region, icon-home" />
+                        </graphic>
+                        <tooltip>
+                            <javafx.scene.control.Tooltip text="%sidebar.home" />
+                        </tooltip>
                         <padding>
                             <Insets left="20.0" top="10.0" bottom="10.0"/>
                         </padding>
                     </Button>
                     
                     <Button fx:id="btnAvailable" alignment="BASELINE_LEFT" maxWidth="Infinity" mnemonicParsing="false" onAction="#showAvailableModels" styleClass="button" text="%sidebar.availableModels">
+                         <graphic>
+                            <Region styleClass="icon-region, icon-download" />
+                        </graphic>
+                        <tooltip>
+                            <javafx.scene.control.Tooltip text="%sidebar.availableModels" />
+                        </tooltip>
                          <padding>
                             <Insets left="20.0" top="10.0" bottom="10.0"/>
                         </padding>
                     </Button>
                     <Button fx:id="btnLocal" alignment="BASELINE_LEFT" maxWidth="Infinity" mnemonicParsing="false" onAction="#showLocalModels" styleClass="button" text="%sidebar.localModels">
+                        <graphic>
+                            <Region styleClass="icon-region, icon-cube" />
+                        </graphic>
+                        <tooltip>
+                            <javafx.scene.control.Tooltip text="%sidebar.localModels" />
+                        </tooltip>
                         <padding>
                             <Insets left="20.0" top="10.0" bottom="10.0"/>
                         </padding>
                     </Button>
                     <Button fx:id="btnSettings" alignment="BASELINE_LEFT" maxWidth="Infinity" mnemonicParsing="false" onAction="#openSettings" styleClass="button" text="%sidebar.settings">
+                        <graphic>
+                            <Region styleClass="icon-region, icon-settings" />
+                        </graphic>
+                        <tooltip>
+                            <javafx.scene.control.Tooltip text="%sidebar.settings" />
+                        </tooltip>
                         <padding>
                             <Insets left="20.0" top="10.0" bottom="10.0"/>
                         </padding>
                     </Button>
                     <Button fx:id="btnAbout" alignment="BASELINE_LEFT" maxWidth="Infinity" mnemonicParsing="false" onAction="#showAbout" styleClass="button" text="%sidebar.about">
+                        <graphic>
+                            <Region styleClass="icon-region, icon-info" />
+                        </graphic>
+                        <tooltip>
+                            <javafx.scene.control.Tooltip text="%sidebar.about" />
+                        </tooltip>
                         <padding>
                             <Insets left="20.0" top="10.0" bottom="10.0"/>
                         </padding>

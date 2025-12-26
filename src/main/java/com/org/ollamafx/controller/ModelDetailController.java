@@ -31,9 +31,14 @@ import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
+import com.org.ollamafx.manager.HardwareManager;
 
 public class ModelDetailController {
 
@@ -107,7 +112,6 @@ public class ModelDetailController {
             };
 
             task.setOnSucceeded(e -> {
-                System.out.println("Download complete!");
                 if (modelManager != null) {
                     String date = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
                             .format(LocalDateTime.now());
@@ -307,12 +311,64 @@ public class ModelDetailController {
 
                 actionBtn.getStyleClass().add(Styles.SUCCESS);
                 actionBtn.setOnAction(ev -> {
-                    showDownloadPopup(model);
+                    handleDownloadRequest(model);
                 });
             }
 
             card.getChildren().addAll(statusBadge, infoBox, spacer, actionBtn);
             modelListContainer.getChildren().add(card);
+        }
+    }
+
+    private void handleDownloadRequest(OllamaModel model) {
+        OllamaModel.CompatibilityStatus status = model.getCompatibilityStatus();
+        if (status == OllamaModel.CompatibilityStatus.RECOMMENDED) {
+            showDownloadPopup(model);
+            return;
+        }
+
+        if (status == OllamaModel.CompatibilityStatus.CAUTION) {
+            Alert alert = new Alert(Alert.AlertType.WARNING, App.getBundle().getString("model.install.warn.content"),
+                    ButtonType.OK, ButtonType.CANCEL);
+            alert.setTitle(App.getBundle().getString("model.install.warn.title"));
+            alert.setHeaderText(
+                    MessageFormat.format(App.getBundle().getString("model.install.warn.header"), model.getTag()));
+            alert.showAndWait().ifPresent(response -> {
+                if (response == ButtonType.OK) {
+                    showDownloadPopup(model);
+                }
+            });
+            return;
+        }
+
+        if (status == OllamaModel.CompatibilityStatus.INCOMPATIBLE) {
+            Alert alert = new Alert(Alert.AlertType.ERROR, null, ButtonType.OK, ButtonType.CANCEL);
+            alert.setTitle(App.getBundle().getString("model.install.error.title"));
+            alert.setHeaderText(
+                    MessageFormat.format(App.getBundle().getString("model.install.error.header"), model.getTag()));
+
+            long availableRam = (long) HardwareManager.getStats().getTotalRamGB();
+            alert.setContentText(MessageFormat.format(App.getBundle().getString("model.install.error.content"),
+                    model.getTag(), availableRam));
+
+            // Custom Double-Check logic
+            CheckBox confirmCheck = new CheckBox(App.getBundle().getString("model.install.error.confirm"));
+            confirmCheck.setWrapText(true);
+            alert.getDialogPane().setExpandableContent(new VBox(10, confirmCheck));
+            alert.getDialogPane().setExpanded(true);
+
+            Button okButton = (Button) alert.getDialogPane().lookupButton(ButtonType.OK);
+            okButton.setDisable(true);
+
+            confirmCheck.selectedProperty().addListener((obs, oldVal, newVal) -> {
+                okButton.setDisable(!newVal);
+            });
+
+            alert.showAndWait().ifPresent(response -> {
+                if (response == ButtonType.OK && confirmCheck.isSelected()) {
+                    showDownloadPopup(model);
+                }
+            });
         }
     }
 }

@@ -48,7 +48,6 @@ public class LibraryCacheManager {
         try {
             cache.setLastUpdated(System.currentTimeMillis());
             mapper.writeValue(cacheFile, cache);
-            System.out.println("LibraryCacheManager: Cache saved to " + cacheFile.getAbsolutePath());
         } catch (IOException e) {
             System.err.println("LibraryCacheManager: Failed to save cache.");
             e.printStackTrace();
@@ -57,7 +56,6 @@ public class LibraryCacheManager {
 
     public synchronized LibraryCache loadCache() {
         if (!cacheFile.exists()) {
-            System.out.println("LibraryCacheManager: No cache file found.");
             return null;
         }
 
@@ -76,7 +74,6 @@ public class LibraryCacheManager {
             return false;
         long age = System.currentTimeMillis() - cache.getLastUpdated();
         boolean valid = age < CACHE_EXPIRY_MS;
-        System.out.println("LibraryCacheManager: Cache age is " + (age / 1000 / 60) + " minutes. Valid: " + valid);
         return valid;
     }
 

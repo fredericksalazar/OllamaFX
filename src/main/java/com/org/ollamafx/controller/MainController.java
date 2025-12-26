@@ -21,9 +21,12 @@ import javafx.animation.KeyFrame;
 import javafx.util.Duration;
 import com.org.ollamafx.manager.OllamaServiceManager;
 import javafx.application.Platform;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.layout.HBox;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.SVGPath;
+import javafx.geometry.Pos;
+import javafx.geometry.Insets;
 
 public class MainController implements Initializable {
 
@@ -64,7 +67,6 @@ public class MainController implements Initializable {
     private ModelManager modelManager;
 
     public MainController() {
-        System.out.println("MainController instantiated!");
         this.chatManager = ChatManager.getInstance();
     }
 
@@ -74,7 +76,6 @@ public class MainController implements Initializable {
         // now.
         if (OllamaServiceManager.getInstance().isRunning()) {
             if (modelManager.getLocalModels().isEmpty()) {
-                System.out.println("MainController: Ollama running but models missing. Retrying load...");
                 modelManager.loadAllModels();
             }
         }
@@ -101,17 +102,10 @@ public class MainController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        System.out.println("MainController initialized!");
-
-        if (centerContentPane == null) {
-            System.err.println("centerContentPane is NULL! Check FXML fx:id");
-        }
-
         // Eager load Home View
         preloadHomeView();
 
         // Ollama Checks
-        checkOllamaInstallation();
         checkOllamaInstallation();
         startStatusPolling();
 
@@ -131,56 +125,38 @@ public class MainController implements Initializable {
                     setGraphic(null);
                     setContextMenu(null);
                 } else {
-                    // Layout Container matches CSS pill style
-                    javafx.scene.layout.HBox container = new javafx.scene.layout.HBox();
-                    container.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+                    HBox container = new HBox();
+                    container.setAlignment(Pos.CENTER_LEFT);
                     container.setSpacing(10);
-                    container.setPadding(new javafx.geometry.Insets(5, 0, 5, 15)); // Add left padding
+                    container.setPadding(new Insets(5, 0, 5, 15));
 
-                    String StringdisplayText = item.getName();
+                    String displayText = item.getName();
                     if (item.isPinned()) {
-                        StringdisplayText = "📌 " + StringdisplayText;
+                        displayText = "📌 " + displayText;
                         getStyleClass().add("pinned-chat");
                     } else {
                         getStyleClass().remove("pinned-chat");
                     }
-                    Label nameLabel = new Label(StringdisplayText);
+                    Label nameLabel = new Label(displayText);
                     nameLabel.setMaxWidth(Double.MAX_VALUE);
-                    javafx.scene.layout.HBox.setHgrow(nameLabel, javafx.scene.layout.Priority.ALWAYS);
+                    HBox.setHgrow(nameLabel, Priority.ALWAYS);
 
-                    // Menu Button (Settings Gear Icon)
-                    javafx.scene.shape.SVGPath icon = new javafx.scene.shape.SVGPath();
-                    // Ellipsis Icon (Three Dots) - Horizontal
+                    SVGPath icon = new SVGPath();
                     icon.setContent(
                             "M6 10c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm6 0c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm6 0c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2z");
-                    icon.setScaleX(0.85); // Make it smaller/lighter
+                    icon.setScaleX(0.85);
                     icon.setScaleY(0.85);
 
-                    // We can use styleclass or inline style to ensure color adapts
-                    // icon.setStyle("-fx-fill: -color-fg-default;"); // Native text color
-
-                    javafx.scene.control.MenuButton menuButton = new javafx.scene.control.MenuButton();
+                    MenuButton menuButton = new MenuButton();
                     menuButton.setGraphic(icon);
-                    // Native AtlantaFX "Flat" and "Icon" styles
                     menuButton.getStyleClass().addAll("flat", "button-icon");
-                    // Remove default arrow if user wants just the gear, but MenuButton usually
-                    // needs arrow.
-                    // "button-icon" often hides text. "flat" removes background.
-                    // To remove the arrow, we can style the .arrow pane to 0 size in CSS or just
-                    // accept it.
-                    // For now, adhere to "MenuButton de tipo flat" which usually keeps arrow but is
-                    // clean.
-                    menuButton.setStyle("-fx-mark-visible: false;"); // Try to hide arrow via style if possible, or
-                                                                     // leave standard.
-                    // Actually, let's stick to standard FLAT.
+                    menuButton.setStyle("-fx-mark-visible: false;");
 
-                    ResourceBundle bundle = com.org.ollamafx.App.getBundle();
+                    ResourceBundle bundle = resources; // Use injected resources
 
-                    javafx.scene.control.MenuItem renameItem = new javafx.scene.control.MenuItem(
-                            bundle.getString("context.rename"));
+                    MenuItem renameItem = new MenuItem(bundle.getString("context.rename"));
                     renameItem.setOnAction(e -> {
-                        javafx.scene.control.TextInputDialog dialog = new javafx.scene.control.TextInputDialog(
-                                item.getName());
+                        TextInputDialog dialog = new TextInputDialog(item.getName());
                         dialog.setTitle(bundle.getString("dialog.rename.title"));
                         dialog.setHeaderText(bundle.getString("dialog.rename.header"));
                         dialog.showAndWait().ifPresent(newName -> {
@@ -188,17 +164,16 @@ public class MainController implements Initializable {
                             getListView().refresh();
                         });
                     });
-                    javafx.scene.control.MenuItem pinItem = new javafx.scene.control.MenuItem(
+                    MenuItem pinItem = new MenuItem(
                             item.isPinned() ? bundle.getString("context.unpin") : bundle.getString("context.pin"));
                     pinItem.setOnAction(e -> {
                         chatManager.togglePin(item);
                         getListView().refresh();
                     });
-                    javafx.scene.control.MenuItem deleteItem = new javafx.scene.control.MenuItem(
-                            bundle.getString("context.delete"));
+                    MenuItem deleteItem = new MenuItem(bundle.getString("context.delete"));
                     deleteItem.setStyle("-fx-text-fill: red;");
                     deleteItem.setOnAction(e -> chatManager.deleteChat(item));
-                    menuButton.getItems().addAll(renameItem, pinItem, new javafx.scene.control.SeparatorMenuItem(),
+                    menuButton.getItems().addAll(renameItem, pinItem, new SeparatorMenuItem(),
                             deleteItem);
 
                     container.getChildren().addAll(nameLabel, menuButton);
@@ -447,7 +422,6 @@ public class MainController implements Initializable {
                 Platform.runLater(() -> {
                     updateStatusUI(started);
                     if (started && modelManager != null) {
-                        System.out.println("MainController: Auto-start success. Loading models...");
                         modelManager.loadAllModels();
                     }
                 });

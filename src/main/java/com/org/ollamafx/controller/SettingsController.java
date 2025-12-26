@@ -13,6 +13,15 @@ import javafx.scene.control.TextField;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.ResourceBundle;
+import java.io.File;
+import javafx.animation.FadeTransition;
+import javafx.util.Duration;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+import javafx.stage.Modality;
+import javafx.application.Application;
 
 public class SettingsController {
 
@@ -120,11 +129,22 @@ public class SettingsController {
         String newHost = hostTextField.getText();
         if (newHost != null && !newHost.trim().isEmpty()) {
             configManager.setOllamaHost(newHost.trim());
-            statusLabel.setText(bundle.getString("settings.status.saved"));
-            statusLabel.setStyle("-fx-text-fill: green;");
+            statusLabel.setText("✓ " + bundle.getString("settings.status.saved"));
+            statusLabel.setStyle("-fx-text-fill: -color-success-fg;");
+
+            // Fade out animation after 3 seconds
+            FadeTransition fade = new FadeTransition(Duration.millis(500), statusLabel);
+            fade.setDelay(Duration.seconds(3));
+            fade.setFromValue(1.0);
+            fade.setToValue(0.0);
+            fade.setOnFinished(e -> {
+                statusLabel.setText("");
+                statusLabel.setOpacity(1.0);
+            });
+            fade.play();
         } else {
-            statusLabel.setText(bundle.getString("settings.status.invalid"));
-            statusLabel.setStyle("-fx-text-fill: red;");
+            statusLabel.setText("⚠ " + bundle.getString("settings.status.invalid"));
+            statusLabel.setStyle("-fx-text-fill: -color-danger-fg;");
         }
     }
 
@@ -132,10 +152,9 @@ public class SettingsController {
     private void refreshLibrary() {
         // Delete cache to force redownload
         try {
-            java.io.File cacheFile = new java.io.File(cacheManager.getCacheFilePath());
+            File cacheFile = new File(cacheManager.getCacheFilePath());
             if (cacheFile.exists()) {
                 cacheFile.delete();
-                System.out.println("SettingsController: Cache file deleted for refresh.");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -148,15 +167,14 @@ public class SettingsController {
     @FXML
     private void showHardwareLogic() {
         try {
-            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
-                    getClass().getResource("/ui/hardware_explanation_popup.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/hardware_explanation_popup.fxml"));
             loader.setResources(bundle);
-            javafx.scene.Parent root = loader.load();
+            Parent root = loader.load();
 
-            javafx.stage.Stage stage = new javafx.stage.Stage();
+            Stage stage = new Stage();
             stage.setTitle(bundle.getString("settings.hardware.popup.title"));
-            stage.setScene(new javafx.scene.Scene(root));
-            stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.APPLICATION_MODAL);
             stage.showAndWait();
         } catch (Exception e) {
             e.printStackTrace();
@@ -165,16 +183,16 @@ public class SettingsController {
 
     @FXML
     private void toggleTheme() {
-        if (javafx.application.Application.getUserAgentStylesheet()
+        if (Application.getUserAgentStylesheet()
                 .equals(new atlantafx.base.theme.CupertinoDark().getUserAgentStylesheet())) {
-            javafx.application.Application
+            Application
                     .setUserAgentStylesheet(new atlantafx.base.theme.CupertinoLight().getUserAgentStylesheet());
             if (themeButton.getScene() != null) {
                 themeButton.getScene().getRoot().getStyleClass().remove("dark");
                 themeButton.getScene().getRoot().getStyleClass().add("light");
             }
         } else {
-            javafx.application.Application
+            Application
                     .setUserAgentStylesheet(new atlantafx.base.theme.CupertinoDark().getUserAgentStylesheet());
             if (themeButton.getScene() != null) {
                 themeButton.getScene().getRoot().getStyleClass().remove("light");
