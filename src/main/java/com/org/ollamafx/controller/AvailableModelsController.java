@@ -95,11 +95,18 @@ public class AvailableModelsController {
         detailViewContainer.getChildren().setAll(progressIndicator);
         System.out.println("DEBUG: ProgressIndicator set.");
 
-        // La tarea ahora espera una Lista de OllamaModel
+        // Create Task
         Task<List<OllamaModel>> loadDetailsTask = new Task<>() {
             @Override
             protected List<OllamaModel> call() throws Exception {
                 System.out.println("DEBUG: Background Task started for " + selectedModel.getName());
+                try {
+                    // Check if manager is available
+                    if (modelManager == null) {
+                        throw new IllegalStateException("ModelManager is null");
+                    }
+                    // Use ModelManager which handles Caching & Classification
+                    return modelManager.getModelDetails(selectedModel.getName());
                 } catch (Exception e) {
                     System.err.println("DEBUG: Error in background task: " + e.getMessage());
                     e.printStackTrace();
@@ -108,38 +115,36 @@ public class AvailableModelsController {
             }
         };
 
-    currentTask=loadDetailsTask; // Track it
+        currentTask = loadDetailsTask; // Track it
 
-    loadDetailsTask.setOnSucceeded(event->
-
-    {
-        System.out.println("DEBUG: Task succeeded. Updating UI...");
-        List<OllamaModel> details = loadDetailsTask.getValue();
-        Platform.runLater(() -> {
-            System.out.println("DEBUG: Calling showDetailsInView on UI thread.");
-            showDetailsInView(details);
+        loadDetailsTask.setOnSucceeded(event -> {
+            System.out.println("DEBUG: Task succeeded. Updating UI...");
+            List<OllamaModel> details = loadDetailsTask.getValue();
+            Platform.runLater(() -> {
+                System.out.println("DEBUG: Calling showDetailsInView on UI thread.");
+                showDetailsInView(details);
+            });
         });
-    });
 
-    loadDetailsTask.setOnFailed(event->
-    {
-        System.err.println("DEBUG: Task failed event.");
-        if (loadDetailsTask.getException() != null) {
-            loadDetailsTask.getException().printStackTrace();
-        }
-        Platform.runLater(() -> showErrorInView("Error Loading Details", "Failed to load model details."));
-    });
+        loadDetailsTask.setOnFailed(event -> {
+            System.err.println("DEBUG: Task failed event.");
+            Throwable ex = loadDetailsTask.getException();
+            if (ex != null) {
+                ex.printStackTrace();
+            }
+            Platform.runLater(() -> showErrorInView("Error Loading Details", "Failed to load model details."));
+        });
 
-    // ... (onFailed se queda igual)
-    new Thread(loadDetailsTask).start();System.out.println("DEBUG: Task thread started.");
-}
-
-// Helper to check task state implicitly
-private static class CodeBlock {
-    static boolean isRunning(Task<?> task) {
-        return task.getState() == javafx.concurrent.Worker.State.RUNNING
-                || task.getState() == javafx.concurrent.Worker.State.SCHEDULED;
+        new Thread(loadDetailsTask).start();
+        System.out.println("DEBUG: Task thread started.");
     }
+
+    // Helper to check task state implicitly
+    private static class CodeBlock {
+        static boolean isRunning(Task<?> task) {
+            return task.getState() == javafx.concurrent.Worker.State.RUNNING
+                    || task.getState() == javafx.concurrent.Worker.State.SCHEDULED;
+        }
 
     }
 
