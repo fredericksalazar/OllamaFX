@@ -100,13 +100,6 @@ public class AvailableModelsController {
             @Override
             protected List<OllamaModel> call() throws Exception {
                 System.out.println("DEBUG: Background Task started for " + selectedModel.getName());
-                try {
-                    // LLAMAMOS AL NUEVO MÉTODO DE SCRAPING
-                    long start = System.currentTimeMillis();
-                    List<OllamaModel> result = ollamaManager.scrapeModelDetails(selectedModel.getName());
-                    System.out.println(
-                            "DEBUG: scrapeModelDetails finished in " + (System.currentTimeMillis() - start) + "ms");
-                    return result;
                 } catch (Exception e) {
                     System.err.println("DEBUG: Error in background task: " + e.getMessage());
                     e.printStackTrace();
@@ -115,36 +108,39 @@ public class AvailableModelsController {
             }
         };
 
-        currentTask = loadDetailsTask; // Track it
+    currentTask=loadDetailsTask; // Track it
 
-        loadDetailsTask.setOnSucceeded(event -> {
-            System.out.println("DEBUG: Task succeeded. Updating UI...");
-            List<OllamaModel> details = loadDetailsTask.getValue();
-            Platform.runLater(() -> {
-                System.out.println("DEBUG: Calling showDetailsInView on UI thread.");
-                showDetailsInView(details);
-            });
+    loadDetailsTask.setOnSucceeded(event->
+
+    {
+        System.out.println("DEBUG: Task succeeded. Updating UI...");
+        List<OllamaModel> details = loadDetailsTask.getValue();
+        Platform.runLater(() -> {
+            System.out.println("DEBUG: Calling showDetailsInView on UI thread.");
+            showDetailsInView(details);
         });
+    });
 
-        loadDetailsTask.setOnFailed(event -> {
-            System.err.println("DEBUG: Task failed event.");
-            if (loadDetailsTask.getException() != null) {
-                loadDetailsTask.getException().printStackTrace();
-            }
-            Platform.runLater(() -> showErrorInView("Error Loading Details", "Failed to load model details."));
-        });
+    loadDetailsTask.setOnFailed(event->
+    {
+        System.err.println("DEBUG: Task failed event.");
+        if (loadDetailsTask.getException() != null) {
+            loadDetailsTask.getException().printStackTrace();
+        }
+        Platform.runLater(() -> showErrorInView("Error Loading Details", "Failed to load model details."));
+    });
 
-        // ... (onFailed se queda igual)
-        new Thread(loadDetailsTask).start();
-        System.out.println("DEBUG: Task thread started.");
+    // ... (onFailed se queda igual)
+    new Thread(loadDetailsTask).start();System.out.println("DEBUG: Task thread started.");
+}
+
+// Helper to check task state implicitly
+private static class CodeBlock {
+    static boolean isRunning(Task<?> task) {
+        return task.getState() == javafx.concurrent.Worker.State.RUNNING
+                || task.getState() == javafx.concurrent.Worker.State.SCHEDULED;
     }
 
-    // Helper to check task state implicitly
-    private static class CodeBlock {
-        static boolean isRunning(Task<?> task) {
-            return task.getState() == javafx.concurrent.Worker.State.RUNNING
-                    || task.getState() == javafx.concurrent.Worker.State.SCHEDULED;
-        }
     }
 
     // El método ahora recibe una lista de modelos (tags)

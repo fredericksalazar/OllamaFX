@@ -55,8 +55,33 @@ public class ModelCard extends VBox {
             });
         }
 
+        // STATUS BADGE (Hardware Compatibility)
+        Label statusBadge = new Label();
+        statusBadge.getStyleClass().add("model-badge-small");
+        OllamaModel.CompatibilityStatus status = model.getCompatibilityStatus();
+
+        // Ensure status isn't null (fallback)
+        if (status == null)
+            status = OllamaModel.CompatibilityStatus.CAUTION;
+
+        switch (status) {
+            case RECOMMENDED:
+                statusBadge.setText("Recommended"); // Localization later?
+                statusBadge.setStyle("-fx-background-color: -color-success-subtle; -fx-text-fill: -color-success-fg;");
+                break;
+            case CAUTION:
+                statusBadge.setText("Standard");
+                statusBadge.setStyle("-fx-background-color: -color-warning-subtle; -fx-text-fill: -color-warning-fg;");
+                break;
+            case INCOMPATIBLE:
+                statusBadge.setText("Not Recommended");
+                statusBadge.setStyle("-fx-background-color: -color-danger-subtle; -fx-text-fill: -color-danger-fg;");
+                break;
+        }
+        badgesBox.getChildren().add(statusBadge);
+
         // PARAM SIZE (if not in badges, try to guess or show from size)
-        if (badgesBox.getChildren().isEmpty() && !model.getSize().equals("N/A")) {
+        if (badgesBox.getChildren().size() < 2 && !model.getSize().equals("N/A")) {
             Label sizeBadge = new Label(model.getSize());
             sizeBadge.getStyleClass().add("model-badge-small");
             badgesBox.getChildren().add(sizeBadge);
