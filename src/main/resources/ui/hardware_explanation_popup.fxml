@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.layout.Region?>
+
+<VBox alignment="CENTER" spacing="15.0" styleClass="dialog-pane" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.org.ollamafx.controller.HardwareExplanationController">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+
+    <Label text="%settings.hardware.popup.title" styleClass="title-2" />
+    
+    <Label text="%settings.hardware.popup.intro" wrapText="true" textAlignment="CENTER" style="-fx-text-fill: -color-fg-muted;" />
+    
+    <Separator />
+
+    <!-- TIERS -->
+    <VBox spacing="10" alignment="CENTER_LEFT" maxWidth="400">
+        <!-- High Perf -->
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Region style="-fx-background-color: -color-success-fg; -fx-min-width: 12; -fx-min-height: 12; -fx-background-radius: 6;" />
+            <VBox>
+                <Label text="%settings.hardware.popup.highIter" style="-fx-font-weight: bold; -fx-text-fill: -color-success-fg;" />
+                <Label text="%settings.hardware.popup.highDesc" wrapText="true" style="-fx-font-size: 11px; -fx-text-fill: -color-fg-muted;" />
+            </VBox>
+        </HBox>
+
+        <!-- Standard Perf -->
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Region style="-fx-background-color: -color-warning-fg; -fx-min-width: 12; -fx-min-height: 12; -fx-background-radius: 6;" />
+            <VBox>
+                <Label text="%settings.hardware.popup.stdIter" style="-fx-font-weight: bold; -fx-text-fill: -color-warning-fg;" />
+                <Label text="%settings.hardware.popup.stdDesc" wrapText="true" style="-fx-font-size: 11px; -fx-text-fill: -color-fg-muted;" />
+            </VBox>
+        </HBox>
+
+        <!-- Not Rec -->
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Region style="-fx-background-color: -color-fg-muted; -fx-min-width: 12; -fx-min-height: 12; -fx-background-radius: 6;" />
+            <VBox>
+                <Label text="%settings.hardware.popup.notRec" style="-fx-font-weight: bold; -fx-text-fill: -color-fg-muted;" />
+                <Label text="%settings.hardware.popup.notRecDesc" wrapText="true" style="-fx-font-size: 11px; -fx-text-fill: -color-fg-muted;" />
+            </VBox>
+        </HBox>
+    </VBox>
+
+    <Separator />
+
+    <!-- USER STATS -->
+    <VBox spacing="5" alignment="CENTER" style="-fx-background-color: -color-bg-subtle; -fx-padding: 10; -fx-background-radius: 8;">
+        <Label text="%settings.hardware.popup.yourStats" style="-fx-font-weight: bold;" />
+        <HBox spacing="20" alignment="CENTER">
+             <VBox alignment="CENTER">
+                <Label text="RAM" style="-fx-font-size: 10px; -fx-text-fill: -color-fg-muted;" />
+                <Label fx:id="totalRamLabel" text="-" style="-fx-font-weight: bold;" />
+             </VBox>
+             <Separator orientation="VERTICAL" />
+             <VBox alignment="CENTER">
+                <Label text="VRAM" style="-fx-font-size: 10px; -fx-text-fill: -color-fg-muted;" />
+                <Label fx:id="vramLabel" text="-" style="-fx-font-weight: bold;" />
+             </VBox>
+             <Separator orientation="VERTICAL" />
+             <VBox alignment="CENTER">
+                <Label text="%settings.hardware.popup.safeLimit" style="-fx-font-size: 10px; -fx-text-fill: -color-fg-muted;" />
+                <Label fx:id="safeLimitLabel" text="-" style="-fx-font-weight: bold; -fx-text-fill: -color-accent-fg;" />
+             </VBox>
+        </HBox>
+    </VBox>
+
+    <Button text="OK" onAction="#close" styleClass="accent" />
+
+</VBox>

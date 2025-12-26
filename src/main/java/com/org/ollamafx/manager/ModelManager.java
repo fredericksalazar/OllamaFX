@@ -1,7 +1,7 @@
 package com.org.ollamafx.manager;
 
 import com.org.ollamafx.model.OllamaModel;
-import oshi.SystemInfo;
+
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -195,15 +195,25 @@ public class ModelManager {
     }
 
     private void generateRecommendations(List<OllamaModel> popular, List<OllamaModel> newest) {
-        // Simple logic based on RAM
-        long totalRam = new SystemInfo().getHardware().getMemory().getTotal();
-        double gb = totalRam / (1024.0 * 1024.0 * 1024.0);
+        HardwareManager.HardwareStats stats = HardwareManager.getStats();
 
-        System.out.println("ModelManager: Generating recommendations for " + String.format("%.2f", gb) + " GB RAM");
+        // Safety Overhead for OS (e.g., 4GB reserved)
+        long osOverhead = 4L * 1024 * 1024 * 1024;
+
+        long safeRamLimit = stats.totalRamBytes - osOverhead;
+        // On Apple Silicon, safeRamLimit acts as VRAM too.
+        // On PC, we have distinct VRAM.
+        long vramLimit = stats.isUnifiedMemory ? safeRamLimit : stats.totalVramBytes;
+
+        System.out.println("ModelManager: Generating recommendations based on Hardware:");
+        System.out.println(" - Total RAM: " + String.format("%.2f GB", stats.getTotalRamGB()));
+        System.out.println(" - Effective VRAM: " + String.format("%.2f GB", vramLimit / (1024.0 * 1024.0 * 1024.0)));
+        System.out.println(" - Safe RAM Limit (OS reserved): "
+                + String.format("%.2f GB", safeRamLimit / (1024.0 * 1024.0 * 1024.0)));
 
         List<OllamaModel> recs = new java.util.ArrayList<>();
 
-        // Source pool: Popular + Newest (deduplicated)
+        // Pool Source: Popular + Newest
         java.util.Set<String> seen = new java.util.HashSet<>();
         List<OllamaModel> pool = new java.util.ArrayList<>();
         if (popular != null)
@@ -216,32 +226,56 @@ public class ModelManager {
                 continue;
             seen.add(m.getName());
 
-            boolean suitable = false;
-            String lowerName = m.getName().toLowerCase();
+            long modelSizeBytes = parseModelSizeBytes(m.getSize());
 
-            // Heuristic filtering
-            if (gb < 8.0) {
-                if (lowerName.contains("phi") || lowerName.contains("tiny") || lowerName.contains("qwen")
-                        || lowerName.contains("gemmanano")) {
-                    suitable = true;
-                }
-            } else if (gb <= 16.0) {
-                if (lowerName.contains("llama3") || lowerName.contains("mistral") || lowerName.contains("gemma")
-                        || lowerName.contains("phi")) {
-                    suitable = true;
-                }
-            } else {
-                suitable = true;
+            // LOGIC TABLE OF EQUIVALENCES
+            // 1. Must fit in System RAM (absolute hard limit for running at all)
+            if (modelSizeBytes > safeRamLimit) {
+                continue; // Skip, too big for this machine
             }
 
-            if (suitable) {
+            // 2. Recommendation Tier
+            // We recommend it if it fits in VRAM (Fast) OR if it is a smaller model that
+            // runs reasonably on CPU.
+            // For the "Recommended" list, let's be strict: Models that will provide a GOOD
+            // experience.
+            // - Fits in VRAM (Green tier) -> DEFINITELY RECOMMEND
+            // - Fits in RAM but < 50% of Total RAM (to ensure decent CPU performance) ->
+            // OKAY
+
+            boolean highPerformance = modelSizeBytes <= vramLimit;
+            boolean standardPerformance = modelSizeBytes <= (safeRamLimit * 0.8); // 80% of max safe ram
+
+            if (highPerformance || standardPerformance) {
                 recs.add(m);
             }
-            if (recs.size() >= 10)
-                break;
+
+            if (recs.size() >= 12)
+                break; // Limit to desktop grid size
         }
 
         Platform.runLater(() -> recommendedModels.setAll(recs));
+    }
+
+    private long parseModelSizeBytes(String sizeStr) {
+        if (sizeStr == null || sizeStr.isEmpty())
+            return 0;
+        try {
+            String lower = sizeStr.toLowerCase().trim();
+            double value = Double.parseDouble(lower.replaceAll("[^0-9.]", ""));
+            long multiplier = 1;
+            if (lower.contains("gb") || lower.contains("g")) {
+                multiplier = 1024L * 1024 * 1024;
+            } else if (lower.contains("mb") || lower.contains("m")) {
+                multiplier = 1024L * 1024;
+            } else if (lower.contains("kb") || lower.contains("k")) {
+                multiplier = 1024L;
+            }
+            return (long) (value * multiplier);
+        } catch (NumberFormatException e) {
+            System.err.println("Failed to parse model size: " + sizeStr);
+            return 0;
+        }
     }
 
     public ObservableList<OllamaModel> getAvailableModels() {

@@ -26,6 +26,9 @@ public class SettingsController {
     private Label ramLabel;
 
     @FXML
+    private Label vramLabel;
+
+    @FXML
     private Label cpuLabel;
 
     @FXML
@@ -39,6 +42,8 @@ public class SettingsController {
 
         // Populate Hardware Info
         ramLabel.setText(HardwareManager.getRamDetails());
+        if (vramLabel != null)
+            vramLabel.setText(HardwareManager.getVramDetails());
         cpuLabel.setText(HardwareManager.getCpuDetails());
         osLabel.setText(HardwareManager.getOsDetails());
 
@@ -74,6 +79,24 @@ public class SettingsController {
         } else {
             statusLabel.setText(com.org.ollamafx.App.getBundle().getString("settings.status.invalid"));
             statusLabel.setStyle("-fx-text-fill: red;");
+        }
+    }
+
+    @FXML
+    private void showHardwareLogic() {
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                    getClass().getResource("/ui/hardware_explanation_popup.fxml"));
+            loader.setResources(com.org.ollamafx.App.getBundle());
+            javafx.scene.Parent root = loader.load();
+
+            javafx.stage.Stage stage = new javafx.stage.Stage();
+            stage.setTitle(com.org.ollamafx.App.getBundle().getString("settings.hardware.popup.title"));
+            stage.setScene(new javafx.scene.Scene(root));
+            stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+            stage.showAndWait();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

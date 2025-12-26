@@ -7,6 +7,8 @@
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.text.Text?>
 
 <VBox alignment="TOP_CENTER" spacing="20.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.org.ollamafx.controller.SettingsController">
@@ -43,13 +45,21 @@
     <Separator />
 
     <VBox spacing="10.0">
-        <Label styleClass="title-4" text="%settings.section.system" />
+        <HBox alignment="CENTER_LEFT" spacing="10">
+            <Label styleClass="title-4" text="%settings.section.system" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Button text="%settings.viewHardwareLogic" onAction="#showHardwareLogic" styleClass="button-outlined" style="-fx-font-size: 11px;" />
+        </HBox>
+        
         <VBox spacing="5.0" style="-fx-background-color: -color-bg-subtle; -fx-padding: 10; -fx-background-radius: 5;">
             <Label text="%settings.ram" style="-fx-font-weight: bold;" />
             <Label fx:id="ramLabel" text="%settings.loading" textFill="#888888" />
+
+            <Label text="%settings.vram" style="-fx-font-weight: bold;" />
+            <Label fx:id="vramLabel" text="%settings.loading" textFill="#888888" />
             
             <Label text="%settings.cpu" style="-fx-font-weight: bold;" />
-            <Label fx:id="cpuLabel" text="%settings.loading" textFill="#888888" />
+            <Label fx:id="cpuLabel" text="%settings.loading" textFill="#888888" wrapText="true" />
             
             <Label text="%settings.os" style="-fx-font-weight: bold;" />
             <Label fx:id="osLabel" text="%settings.loading" textFill="#888888" />
