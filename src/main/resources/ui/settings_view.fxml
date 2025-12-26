@@ -66,6 +66,34 @@
         </VBox>
     </VBox>
     
+    <Separator />
+    
+    <!-- Model Library Section -->
+    <VBox spacing="10.0">
+        <HBox alignment="CENTER_LEFT" spacing="10">
+            <Label styleClass="title-4" text="%settings.section.library" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Button fx:id="refreshLibraryButton" text="%settings.library.refresh" onAction="#refreshLibrary" styleClass="accent" />
+        </HBox>
+        
+        <VBox spacing="5.0" style="-fx-background-color: -color-bg-subtle; -fx-padding: 10; -fx-background-radius: 5;">
+            <Label text="%settings.library.filename" style="-fx-font-weight: bold;" />
+            <Label fx:id="cacheFileLabel" text="%settings.loading" textFill="#888888" />
+            
+            <Label text="%settings.library.location" style="-fx-font-weight: bold;" />
+            <Label fx:id="cacheLocationLabel" text="%settings.loading" textFill="#888888" wrapText="true" style="-fx-font-size: 11px;" />
+            
+            <Label text="%settings.library.size" style="-fx-font-weight: bold;" />
+            <Label fx:id="cacheSizeLabel" text="%settings.loading" textFill="#888888" />
+            
+            <Label text="%settings.library.lastupdate" style="-fx-font-weight: bold;" />
+            <Label fx:id="cacheLastUpdateLabel" text="%settings.loading" textFill="#888888" />
+            
+            <Label text="%settings.library.daysago" style="-fx-font-weight: bold;" />
+            <Label fx:id="cacheDaysLabel" text="%settings.loading" textFill="#888888" />
+        </VBox>
+    </VBox>
+    
     <Label fx:id="statusLabel" text="" textFill="green" />
 
 </VBox>

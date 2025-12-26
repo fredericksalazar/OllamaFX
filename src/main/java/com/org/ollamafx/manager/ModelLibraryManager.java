@@ -56,7 +56,7 @@ public class ModelLibraryManager {
         long ageMs = System.currentTimeMillis() - currentLibrary.getLastUpdated();
         long days = ageMs / (1000 * 60 * 60 * 24);
 
-        if (days > 15)
+        if (days > 10)
             return UpdateStatus.OUTDATED_HARD;
         if (days > 5)
             return UpdateStatus.OUTDATED_SOFT;
@@ -165,15 +165,90 @@ public class ModelLibraryManager {
             currentProgress = (double) current / total;
         }
 
-        // Finalize
+        // Finalize - sort and categorize
         currentStatus = "Guardando librería...";
+
+        // ALL models
         currentLibrary.setAllModels(allFoundModels);
-        currentLibrary.setPopularModels(allFoundModels);
+
+        // POPULAR: Sort by pull count (most downloads first)
+        List<OllamaModel> popular = new ArrayList<>(allFoundModels);
+        popular.sort((a, b) -> {
+            long countA = parsePullCount(a.getPullCount());
+            long countB = parsePullCount(b.getPullCount());
+            return Long.compare(countB, countA); // Descending
+        });
+        currentLibrary.setPopularModels(popular.size() > 20 ? popular.subList(0, 20) : popular);
+
+        // NEW: Sort by lastUpdated date (newest first)
+        List<OllamaModel> newest = new ArrayList<>(allFoundModels);
+        newest.sort((a, b) -> {
+            long dateA = parseRelativeDate(a.getLastUpdated());
+            long dateB = parseRelativeDate(b.getLastUpdated());
+            return Long.compare(dateB, dateA); // Descending (most recent first)
+        });
+        currentLibrary.setNewModels(newest.size() > 20 ? newest.subList(0, 20) : newest);
+
         currentLibrary.setLastUpdated(System.currentTimeMillis());
         cacheManager.saveCache(currentLibrary);
 
         currentStatus = "Completado.";
         currentProgress = 1.0;
+    }
+
+    /**
+     * Parse pull count string like "1.2M", "500K", "1000" to long
+     */
+    private long parsePullCount(String pullCount) {
+        if (pullCount == null || pullCount.isEmpty())
+            return 0;
+        try {
+            String clean = pullCount.toUpperCase().trim();
+            double value = Double.parseDouble(clean.replaceAll("[^0-9.]", ""));
+            if (clean.contains("M")) {
+                return (long) (value * 1_000_000);
+            } else if (clean.contains("K")) {
+                return (long) (value * 1_000);
+            }
+            return (long) value;
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    /**
+     * Parse relative date like "2 days ago", "1 month ago" to timestamp
+     */
+    private long parseRelativeDate(String relativeDate) {
+        if (relativeDate == null || relativeDate.isEmpty())
+            return 0;
+        try {
+            String lower = relativeDate.toLowerCase().trim();
+            long now = System.currentTimeMillis();
+
+            java.util.regex.Pattern p = java.util.regex.Pattern
+                    .compile("(\\d+)\\s+(second|minute|hour|day|week|month|year)");
+            java.util.regex.Matcher m = p.matcher(lower);
+
+            if (m.find()) {
+                int amount = Integer.parseInt(m.group(1));
+                String unit = m.group(2);
+                long ms = switch (unit) {
+                    case "second" -> 1000L;
+                    case "minute" -> 60 * 1000L;
+                    case "hour" -> 60 * 60 * 1000L;
+                    case "day" -> 24 * 60 * 60 * 1000L;
+                    case "week" -> 7 * 24 * 60 * 60 * 1000L;
+                    case "month" -> 30L * 24 * 60 * 60 * 1000L;
+                    case "year" -> 365L * 24 * 60 * 60 * 1000L;
+                    default -> 0L;
+                };
+                return now - (amount * ms);
+            }
+            return 0;
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     private java.util.Set<String> discoverAllModelNames() {

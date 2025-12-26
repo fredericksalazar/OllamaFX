@@ -3,7 +3,10 @@ package com.org.ollamafx.model;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+// Ignore any unknown properties and specifically the internal StringProperty fields
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class OllamaModel {
     private final StringProperty name;
     private final StringProperty description;
@@ -116,10 +119,12 @@ public class OllamaModel {
         return tag.get();
     }
 
+    @com.fasterxml.jackson.annotation.JsonProperty("context_length")
     public String getContextLength() {
         return contextLength.get();
     }
 
+    @com.fasterxml.jackson.annotation.JsonProperty("input_type")
     public String getInputType() {
         return inputType.get();
     }
@@ -128,6 +133,7 @@ public class OllamaModel {
         return badges;
     }
 
+    @com.fasterxml.jackson.annotation.JsonProperty("readme_content")
     public String getReadmeContent() {
         return readmeContent.get();
     }
@@ -136,6 +142,7 @@ public class OllamaModel {
         return description.get();
     }
 
+    @com.fasterxml.jackson.annotation.JsonProperty("pull_count")
     public String getPullCount() {
         return pullCount.get();
     }
@@ -144,6 +151,7 @@ public class OllamaModel {
         return size.get();
     }
 
+    @com.fasterxml.jackson.annotation.JsonProperty("last_updated")
     public String getLastUpdated() {
         return lastUpdated.get();
     }

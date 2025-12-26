@@ -66,7 +66,12 @@ public class HomeController implements Initializable {
 
     private void updateCarousel(HBox container, java.util.List<? extends OllamaModel> models) {
         container.getChildren().clear();
-        for (OllamaModel model : models) {
+
+        // Limit to top 20 models to reduce CPU/memory usage
+        int limit = Math.min(models.size(), 20);
+
+        for (int i = 0; i < limit; i++) {
+            OllamaModel model = models.get(i);
             boolean isInstalled = modelManager.isModelInstalled(model.getName(), model.getTag());
             ModelCard card = new ModelCard(model, isInstalled,
                     () -> handleInstall(model),
