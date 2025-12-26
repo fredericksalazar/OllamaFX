@@ -4,32 +4,71 @@
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.MenuButton?>
 <?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-
-<HBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.org.ollamafx.controller.AvailableModelsController">
-    <children>
-        <VBox spacing="10.0" HBox.hgrow="NEVER" minWidth="250.0" prefWidth="300.0">
-            <children>
-                <HBox alignment="CENTER_LEFT" spacing="5.0">
-                    <children>
-                        <Label text="%available.library" styleClass="h4" />
-                        <Region HBox.hgrow="ALWAYS" />
-                        <MenuButton text="%available.sort" styleClass="flat" mnemonicParsing="false">
-                            <items>
-                                <MenuItem text="%available.sort.az" onAction="#sortByNameAsc" />
-                                <MenuItem text="%available.sort.za" onAction="#sortByNameDesc" />
-                            </items>
-                        </MenuButton>
-                    </children>
-                </HBox>
-                <javafx.scene.control.TextField fx:id="searchField" promptText="%available.search" styleClass="search-field" />
-                <ListView fx:id="modelListView" VBox.vgrow="ALWAYS" />
-            </children>
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="com.org.ollamafx.controller.AvailableModelsController"
+      spacing="0" style="-fx-background-color: -color-bg-default;">
+    
+    <!-- TOP TOOLBAR: Search + Filters (scrollable) -->
+    <ScrollPane fitToHeight="true" hbarPolicy="NEVER" vbarPolicy="NEVER" styleClass="toolbar-scroll">
+        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="model-toolbar">
+            <!-- Search Field -->
+            <javafx.scene.control.TextField fx:id="searchField" promptText="%available.search" 
+                prefWidth="180" styleClass="search-field" />
+            
+            <Separator orientation="VERTICAL" />
+            
+            <!-- Compatibility Filters -->
+            <Label text="Estado:" styleClass="filter-label" />
+            <ToggleButton fx:id="filterRecommended" text="🟢 Recom." styleClass="filter-chip" />
+            <ToggleButton fx:id="filterStandard" text="🟠 Estándar" styleClass="filter-chip" />
+            <ToggleButton fx:id="filterNotRecommended" text="🔴 No Rec." styleClass="filter-chip" />
+            
+            <Separator orientation="VERTICAL" />
+            
+            <!-- Size Filters -->
+            <Label text="Tamaño:" styleClass="filter-label" />
+            <ToggleButton fx:id="filterSmall" text="≤3B" styleClass="filter-chip" />
+            <ToggleButton fx:id="filterMedium" text="7B" styleClass="filter-chip" />
+            <ToggleButton fx:id="filterLarge" text="13B+" styleClass="filter-chip" />
+            <ToggleButton fx:id="filterXLarge" text="70B+" styleClass="filter-chip" />
+            
+            <Separator orientation="VERTICAL" />
+            
+            <!-- Capability Filters -->
+            <Label text="Capacidad:" styleClass="filter-label" />
+            <ToggleButton fx:id="filterVision" text="👁 Vision" styleClass="filter-chip" />
+            <ToggleButton fx:id="filterTools" text="🛠 Tools" styleClass="filter-chip" />
+            <ToggleButton fx:id="filterCode" text="💻 Code" styleClass="filter-chip" />
+            
+            <Region HBox.hgrow="ALWAYS" />
+            
+            <!-- Sort Menu -->
+            <MenuButton text="%available.sort" styleClass="flat" mnemonicParsing="false">
+                <items>
+                    <MenuItem text="%available.sort.az" onAction="#sortByNameAsc" />
+                    <MenuItem text="%available.sort.za" onAction="#sortByNameDesc" />
+                </items>
+            </MenuButton>
+        </HBox>
+    </ScrollPane>
+    
+    <!-- CONTENT: List + Detail Panel -->
+    <HBox VBox.vgrow="ALWAYS">
+        <!-- Left: Model List -->
+        <VBox spacing="8" HBox.hgrow="NEVER" minWidth="280" prefWidth="320" style="-fx-padding: 12;">
+            <Label fx:id="resultsLabel" text="Cargando..." styleClass="results-label" />
+            <ListView fx:id="modelListView" VBox.vgrow="ALWAYS" styleClass="edge-to-edge" />
         </VBox>
-        <StackPane fx:id="detailViewContainer" HBox.hgrow="ALWAYS" />
-    </children>
-</HBox>
+        
+        <!-- Right: Detail Panel -->
+        <StackPane fx:id="detailViewContainer" HBox.hgrow="ALWAYS" style="-fx-background-color: -color-bg-subtle;" />
+    </HBox>
+</VBox>
