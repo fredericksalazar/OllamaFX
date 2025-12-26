@@ -1,5 +1,6 @@
 package com.org.ollamafx.manager;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.org.ollamafx.model.LibraryCache;
 import java.io.File;
@@ -23,7 +24,17 @@ public class LibraryCacheManager {
             appDir.mkdirs();
         }
         this.cacheFile = new File(appDir, CACHE_FILE_NAME);
+
+        // Configure ObjectMapper to only use getters, not fields
+        // This prevents serialization of JavaFX StringProperty fields
         this.mapper = new ObjectMapper();
+        this.mapper.setVisibility(
+                this.mapper.getSerializationConfig()
+                        .getDefaultVisibilityChecker()
+                        .withFieldVisibility(JsonAutoDetect.Visibility.NONE)
+                        .withGetterVisibility(JsonAutoDetect.Visibility.PUBLIC_ONLY)
+                        .withSetterVisibility(JsonAutoDetect.Visibility.NONE)
+                        .withCreatorVisibility(JsonAutoDetect.Visibility.ANY));
     }
 
     public static synchronized LibraryCacheManager getInstance() {
@@ -53,8 +64,9 @@ public class LibraryCacheManager {
         try {
             return mapper.readValue(cacheFile, LibraryCache.class);
         } catch (IOException e) {
-            System.err.println("LibraryCacheManager: Failed to load cache. It might be corrupted.");
-            e.printStackTrace();
+            System.err.println("LibraryCacheManager: Cache corrupto, eliminando archivo: " + e.getMessage());
+            // DELETE corrupt file so fresh cache can be created
+            cacheFile.delete();
             return null;
         }
     }
@@ -66,5 +78,42 @@ public class LibraryCacheManager {
         boolean valid = age < CACHE_EXPIRY_MS;
         System.out.println("LibraryCacheManager: Cache age is " + (age / 1000 / 60) + " minutes. Valid: " + valid);
         return valid;
+    }
+
+    // === METADATA METHODS FOR SETTINGS ===
+
+    public String getCacheFilePath() {
+        return cacheFile.getAbsolutePath();
+    }
+
+    public String getCacheFileName() {
+        return CACHE_FILE_NAME;
+    }
+
+    public long getCacheFileSizeKB() {
+        if (cacheFile.exists()) {
+            return cacheFile.length() / 1024;
+        }
+        return 0;
+    }
+
+    public long getLastUpdatedTimestamp() {
+        LibraryCache cache = loadCache();
+        if (cache != null) {
+            return cache.getLastUpdated();
+        }
+        return 0;
+    }
+
+    public int getDaysSinceUpdate() {
+        long lastUpdated = getLastUpdatedTimestamp();
+        if (lastUpdated == 0)
+            return -1; // No cache
+        long ageMs = System.currentTimeMillis() - lastUpdated;
+        return (int) (ageMs / (1000 * 60 * 60 * 24));
+    }
+
+    public boolean cacheExists() {
+        return cacheFile.exists();
     }
 }

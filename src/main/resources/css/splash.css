@@ -1,0 +1,68 @@
+/* =============================================
+   OLLAMAFX SPLASH - PURE MINIMAL WHITE
+   ============================================= */
+
+/* === WHITE BACKGROUND === */
+.root {
+    -fx-background-color: #ffffff;
+}
+
+/* === TITLE === */
+.title-label {
+    -fx-font-family: "SF Pro Display", "System";
+    -fx-font-size: 32px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #1d1d1f;
+}
+
+/* === RING === */
+.ring-indicator {
+    -fx-accent: #007aff;
+}
+
+/* === COUNTER (Inside Ring) === */
+.counter-value {
+    -fx-font-family: "SF Pro Display", "System";
+    -fx-font-size: 42px;
+    -fx-font-weight: 200;
+    -fx-text-fill: #1d1d1f;
+}
+
+.counter-label {
+    -fx-font-family: "SF Pro Text", "System";
+    -fx-font-size: 10px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #86868b;
+    -fx-letter-spacing: 2px;
+}
+
+/* === STATUS MESSAGE (Inside Ring) === */
+.status-text {
+    -fx-font-family: "SF Pro Text", "System";
+    -fx-font-size: 11px;
+    -fx-font-weight: 400;
+    -fx-text-fill: #86868b;
+}
+
+.model-name-label {
+    -fx-font-family: "SF Mono", "Menlo", monospace;
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #007aff;
+}
+
+/* === DESCRIPTION (Below Ring) === */
+.description-text {
+    -fx-font-family: "SF Pro Text", "System";
+    -fx-font-size: 13px;
+    -fx-font-weight: 400;
+    -fx-text-fill: #6e6e73;
+}
+
+.description-text-secondary {
+    -fx-font-family: "SF Pro Text", "System";
+    -fx-font-size: 12px;
+    -fx-font-weight: 400;
+    -fx-text-fill: #aeaeb2;
+    -fx-padding: 4 0 0 0;
+}

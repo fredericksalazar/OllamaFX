@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import atlantafx.base.controls.RingProgressIndicator?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane prefHeight="550.0" prefWidth="750.0" styleClass="root" stylesheets="@../css/splash.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.org.ollamafx.controller.SplashController">
+   <children>
+      <VBox alignment="CENTER" spacing="0">
+         <children>
+            <!-- ═══ TITLE ═══ -->
+            <Label fx:id="titleLabel" styleClass="title-label" text="OllamaFX" />
+            
+            <!-- Spacer -->
+            <Region prefHeight="30"/>
+            
+            <!-- ═══ RING WITH COUNTER INSIDE ═══ -->
+            <StackPane alignment="CENTER" prefHeight="280" prefWidth="280">
+               <children>
+                  <RingProgressIndicator fx:id="progressIndicator" progress="-1.0" prefWidth="260" prefHeight="260" styleClass="ring-indicator" />
+                  <VBox alignment="CENTER" spacing="6" mouseTransparent="true">
+                     <Label fx:id="counterLabel" styleClass="counter-value" text="..." />
+                     <Label fx:id="modelsLabel" styleClass="counter-label" text="MODELOS" />
+                     <Region prefHeight="10"/>
+                     <Label fx:id="actionLabel" styleClass="status-text" text="..." />
+                     <Label fx:id="modelLabel" styleClass="model-name-label" text="..." />
+                  </VBox>
+               </children>
+            </StackPane>
+            
+            <!-- Spacer -->
+            <Region prefHeight="35"/>
+            
+            <!-- ═══ DESCRIPTION ═══ -->
+            <Label fx:id="descriptionLabel" styleClass="description-text" text="..." />
+            <Label fx:id="descriptionSecondaryLabel" styleClass="description-text-secondary" text="..." />
+         </children>
+      </VBox>
+   </children>
+</StackPane>

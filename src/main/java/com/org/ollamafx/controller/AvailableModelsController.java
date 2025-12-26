@@ -1,11 +1,8 @@
 package com.org.ollamafx.controller;
 
 import com.org.ollamafx.manager.ModelManager;
-import com.org.ollamafx.manager.OllamaManager;
 import com.org.ollamafx.model.OllamaModel;
 
-import javafx.application.Platform;
-import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
@@ -13,7 +10,6 @@ import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
-import javafx.scene.control.ProgressIndicator;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -29,11 +25,9 @@ public class AvailableModelsController {
     private ListView<OllamaModel> modelListView;
 
     private ModelManager modelManager;
-    private final OllamaManager ollamaManager = OllamaManager.getInstance();
 
     // Debounce for selection to prevent UI flooding
     private javafx.animation.PauseTransition selectionDebounce;
-    private Task<List<OllamaModel>> currentTask;
 
     public void setModelManager(ModelManager modelManager) {
         this.modelManager = modelManager;
@@ -53,8 +47,9 @@ public class AvailableModelsController {
             }
         });
 
-        // Initialize debounce
-        selectionDebounce = new javafx.animation.PauseTransition(javafx.util.Duration.millis(250));
+        // Initialize debounce (100ms to prevent rapid clicks while maintaining
+        // responsiveness)
+        selectionDebounce = new javafx.animation.PauseTransition(javafx.util.Duration.millis(100));
         selectionDebounce.setOnFinished(event -> {
             System.out.println("DEBUG: Debounce finished. Getting selected item...");
             OllamaModel selected = modelListView.getSelectionModel().getSelectedItem();
@@ -85,67 +80,26 @@ public class AvailableModelsController {
     private void displayModelDetails(OllamaModel selectedModel) {
         System.out.println("DEBUG: displayModelDetails called for " + selectedModel.getName());
 
-        // Cancel previous task if running
-        if (currentTask != null && CodeBlock.isRunning(currentTask)) {
-            System.out.println("DEBUG: Cancelling previous running task.");
-            currentTask.cancel();
-        }
-
-        ProgressIndicator progressIndicator = new ProgressIndicator();
-        detailViewContainer.getChildren().setAll(progressIndicator);
-        System.out.println("DEBUG: ProgressIndicator set.");
-
-        // Create Task
-        Task<List<OllamaModel>> loadDetailsTask = new Task<>() {
-            @Override
-            protected List<OllamaModel> call() throws Exception {
-                System.out.println("DEBUG: Background Task started for " + selectedModel.getName());
-                try {
-                    // Check if manager is available
-                    if (modelManager == null) {
-                        throw new IllegalStateException("ModelManager is null");
-                    }
-                    // Use ModelManager which handles Caching & Classification
-                    return modelManager.getModelDetails(selectedModel.getName());
-                } catch (Exception e) {
-                    System.err.println("DEBUG: Error in background task: " + e.getMessage());
-                    e.printStackTrace();
-                    throw e;
-                }
+        // Get all tags for this model from the in-memory details cache
+        // This is instant since cache is already loaded in memory
+        try {
+            if (modelManager == null) {
+                showErrorInView("Error", "ModelManager is null");
+                return;
             }
-        };
 
-        currentTask = loadDetailsTask; // Track it
+            // Get all tags from cache - this uses in-memory ModelDetailsCacheManager
+            List<OllamaModel> details = modelManager.getModelDetails(selectedModel.getName());
+            System.out.println("DEBUG: Got " + details.size() + " tags from cache for " + selectedModel.getName());
 
-        loadDetailsTask.setOnSucceeded(event -> {
-            System.out.println("DEBUG: Task succeeded. Updating UI...");
-            List<OllamaModel> details = loadDetailsTask.getValue();
-            Platform.runLater(() -> {
-                System.out.println("DEBUG: Calling showDetailsInView on UI thread.");
-                showDetailsInView(details);
-            });
-        });
+            // Show immediately
+            showDetailsInView(details);
 
-        loadDetailsTask.setOnFailed(event -> {
-            System.err.println("DEBUG: Task failed event.");
-            Throwable ex = loadDetailsTask.getException();
-            if (ex != null) {
-                ex.printStackTrace();
-            }
-            Platform.runLater(() -> showErrorInView("Error Loading Details", "Failed to load model details."));
-        });
-
-        new Thread(loadDetailsTask).start();
-        System.out.println("DEBUG: Task thread started.");
-    }
-
-    // Helper to check task state implicitly
-    private static class CodeBlock {
-        static boolean isRunning(Task<?> task) {
-            return task.getState() == javafx.concurrent.Worker.State.RUNNING
-                    || task.getState() == javafx.concurrent.Worker.State.SCHEDULED;
+        } catch (Exception e) {
+            System.err.println("DEBUG: Error loading details: " + e.getMessage());
+            e.printStackTrace();
+            showErrorInView("Error Loading Details", "Failed to load model details.");
         }
-
     }
 
     // El método ahora recibe una lista de modelos (tags)

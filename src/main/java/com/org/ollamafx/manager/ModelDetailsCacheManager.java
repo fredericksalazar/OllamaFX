@@ -1,5 +1,6 @@
 package com.org.ollamafx.manager;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.org.ollamafx.model.ModelDetailsCache;
 import java.io.File;
@@ -26,7 +27,18 @@ public class ModelDetailsCacheManager {
             appDir.mkdirs();
         }
         this.cacheFile = new File(appDir, CACHE_FILE_NAME);
+
+        // Configure ObjectMapper to only use getters, not fields
+        // This prevents serialization of JavaFX StringProperty fields
         this.mapper = new ObjectMapper();
+        this.mapper.setVisibility(
+                this.mapper.getSerializationConfig()
+                        .getDefaultVisibilityChecker()
+                        .withFieldVisibility(JsonAutoDetect.Visibility.NONE)
+                        .withGetterVisibility(JsonAutoDetect.Visibility.PUBLIC_ONLY)
+                        .withSetterVisibility(JsonAutoDetect.Visibility.NONE)
+                        .withCreatorVisibility(JsonAutoDetect.Visibility.ANY));
+
         this.memoryCache = loadCacheFromDisk();
         if (this.memoryCache == null) {
             this.memoryCache = new ModelDetailsCache();
@@ -47,7 +59,9 @@ public class ModelDetailsCacheManager {
         try {
             return mapper.readValue(cacheFile, ModelDetailsCache.class);
         } catch (IOException e) {
-            System.err.println("ModelDetailsCacheManager: Failed to load cache: " + e.getMessage());
+            System.err.println("ModelDetailsCacheManager: Cache corrupto, eliminando archivo: " + e.getMessage());
+            // DELETE corrupt file so fresh cache can be created
+            cacheFile.delete();
             return new ModelDetailsCache();
         }
     }
