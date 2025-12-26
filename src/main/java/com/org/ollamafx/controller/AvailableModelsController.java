@@ -95,18 +95,18 @@ public class AvailableModelsController {
         detailViewContainer.getChildren().setAll(progressIndicator);
         System.out.println("DEBUG: ProgressIndicator set.");
 
-        // La tarea ahora espera una Lista de OllamaModel
+        // Create Task
         Task<List<OllamaModel>> loadDetailsTask = new Task<>() {
             @Override
             protected List<OllamaModel> call() throws Exception {
                 System.out.println("DEBUG: Background Task started for " + selectedModel.getName());
                 try {
-                    // LLAMAMOS AL NUEVO MÉTODO DE SCRAPING
-                    long start = System.currentTimeMillis();
-                    List<OllamaModel> result = ollamaManager.scrapeModelDetails(selectedModel.getName());
-                    System.out.println(
-                            "DEBUG: scrapeModelDetails finished in " + (System.currentTimeMillis() - start) + "ms");
-                    return result;
+                    // Check if manager is available
+                    if (modelManager == null) {
+                        throw new IllegalStateException("ModelManager is null");
+                    }
+                    // Use ModelManager which handles Caching & Classification
+                    return modelManager.getModelDetails(selectedModel.getName());
                 } catch (Exception e) {
                     System.err.println("DEBUG: Error in background task: " + e.getMessage());
                     e.printStackTrace();
@@ -128,13 +128,13 @@ public class AvailableModelsController {
 
         loadDetailsTask.setOnFailed(event -> {
             System.err.println("DEBUG: Task failed event.");
-            if (loadDetailsTask.getException() != null) {
-                loadDetailsTask.getException().printStackTrace();
+            Throwable ex = loadDetailsTask.getException();
+            if (ex != null) {
+                ex.printStackTrace();
             }
             Platform.runLater(() -> showErrorInView("Error Loading Details", "Failed to load model details."));
         });
 
-        // ... (onFailed se queda igual)
         new Thread(loadDetailsTask).start();
         System.out.println("DEBUG: Task thread started.");
     }
@@ -145,6 +145,7 @@ public class AvailableModelsController {
             return task.getState() == javafx.concurrent.Worker.State.RUNNING
                     || task.getState() == javafx.concurrent.Worker.State.SCHEDULED;
         }
+
     }
 
     // El método ahora recibe una lista de modelos (tags)

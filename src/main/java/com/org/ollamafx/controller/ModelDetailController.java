@@ -213,11 +213,57 @@ public class ModelDetailController {
         modelListContainer.setSpacing(12); // Spacing between cards
 
         for (OllamaModel model : modelTags) {
+            // Classify each tag
+            if (modelManager != null) {
+                modelManager.classifyModel(model);
+            }
+
             // Main Card Container
             HBox card = new HBox();
             card.getStyleClass().add("apple-card-row");
             card.setAlignment(Pos.CENTER_LEFT);
-            card.setSpacing(20);
+            card.setSpacing(15);
+            card.setPadding(new javafx.geometry.Insets(10, 15, 10, 15)); // Add padding for better look
+
+            // TRAFFIC LIGHT INDICATOR (Label Badge)
+            Label statusBadge = new Label();
+            statusBadge.getStyleClass().add("badge-chip"); // Reusing chip style or custom
+
+            OllamaModel.CompatibilityStatus status = model.getCompatibilityStatus();
+            if (status == null)
+                status = OllamaModel.CompatibilityStatus.CAUTION;
+
+            switch (status) {
+                case RECOMMENDED:
+                    statusBadge.setText(App.getBundle().getString("status.recommended").split(":")[0]); // Use short
+                                                                                                        // text
+                    statusBadge.getStyleClass().add("success");
+                    statusBadge
+                            .setStyle("-fx-background-color: -color-success-subtle; -fx-text-fill: -color-success-fg;");
+                    break;
+                case CAUTION:
+                    statusBadge.setText(App.getBundle().getString("status.caution").split(":")[0]);
+                    statusBadge.getStyleClass().add("warning");
+                    statusBadge
+                            .setStyle("-fx-background-color: -color-warning-subtle; -fx-text-fill: -color-warning-fg;");
+                    break;
+                case INCOMPATIBLE:
+                    statusBadge.setText(App.getBundle().getString("status.incompatible").split(":")[0]);
+                    statusBadge.getStyleClass().add("danger");
+                    statusBadge
+                            .setStyle("-fx-background-color: -color-danger-subtle; -fx-text-fill: -color-danger-fg;");
+                    break;
+            }
+
+            // Create tooltip for full description
+            javafx.scene.control.Tooltip tip = new javafx.scene.control.Tooltip();
+            if (status == OllamaModel.CompatibilityStatus.RECOMMENDED)
+                tip.setText(App.getBundle().getString("status.recommended"));
+            else if (status == OllamaModel.CompatibilityStatus.CAUTION)
+                tip.setText(App.getBundle().getString("status.caution"));
+            else
+                tip.setText(App.getBundle().getString("status.incompatible"));
+            javafx.scene.control.Tooltip.install(statusBadge, tip);
 
             // Left: Icon placeholder or just padding? Let's use a tech icon or just clean
             // text.
@@ -255,13 +301,17 @@ public class ModelDetailController {
                 });
             } else {
                 actionBtn.setText(App.getBundle().getString("model.action.get")); // Apple Style "Get"
+                // Disable if incompatible? No, let user override if they want (maybe they have
+                // swap)
+                // But visual feedback is enough.
+
                 actionBtn.getStyleClass().add(Styles.SUCCESS);
                 actionBtn.setOnAction(ev -> {
                     showDownloadPopup(model);
                 });
             }
 
-            card.getChildren().addAll(infoBox, spacer, actionBtn);
+            card.getChildren().addAll(statusBadge, infoBox, spacer, actionBtn);
             modelListContainer.getChildren().add(card);
         }
     }

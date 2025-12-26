@@ -12,6 +12,16 @@ public class OllamaModel {
     private final StringProperty size;
     private final StringProperty lastUpdated;
 
+    // Status Enum
+    public enum CompatibilityStatus {
+        RECOMMENDED, // Green
+        CAUTION, // Orange
+        INCOMPATIBLE // Red
+    }
+
+    private final javafx.beans.property.ObjectProperty<CompatibilityStatus> compatibilityStatus = new javafx.beans.property.SimpleObjectProperty<>(
+            CompatibilityStatus.CAUTION);
+
     private final StringProperty contextLength;
     private final StringProperty inputType;
     private final java.util.List<String> badges;
@@ -52,38 +62,47 @@ public class OllamaModel {
     }
 
     // Getters para las propiedades de JavaFX (esenciales para las TableView)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     public StringProperty nameProperty() {
         return name;
     }
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     public StringProperty descriptionProperty() {
         return description;
     }
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     public StringProperty pullCountProperty() {
         return pullCount;
     }
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     public StringProperty tagProperty() {
         return tag;
     }
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     public StringProperty sizeProperty() {
         return size;
     }
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     public StringProperty lastUpdatedProperty() {
         return lastUpdated;
     }
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     public StringProperty contextLengthProperty() {
         return contextLength;
     }
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     public StringProperty inputTypeProperty() {
         return inputType;
     }
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     public StringProperty readmeContentProperty() {
         return readmeContent;
     }
@@ -127,5 +146,20 @@ public class OllamaModel {
 
     public String getLastUpdated() {
         return lastUpdated.get();
+    }
+
+    // ...
+
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public javafx.beans.property.ObjectProperty<CompatibilityStatus> compatibilityStatusProperty() {
+        return compatibilityStatus;
+    }
+
+    public CompatibilityStatus getCompatibilityStatus() {
+        return compatibilityStatus.get();
+    }
+
+    public void setCompatibilityStatus(CompatibilityStatus status) {
+        this.compatibilityStatus.set(status);
     }
 }

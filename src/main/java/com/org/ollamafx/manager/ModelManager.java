@@ -1,7 +1,7 @@
 package com.org.ollamafx.manager;
 
 import com.org.ollamafx.model.OllamaModel;
-import oshi.SystemInfo;
+
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -144,6 +144,17 @@ public class ModelManager {
                 // Available base models (names only, but maybe we can enrich them later)
                 List<OllamaModel> available = ollamaManager.getAvailableBaseModels();
 
+                // CLASSIFY ALL MODELS
+                List<OllamaModel> allToClassify = new java.util.ArrayList<>();
+                allToClassify.addAll(topPopular);
+                allToClassify.addAll(topNewest);
+                // allToClassify.addAll(available); // Available might not have size yet, skip
+                // for now or fetch details
+
+                for (OllamaModel m : allToClassify) {
+                    classifyModel(m);
+                }
+
                 // Update UI
                 Platform.runLater(() -> {
                     popularModels.setAll(topPopular);
@@ -194,16 +205,121 @@ public class ModelManager {
         new Thread(loadTask).start();
     }
 
-    private void generateRecommendations(List<OllamaModel> popular, List<OllamaModel> newest) {
-        // Simple logic based on RAM
-        long totalRam = new SystemInfo().getHardware().getMemory().getTotal();
-        double gb = totalRam / (1024.0 * 1024.0 * 1024.0);
+    // --- CLASSIFICATION LOGIC ---
+    // --- CLASSIFICATION LOGIC ---
+    public void classifyModel(OllamaModel model) {
+        HardwareManager.HardwareStats stats = HardwareManager.getStats();
+        long osOverhead = 4L * 1024 * 1024 * 1024;
+        long safeRamLimit = stats.totalRamBytes - osOverhead;
+        long vramLimit = stats.isUnifiedMemory ? safeRamLimit : stats.totalVramBytes;
 
-        System.out.println("ModelManager: Generating recommendations for " + String.format("%.2f", gb) + " GB RAM");
+        long modelSizeBytes = parseModelSizeBytes(model.getSize());
+
+        // Fallback: Estimate from parameters if size is unknown
+        if (modelSizeBytes == 0) {
+            double billionsParams = extractParameterCount(model);
+            if (billionsParams > 0) {
+                // Rule of thumb: ~0.6-0.7 GB per billion parameters (Q4 quantization)
+                // We use 0.65 to be slightly optimistic but realistic
+                modelSizeBytes = (long) (billionsParams * 0.65 * 1024 * 1024 * 1024);
+                // System.out.println("Estimating size for " + model.getName() + ": " +
+                // billionsParams + "B params -> " + (modelSizeBytes / (1024*1024*1024)) + "
+                // GB");
+            }
+        }
+
+        // Still 0? We can't know. Default to CAUTION (Standard).
+        if (modelSizeBytes == 0) {
+            model.setCompatibilityStatus(OllamaModel.CompatibilityStatus.CAUTION);
+            return;
+        }
+
+        if (modelSizeBytes <= vramLimit) {
+            // Fits in VRAM -> FAST (Green)
+            model.setCompatibilityStatus(OllamaModel.CompatibilityStatus.RECOMMENDED);
+        } else if (modelSizeBytes <= (safeRamLimit * 0.9)) {
+            // Fits in RAM (with 90% usage cap) -> SLOW (Orange)
+            model.setCompatibilityStatus(OllamaModel.CompatibilityStatus.CAUTION);
+        } else {
+            // Dangerous -> RED
+            model.setCompatibilityStatus(OllamaModel.CompatibilityStatus.INCOMPATIBLE);
+        }
+    }
+
+    /**
+     * Extracts parameter count (in billions) from model badges, tags, or name.
+     * e.g., "llama3:8b" -> 8.0
+     * e.g., Badge "7B" -> 7.0
+     * Returns 0.0 if not found.
+     */
+    private double extractParameterCount(OllamaModel model) {
+        // 1. Check Badges first (usually most accurate from library)
+        if (model.getBadges() != null) {
+            for (String badge : model.getBadges()) {
+                double val = parseBillionString(badge);
+                if (val > 0)
+                    return val;
+            }
+        }
+
+        // 2. Check Tag (e.g. "8b", "70b-instruct")
+        double valTag = parseBillionString(model.getTag());
+        if (valTag > 0)
+            return valTag;
+
+        // 3. Check Name (e.g. "gemma:2b")
+        // Sometimes name includes tag like "gemma:2b"
+        if (model.getName().contains(":")) {
+            String[] parts = model.getName().split(":");
+            if (parts.length > 1) {
+                double valNameTag = parseBillionString(parts[1]);
+                if (valNameTag > 0)
+                    return valNameTag;
+            }
+        }
+
+        return 0.0;
+    }
+
+    private double parseBillionString(String text) {
+        if (text == null)
+            return 0;
+        String t = text.toLowerCase().trim();
+        // Regex to find number followed by 'b' e.g. "8b", "1.5b", "70b"
+        // Avoid matching "byte" or words, strictly digits then 'b' at word boundary or
+        // end
+        java.util.regex.Pattern p = java.util.regex.Pattern.compile("(\\d+(\\.\\d+)?)(b)");
+        java.util.regex.Matcher m = p.matcher(t);
+        if (m.find()) {
+            try {
+                return Double.parseDouble(m.group(1));
+            } catch (Exception e) {
+                return 0;
+            }
+        }
+        return 0;
+    }
+
+    private void generateRecommendations(List<OllamaModel> popular, List<OllamaModel> newest) {
+        HardwareManager.HardwareStats stats = HardwareManager.getStats();
+
+        // Safety Overhead for OS (e.g., 4GB reserved)
+        long osOverhead = 4L * 1024 * 1024 * 1024;
+
+        long safeRamLimit = stats.totalRamBytes - osOverhead;
+        // On Apple Silicon, safeRamLimit acts as VRAM too.
+        // On PC, we have distinct VRAM.
+        long vramLimit = stats.isUnifiedMemory ? safeRamLimit : stats.totalVramBytes;
+
+        System.out.println("ModelManager: Generating recommendations based on Hardware:");
+        System.out.println(" - Total RAM: " + String.format("%.2f GB", stats.getTotalRamGB()));
+        System.out.println(" - Effective VRAM: " + String.format("%.2f GB", vramLimit / (1024.0 * 1024.0 * 1024.0)));
+        System.out.println(" - Safe RAM Limit (OS reserved): "
+                + String.format("%.2f GB", safeRamLimit / (1024.0 * 1024.0 * 1024.0)));
 
         List<OllamaModel> recs = new java.util.ArrayList<>();
 
-        // Source pool: Popular + Newest (deduplicated)
+        // Pool Source: Popular + Newest
         java.util.Set<String> seen = new java.util.HashSet<>();
         List<OllamaModel> pool = new java.util.ArrayList<>();
         if (popular != null)
@@ -216,32 +332,57 @@ public class ModelManager {
                 continue;
             seen.add(m.getName());
 
-            boolean suitable = false;
-            String lowerName = m.getName().toLowerCase();
+            long modelSizeBytes = parseModelSizeBytes(m.getSize());
 
-            // Heuristic filtering
-            if (gb < 8.0) {
-                if (lowerName.contains("phi") || lowerName.contains("tiny") || lowerName.contains("qwen")
-                        || lowerName.contains("gemmanano")) {
-                    suitable = true;
-                }
-            } else if (gb <= 16.0) {
-                if (lowerName.contains("llama3") || lowerName.contains("mistral") || lowerName.contains("gemma")
-                        || lowerName.contains("phi")) {
-                    suitable = true;
-                }
-            } else {
-                suitable = true;
+            // LOGIC TABLE OF EQUIVALENCES
+            // 1. Must fit in System RAM (absolute hard limit for running at all)
+            if (modelSizeBytes > safeRamLimit) {
+                continue; // Skip, too big for this machine
             }
 
-            if (suitable) {
+            // 2. Recommendation Tier
+            // We recommend it if it fits in VRAM (Fast) OR if it is a smaller model that
+            // runs reasonably on CPU.
+            // For the "Recommended" list, let's be strict: Models that will provide a GOOD
+            // experience.
+            // - Fits in VRAM (Green tier) -> DEFINITELY RECOMMEND
+            // - Fits in RAM but < 50% of Total RAM (to ensure decent CPU performance) ->
+            // OKAY
+
+            boolean highPerformance = modelSizeBytes <= vramLimit;
+            boolean standardPerformance = modelSizeBytes <= (safeRamLimit * 0.8); // 80% of max safe ram
+
+            if (highPerformance || standardPerformance) {
                 recs.add(m);
             }
-            if (recs.size() >= 10)
-                break;
+
+            if (recs.size() >= 12)
+                break; // Limit to desktop grid size
         }
 
         Platform.runLater(() -> recommendedModels.setAll(recs));
+    }
+
+    private long parseModelSizeBytes(String sizeStr) {
+        if (sizeStr == null || sizeStr.isEmpty() || sizeStr.equalsIgnoreCase("N/A"))
+            return 0;
+        try {
+            String lower = sizeStr.toLowerCase().trim();
+            double value = Double.parseDouble(lower.replaceAll("[^0-9.]", ""));
+            long multiplier = 1;
+            if (lower.contains("gb") || lower.contains("g")) {
+                multiplier = 1024L * 1024 * 1024;
+            } else if (lower.contains("mb") || lower.contains("m")) {
+                multiplier = 1024L * 1024;
+            } else if (lower.contains("kb") || lower.contains("k")) {
+                multiplier = 1024L;
+            }
+            return (long) (value * multiplier);
+        } catch (NumberFormatException e) {
+            // Valid case for "Unknown" or unexpected formats, precise logging not needed
+            // for regular logic flow
+            return 0;
+        }
     }
 
     public ObservableList<OllamaModel> getAvailableModels() {
@@ -286,6 +427,7 @@ public class ModelManager {
             System.out.println("ModelManager: Local models refreshed. Count: " + models.size());
             for (OllamaModel m : models) {
                 System.out.println(" - Found: " + m.getName() + ":" + m.getTag());
+                classifyModel(m); // Classify installed models too
             }
             Platform.runLater(() -> localModels.setAll(models));
         });
@@ -315,5 +457,38 @@ public class ModelManager {
                 System.out.println("ModelManager: Model already exists in list. Not adding.");
             }
         });
+    }
+
+    /**
+     * Gets details (tags) for a model.
+     * Uses Cache first. If missing/expired, scrapes, classifies, and caches.
+     */
+    public List<OllamaModel> getModelDetails(String modelName) throws Exception {
+        // 1. Check Cache
+        com.org.ollamafx.model.ModelDetailsEntry entry = ModelDetailsCacheManager.getInstance().getDetails(modelName);
+        if (ModelDetailsCacheManager.getInstance().isEntryValid(entry)) {
+            System.out.println("ModelManager: Cache HIT for " + modelName);
+            List<OllamaModel> cached = entry.getTags();
+            // RE-Apply Classification (Computing is cheap, ensures hardware changes are
+            // respected)
+            for (OllamaModel m : cached) {
+                classifyModel(m);
+            }
+            return cached;
+        }
+
+        // 2. Scrape if miss
+        System.out.println("ModelManager: Cache MISS for " + modelName + ". Scraping...");
+        List<OllamaModel> freshTags = ollamaManager.scrapeModelDetails(modelName);
+
+        // 3. Classify
+        for (OllamaModel m : freshTags) {
+            classifyModel(m);
+        }
+
+        // 4. Cache
+        ModelDetailsCacheManager.getInstance().saveDetails(modelName, freshTags);
+
+        return freshTags;
     }
 }
