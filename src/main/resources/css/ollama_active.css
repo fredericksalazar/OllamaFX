@@ -1358,3 +1358,138 @@ t beef them up. */
     -fx-font-size: 20px;
     -fx-text-fill: -color-accent-emphasis;
 }
+
+/* --- MODEL EXPLORER (Available Models) - Simplified --- */
+
+.model-toolbar {
+    -fx-padding: 12 16;
+    -fx-background-color: -color-bg-default;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 0 1 0;
+}
+
+.filter-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.filter-toggle {
+    -fx-background-color: transparent;
+    -fx-background-radius: 6px;
+    -fx-padding: 6 12;
+    -fx-font-size: 12px;
+    -fx-cursor: hand;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-radius: 6px;
+    -fx-border-width: 1px;
+}
+
+.filter-toggle:hover {
+    -fx-background-color: -color-bg-subtle;
+}
+
+.filter-toggle:selected {
+    -fx-background-color: -color-accent-emphasis;
+    -fx-text-fill: white;
+    -fx-border-color: transparent;
+}
+
+.results-label {
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.search-field {
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-padding: 8 12;
+    -fx-font-size: 13px;
+}
+
+/* Model List styling */
+.model-list {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+.model-list .list-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.model-list .list-cell:empty {
+    -fx-background-color: transparent;
+}
+
+/* Model Card (List Cell Content) */
+.model-card {
+    -fx-background-color: -color-bg-default;
+    -fx-background-radius: 10px;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-radius: 10px;
+    -fx-border-width: 1px;
+    -fx-padding: 12 14;
+    -fx-cursor: hand;
+}
+
+.model-card:hover {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-default;
+}
+
+.model-list .list-cell:selected .model-card {
+    -fx-background-color: -color-accent-subtle;
+    -fx-border-color: -color-accent-emphasis;
+}
+
+.model-card-name {
+    -fx-font-size: 14px;
+    -fx-font-weight: normal;
+    -fx-text-fill: -color-fg-default;
+}
+
+.model-card-size {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-family: "SF Mono", "Menlo", monospace;
+}
+
+.model-card-badges {
+    -fx-spacing: 4;
+}
+
+.capability-badge {
+    -fx-font-size: 10px;
+    -fx-padding: 2 6;
+    -fx-background-radius: 4px;
+    -fx-background-color: rgba(0, 122, 255, 0.1);
+    -fx-text-fill: #007AFF;
+}
+
+/* Compatibility Indicator */
+.compat-dot {
+    -fx-min-width: 6px;
+    -fx-min-height: 6px;
+    -fx-max-width: 6px;
+    -fx-max-height: 6px;
+    -fx-background-radius: 50%;
+}
+
+.compat-recommended {
+    -fx-background-color: #34c759;
+}
+
+.compat-standard {
+    -fx-background-color: #ff9500;
+}
+
+.compat-notrecommended {
+    -fx-background-color: #ff3b30;
+}
+
+/* Detail Panel */
+.detail-panel {
+    -fx-background-color: -color-bg-subtle;
+    -fx-padding: 20;
+}
