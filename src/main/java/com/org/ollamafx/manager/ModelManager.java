@@ -10,12 +10,17 @@ import java.util.List;
 
 public class ModelManager {
 
+    private static ModelManager instance;
     private final ObservableList<OllamaModel> localModels = FXCollections.observableArrayList();
     private final ObservableList<OllamaModel> availableModels = FXCollections.observableArrayList();
     private final OllamaManager ollamaManager = OllamaManager.getInstance();
     private final java.util.Set<String> installedModelsCache = new java.util.HashSet<>();
 
-    public ModelManager() {
+    private final ObservableList<OllamaModel> popularModels = FXCollections.observableArrayList();
+    private final ObservableList<OllamaModel> newModels = FXCollections.observableArrayList();
+    private final ObservableList<OllamaModel> recommendedModels = FXCollections.observableArrayList();
+
+    private ModelManager() {
         // Keep cache in sync
         localModels.addListener((javafx.collections.ListChangeListener<OllamaModel>) c -> {
             while (c.next()) {
@@ -33,31 +38,20 @@ public class ModelManager {
         });
     }
 
+    public static synchronized ModelManager getInstance() {
+        if (instance == null) {
+            instance = new ModelManager();
+        }
+        return instance;
+    }
+
     public ObservableList<OllamaModel> getLocalModels() {
         return localModels;
     }
 
-    // ... (rest of getters)
-
-    // ... (loadAllModels remains same)
-
-    /**
-     * Verifica si un modelo específico (nombre y tag) está instalado localmente.
-     * Uses O(1) cache.
-     */
-    public boolean isModelInstalled(String name, String tag) {
-        if (name == null || tag == null)
-            return false;
-        return installedModelsCache.contains(name.toLowerCase() + ":" + tag.toLowerCase());
+    public ObservableList<OllamaModel> getAvailableModels() {
+        return availableModels;
     }
-
-    // ... (deleteModel and other methods remain same... ensure to keep the existing
-    // implementation just replacing what's needed)
-
-    // --- DATA LISTS ---
-    private final ObservableList<OllamaModel> popularModels = FXCollections.observableArrayList();
-    private final ObservableList<OllamaModel> newModels = FXCollections.observableArrayList();
-    private final ObservableList<OllamaModel> recommendedModels = FXCollections.observableArrayList();
 
     public ObservableList<OllamaModel> getPopularModels() {
         return popularModels;
@@ -69,6 +63,16 @@ public class ModelManager {
 
     public ObservableList<OllamaModel> getRecommendedModels() {
         return recommendedModels;
+    }
+
+    /**
+     * Verifica si un modelo específico (nombre y tag) está instalado localmente.
+     * Uses O(1) cache.
+     */
+    public boolean isModelInstalled(String name, String tag) {
+        if (name == null || tag == null)
+            return false;
+        return installedModelsCache.contains(name.toLowerCase() + ":" + tag.toLowerCase());
     }
 
     /**
@@ -162,14 +166,7 @@ public class ModelManager {
                     availableModels.setAll(available);
                 });
 
-                // Save to cache (Store FULL lists or just TOP? User asked for Top 10 display.
-                // Let's store full lists in cache so we don't lose data if we change logic
-                // later,
-                // BUT we update UI with top 10. Wait, effectively if we save full list,
-                // loadLibraryModels needs to limit too. Let's save filtered lists for now
-                // to keep cache small and fast as per "performance" request).
-                // Actually, saving Top 10 makes cache very small. Good.
-
+                // Save to cache
                 com.org.ollamafx.model.LibraryCache newCache = new com.org.ollamafx.model.LibraryCache();
                 newCache.setPopularModels(topPopular);
                 newCache.setNewModels(topNewest);
@@ -206,7 +203,6 @@ public class ModelManager {
     }
 
     // --- CLASSIFICATION LOGIC ---
-    // --- CLASSIFICATION LOGIC ---
     public void classifyModel(OllamaModel model) {
         HardwareManager.HardwareStats stats = HardwareManager.getStats();
         long osOverhead = 4L * 1024 * 1024 * 1024;
@@ -222,9 +218,6 @@ public class ModelManager {
                 // Rule of thumb: ~0.6-0.7 GB per billion parameters (Q4 quantization)
                 // We use 0.65 to be slightly optimistic but realistic
                 modelSizeBytes = (long) (billionsParams * 0.65 * 1024 * 1024 * 1024);
-                // System.out.println("Estimating size for " + model.getName() + ": " +
-                // billionsParams + "B params -> " + (modelSizeBytes / (1024*1024*1024)) + "
-                // GB");
             }
         }
 
@@ -313,7 +306,8 @@ public class ModelManager {
 
         System.out.println("ModelManager: Generating recommendations based on Hardware:");
         System.out.println(" - Total RAM: " + String.format("%.2f GB", stats.getTotalRamGB()));
-        System.out.println(" - Effective VRAM: " + String.format("%.2f GB", vramLimit / (1024.0 * 1024.0 * 1024.0)));
+        System.out
+                .println(" - Effective VRAM: " + String.format("%.2f GB", vramLimit / (1024.0 * 1024.0 * 1024.0)));
         System.out.println(" - Safe RAM Limit (OS reserved): "
                 + String.format("%.2f GB", safeRamLimit / (1024.0 * 1024.0 * 1024.0)));
 
@@ -350,7 +344,11 @@ public class ModelManager {
             // OKAY
 
             boolean highPerformance = modelSizeBytes <= vramLimit;
-            boolean standardPerformance = modelSizeBytes <= (safeRamLimit * 0.8); // 80% of max safe ram
+            boolean standardPerformance = modelSizeBytes <= (safeRamLimit * 0.8); // 80%
+                                                                                  // of
+                                                                                  // max
+                                                                                  // safe
+                                                                                  // ram
 
             if (highPerformance || standardPerformance) {
                 recs.add(m);
@@ -379,14 +377,9 @@ public class ModelManager {
             }
             return (long) (value * multiplier);
         } catch (NumberFormatException e) {
-            // Valid case for "Unknown" or unexpected formats, precise logging not needed
-            // for regular logic flow
+            // Valid case for "Unknown" or unexpected formats
             return 0;
         }
-    }
-
-    public ObservableList<OllamaModel> getAvailableModels() {
-        return availableModels;
     }
 
     public void deleteModel(String name, String tag) {

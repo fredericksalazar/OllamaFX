@@ -71,19 +71,34 @@ public class App extends Application {
         // Hardware Information Logging
         System.out.println(com.org.ollamafx.manager.HardwareManager.getHardwareDetails());
 
-        // Load Fonts - DISABLED (Reverting to System Font for better native rendering)
-        // loadFonts();
-
-        // Check if fonts are loaded
-        System.out.println("Font being used family: " + javafx.scene.text.Font.getDefault().getFamily());
-
-        // Set AtlantaFX theme (adjust if needed to match previous styles)
+        // Set AtlantaFX theme
         Application.setUserAgentStylesheet(new atlantafx.base.theme.CupertinoLight().getUserAgentStylesheet());
 
-        modelManager = new ModelManager();
-        modelManager.loadAllModels();
+        modelManager = ModelManager.getInstance();
+        // Don't load all models here anymore, Splash/LibraryManager handles it.
+        // modelManager.loadAllModels();
 
-        reloadUI();
+        // LOAD SPLASH SCREEN
+        FXMLLoader loader = new FXMLLoader(App.class.getResource("/ui/splash_view.fxml"));
+        // Splash view might not need resources bundle if mostly hardcoded or unified,
+        // but good practice:
+        // loader.setResources(getBundle());
+        javafx.scene.Parent root = loader.load();
+
+        Scene scene = new Scene(root);
+        // Add CSS if splash needs specific styling, or just reuse active
+        scene.getStylesheets().add(App.class.getResource("/css/ollama_active.css").toExternalForm());
+
+        stage.setScene(scene);
+        stage.setTitle(getBundle().getString("app.title"));
+
+        // Icon logic (reused)
+        try {
+            stage.getIcons().add(new javafx.scene.image.Image(App.class.getResourceAsStream("/icons/icon.png")));
+        } catch (Exception e) {
+        }
+
+        stage.show();
     }
 
     public static void reloadUI() {
