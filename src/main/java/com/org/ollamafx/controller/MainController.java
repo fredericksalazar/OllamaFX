@@ -29,7 +29,7 @@ import javafx.scene.control.TreeView;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ContextMenu;
-import javafx.scene.control.TextInputDialog;
+import com.org.ollamafx.ui.FxDialog;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
@@ -348,18 +348,18 @@ public class MainController implements Initializable {
 
     @FXML
     public void createNewFolder() {
-        TextInputDialog dialog = new TextInputDialog("New Folder");
-        dialog.setTitle("New Folder");
-        dialog.setHeaderText("Enter name for new folder:");
-        dialog.setContentText("Name:");
-
-        // Style the dialog if possible to match theme (omitted for brevity)
-
-        dialog.showAndWait().ifPresent(name -> {
-            if (!name.trim().isEmpty()) {
-                collectionManager.createFolder(name.trim());
-            }
-        });
+        java.util.ResourceBundle bundle = com.org.ollamafx.App.getBundle();
+        javafx.stage.Window owner = chatTreeView.getScene().getWindow();
+        FxDialog.showInputDialog(
+                owner,
+                bundle.getString("dialog.folder.create.title"),
+                bundle.getString("dialog.folder.create.placeholder"),
+                "",
+                bundle.getString("dialog.folder.create.confirm")).ifPresent(name -> {
+                    if (!name.trim().isEmpty()) {
+                        collectionManager.createFolder(name.trim());
+                    }
+                });
     }
 
     @FXML

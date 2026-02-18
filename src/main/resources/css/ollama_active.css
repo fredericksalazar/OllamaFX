@@ -69,6 +69,7 @@
     /* Compact but comfortable */
     -fx-text-fill: -color-fg-default;
     -fx-font-size: 13px;
+    /* macOS Finder base size */
     -fx-alignment: CENTER_LEFT;
     -fx-background-radius: 6px;
     -fx-border-width: 0;
@@ -152,21 +153,122 @@
 /* Sidebar Buttons (General) - No Bold */
 .sidebar .button {
     -fx-font-weight: normal;
+    -fx-font-size: 13px;
+    /* macOS Finder base size */
 }
 
 .sidebar .app-title {
     -fx-font-weight: normal;
 }
 
+/* Sidebar Section Headers (CHATS) */
 .sidebar-section-label {
-    -fx-font-weight: normal;
-    /* Even headers should be normal/thin */
-    -fx-opacity: 0.7;
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-text-fill: -color-fg-muted;
+    -fx-opacity: 0.8;
 }
 
-/* --- CONTEXT MENU FIX --- */
-/* Removed custom overrides to use native AtlantaFX styles */
+/* --- SIDEBAR TREE VIEW ---
+   Complementa AtlantaFX sin sobreescribir su sistema de colores.
+   AtlantaFX define: tree-cell bg = -color-cell-bg, padding = 0.5em vertical,
+   disclosure-node padding = 0.35em 0.5em, indent = 1.2em
+   ----------------------------------------------------------------- */
+.chat-tree-view {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    /* Elimina el borde nativo del TreeView */
+}
 
+/* Celdas vacías: invisibles */
+.chat-tree-view .tree-cell:empty {
+    -fx-background-color: transparent;
+    -fx-mouse-transparent: true;
+}
+
+/* Celda base: solo ajustamos fuente y transparencia de fondo.
+   AtlantaFX maneja el padding, indent y colores de selección. */
+.chat-tree-view .tree-cell {
+    -fx-background-color: transparent;
+    /* Fondo transparente para que el sidebar sea uniforme */
+    -fx-font-size: 13px;
+    /* macOS Finder base — único ajuste necesario */
+    -fx-padding: 0.2em 0.5em;
+    /* Ligeramente más compacto que el default 0.5em de AtlantaFX */
+}
+
+/* Hover: sutil, respetando el sistema de colores */
+.chat-tree-view .tree-cell:filled:hover {
+    -fx-background-color: -color-base-8;
+    /* Variable nativa de AtlantaFX para hover */
+    -fx-background-radius: 6px;
+}
+
+/* Selección: usa colores nativos de AtlantaFX */
+.chat-tree-view .tree-cell:filled:selected {
+    -fx-background-color: -color-base-7;
+    /* Selección nativa AtlantaFX */
+    -fx-text-fill: -color-fg-default;
+    -fx-background-radius: 6px;
+    -fx-font-weight: normal;
+    /* Sin bold — más limpio */
+}
+
+/* Flecha de disclosure: usa el color nativo de AtlantaFX */
+.chat-tree-view .tree-cell .tree-disclosure-node {
+    -fx-background-color: transparent;
+    /* No tocar el padding — AtlantaFX lo maneja bien */
+}
+
+.chat-tree-view .tree-cell .tree-disclosure-node .arrow {
+    -fx-background-color: -color-fg-muted;
+    /* Color nativo de AtlantaFX para la flecha */
+}
+
+/* --- CONTEXT MENU ---
+   AtlantaFX ya define: background con borde simulado (insets 0,1),
+   padding 5px, border-radius 4px, dropshadow.
+   Solo ajustamos el font-size del menu-item.
+   NO sobreescribir background-color del context-menu (rompe el borde nativo).
+   ----------------------------------------------------------------- */
+.context-menu .menu-item {
+    -fx-font-size: 13px;
+    /* macOS native — único ajuste necesario */
+}
+
+/* Hover/focus: usa el color de acento nativo de AtlantaFX */
+.context-menu .menu-item:hover,
+.context-menu .menu-item:focused {
+    -fx-background-color: -color-accent-emphasis;
+}
+
+.context-menu .menu-item:hover>.label,
+.context-menu .menu-item:focused>.label {
+    -fx-text-fill: white;
+}
+
+/* --- FX DIALOG (Reemplaza TextInputDialog) ---
+   Diálogo modal minimalista alineado con CupertinoLight / AtlantaFX.
+   ----------------------------------------------------------------- */
+.fx-dialog-pane {
+    -fx-background-color: -color-bg-default;
+    -fx-background-radius: 12px;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1px;
+    -fx-border-radius: 12px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.18), 24, 0.3, 0, 6);
+}
+
+.fx-dialog-pane .dialog-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-text-fill: -color-fg-default;
+}
+
+.fx-dialog-pane .dialog-input {
+    -fx-font-size: 13px;
+    /* Usa el TextField nativo de AtlantaFX — solo ajustamos tamaño */
+}
 
 /* Hide Scrollbar tracks */
 .sidebar .list-view .scroll-bar:vertical {
@@ -385,8 +487,8 @@
 .transparent-area {
     -fx-background-color: transparent;
     -fx-background-insets: 0;
-    -fx-font-size: 16px;
-    /* Texto grande como en Gemini */
+    -fx-font-size: 15px;
+    /* Texto de input, ligeramente mayor que body */
     -fx-prompt-text-fill: #a0a0a0;
     -fx-padding: 0;
     /* Sin padding extra */
@@ -444,6 +546,7 @@
     -fx-background-radius: 18px;
     -fx-padding: 10px 15px;
     -fx-font-size: 14px;
+    /* Texto de conversación: 14px es correcto */
     -fx-max-width: 600px;
     /* Fixed max width to prevent super wide bubbles */
     -fx-effect: null;
@@ -756,8 +859,8 @@
 .markdown-area text {
     -fx-fill: -color-fg-default;
     -fx-font-family: "System";
-    -fx-font-size: 16px;
-    /* Increased from 14px for better readability */
+    -fx-font-size: 14px;
+    /* Alineado con chat-bubble para consistencia */
     -fx-font-smoothing-type: lcd;
     /* Better anti-aliasing */
 }
@@ -809,6 +912,7 @@
     -fx-border-width: 1px;
     -fx-padding: 8px;
     -fx-font-size: 13px;
+    /* Alineado con body */
     -fx-font-family: "System";
     -fx-highlight-fill: -color-accent-emphasis;
     -fx-highlight-text-fill: white;
@@ -823,8 +927,6 @@
 .sidebar-text-area .content {
     -fx-background-color: transparent;
 }
-
-t beef them up. */
 
 /* Headers - Gemini Style (Larger, Bolder) */
 /* Aliasing widely used classes for headers */

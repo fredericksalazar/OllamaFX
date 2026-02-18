@@ -197,3 +197,10 @@ task createInstaller(type: Exec) {
         println "Creating Installer with icon..."
     }
 }
+tasks.named('startScripts') {
+    dependsOn tasks.named('shadowJar')
+}
+
+tasks.named('startShadowScripts') {
+    dependsOn tasks.named('jar')
+}

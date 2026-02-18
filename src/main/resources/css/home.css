@@ -45,22 +45,24 @@
 }
 
 .hero-title {
-    -fx-font-size: 54px;
-    /* Larger */
+    -fx-font-size: 40px;
+    /* Impactante pero elegante */
     -fx-font-weight: 500;
     -fx-text-fill: -color-fg-default;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.05), 5, 0, 0, 1);
 }
 
 .hero-subtitle {
-    -fx-font-size: 22px;
+    -fx-font-size: 17px;
+    /* Title Medium — proporcional al hero */
     -fx-text-fill: -color-fg-muted;
     -fx-font-weight: normal;
 }
 
 .hero-button {
-    -fx-font-size: 16px;
-    -fx-padding: 12px 30px;
+    -fx-font-size: 13px;
+    /* Body — botones usan tamaño base */
+    -fx-padding: 10px 24px;
     -fx-background-radius: 30px;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 8, 0, 0, 3);
     -fx-cursor: hand;
@@ -97,8 +99,8 @@
 
 /* TITLES */
 .section-title {
-    -fx-font-size: 28px;
-    /* Larger */
+    -fx-font-size: 22px;
+    /* Title Large — jerarquía clara sobre body */
     -fx-font-weight: 500;
     -fx-text-fill: -color-fg-default;
     -fx-padding: 0 40px;
@@ -106,7 +108,8 @@
 }
 
 .section-subtitle {
-    -fx-font-size: 15px;
+    -fx-font-size: 13px;
+    /* Body — alineado con texto base */
     -fx-text-fill: -color-fg-muted;
     -fx-padding: 0 40px;
 }
@@ -154,13 +157,15 @@
 }
 
 .model-card-title {
-    -fx-font-size: 18px;
+    -fx-font-size: 15px;
+    /* Title Small — destaca sobre descripción */
     -fx-font-weight: 500;
     -fx-text-fill: -color-fg-default;
 }
 
 .model-card-desc {
-    -fx-font-size: 13px;
+    -fx-font-size: 12px;
+    /* Caption — texto secundario de card */
     -fx-text-fill: -color-fg-muted;
     -fx-line-spacing: 2px;
 }
@@ -187,7 +192,8 @@
 .link-button {
     -fx-background-color: transparent;
     -fx-text-fill: -color-accent-emphasis;
-    -fx-font-size: 14px;
+    -fx-font-size: 13px;
+    /* Body — consistente con sidebar */
     -fx-cursor: hand;
     -fx-padding: 5px 10px;
 }

@@ -101,13 +101,15 @@ public class ChatTreeCell extends TreeCell<ChatNode> {
 
         MenuItem renameItem = new MenuItem(bundle.getString("context.folder.rename"));
         renameItem.setOnAction(e -> {
-            TextInputDialog dialog = new TextInputDialog(folder.getName());
-            dialog.setTitle(bundle.getString("dialog.folder.rename.title"));
-            dialog.setHeaderText(bundle.getString("dialog.rename.header"));
-            dialog.showAndWait().ifPresent(newName -> {
-                collectionManager.renameFolder(folder, newName);
-                // Refresh handled by listener
-            });
+            FxDialog.showInputDialog(
+                    getTreeView().getScene().getWindow(),
+                    bundle.getString("dialog.folder.rename.title"),
+                    folder.getName(),
+                    folder.getName(),
+                    bundle.getString("dialog.rename.confirm")).ifPresent(newName -> {
+                        collectionManager.renameFolder(folder, newName);
+                        // Refresh handled by listener
+                    });
         });
 
         MenuItem newChatHereItem = new MenuItem(bundle.getString("context.folder.newChat"));
@@ -183,13 +185,15 @@ public class ChatTreeCell extends TreeCell<ChatNode> {
 
         MenuItem renameItem = new MenuItem(bundle.getString("context.chat.rename"));
         renameItem.setOnAction(e -> {
-            TextInputDialog dialog = new TextInputDialog(chat.getName());
-            dialog.setTitle(bundle.getString("dialog.rename.title"));
-            dialog.setHeaderText(bundle.getString("dialog.rename.header"));
-            dialog.showAndWait().ifPresent(newName -> {
-                chatManager.renameChat(chat, newName);
-                getTreeView().refresh();
-            });
+            FxDialog.showInputDialog(
+                    getTreeView().getScene().getWindow(),
+                    bundle.getString("dialog.rename.title"),
+                    chat.getName(),
+                    chat.getName(),
+                    bundle.getString("dialog.rename.confirm")).ifPresent(newName -> {
+                        chatManager.renameChat(chat, newName);
+                        getTreeView().refresh();
+                    });
         });
 
         MenuItem deleteItem = new MenuItem(bundle.getString("context.chat.delete"));
