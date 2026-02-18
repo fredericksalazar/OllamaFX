@@ -1749,3 +1749,12 @@
 .button-icon-small:hover .font-icon {
     -fx-icon-color: -color-fg-default;
 }
+
+
+/* --- Thinking Indicator (Ring Spinner) --- */
+.thinking-ring {
+    -fx-min-width: 18px;
+    -fx-min-height: 18px;
+    -fx-max-width: 18px;
+    -fx-max-height: 18px;
+}
