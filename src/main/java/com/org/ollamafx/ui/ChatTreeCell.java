@@ -59,28 +59,30 @@ public class ChatTreeCell extends TreeCell<ChatNode> {
 
     private ContextMenu createFolderContextMenu(ChatFolder folder) {
         ContextMenu menu = new ContextMenu();
+        java.util.ResourceBundle bundle = com.org.ollamafx.App.getBundle();
 
-        MenuItem renameItem = new MenuItem("Rename Folder");
+        MenuItem renameItem = new MenuItem(bundle.getString("context.folder.rename"));
         renameItem.setOnAction(e -> {
             TextInputDialog dialog = new TextInputDialog(folder.getName());
-            dialog.setTitle("Rename Folder");
-            dialog.setHeaderText("Enter new name:");
+            dialog.setTitle(bundle.getString("dialog.folder.rename.title"));
+            dialog.setHeaderText(bundle.getString("dialog.rename.header"));
             dialog.showAndWait().ifPresent(newName -> {
                 collectionManager.renameFolder(folder, newName);
                 // Refresh handled by listener
             });
         });
 
-        MenuItem newChatHereItem = new MenuItem("New Chat in Folder");
+        MenuItem newChatHereItem = new MenuItem(bundle.getString("context.folder.newChat"));
         newChatHereItem.setOnAction(e -> {
             ChatSession newChat = chatManager.createChat("New Chat");
             collectionManager.moveChatToFolder(newChat, folder);
             // Refresh handled by listener
         });
 
-        Menu colorMenu = new Menu("Color Tag");
+        Menu colorMenu = new Menu(bundle.getString("context.folder.color"));
         String[] colors = { "#FF3B30", "#FF9500", "#FFCC00", "#4CD964", "#5AC8FA", "#007AFF", "#5856D6", "#8E8E93" };
-        String[] names = { "Red", "Orange", "Yellow", "Green", "Teal", "Blue", "Purple", "Gray" };
+        String[] names = { "Red", "Orange", "Yellow", "Green", "Teal", "Blue", "Purple", "Gray" }; // Can be localized
+                                                                                                   // later if needed
 
         for (int i = 0; i < colors.length; i++) {
             String color = colors[i];
@@ -95,13 +97,14 @@ public class ChatTreeCell extends TreeCell<ChatNode> {
             colorMenu.getItems().add(colorItem);
         }
 
-        MenuItem deleteItem = new MenuItem("Delete Folder");
+        MenuItem deleteItem = new MenuItem(bundle.getString("context.folder.delete"));
         deleteItem.setStyle("-fx-text-fill: red;");
         deleteItem.setOnAction(e -> {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Delete Folder");
-            alert.setHeaderText("Delete '" + folder.getName() + "'?");
-            alert.setContentText("Chats inside will be moved to Uncategorized.");
+            alert.setTitle(bundle.getString("dialog.folder.delete.title"));
+            alert.setHeaderText(
+                    java.text.MessageFormat.format(bundle.getString("dialog.folder.delete.header"), folder.getName()));
+            alert.setContentText(bundle.getString("dialog.folder.delete.content"));
             alert.showAndWait().ifPresent(response -> {
                 if (response == ButtonType.OK) {
                     collectionManager.deleteFolder(folder);
@@ -109,24 +112,26 @@ public class ChatTreeCell extends TreeCell<ChatNode> {
             });
         });
 
-        menu.getItems().addAll(renameItem, colorMenu, new SeparatorMenuItem(), deleteItem);
+        menu.getItems().addAll(newChatHereItem, renameItem, colorMenu, new SeparatorMenuItem(), deleteItem);
         return menu;
     }
 
     private ContextMenu createChatContextMenu(ChatSession chat) {
         ContextMenu menu = new ContextMenu();
+        java.util.ResourceBundle bundle = com.org.ollamafx.App.getBundle();
 
-        MenuItem renameItem = new MenuItem("Rename Chat");
+        MenuItem renameItem = new MenuItem(bundle.getString("context.chat.rename"));
         renameItem.setOnAction(e -> {
             TextInputDialog dialog = new TextInputDialog(chat.getName());
-            dialog.setTitle("Rename Chat");
+            dialog.setTitle(bundle.getString("dialog.rename.title"));
+            dialog.setHeaderText(bundle.getString("dialog.rename.header"));
             dialog.showAndWait().ifPresent(newName -> {
                 chatManager.renameChat(chat, newName);
                 getTreeView().refresh();
             });
         });
 
-        MenuItem deleteItem = new MenuItem("Delete Chat");
+        MenuItem deleteItem = new MenuItem(bundle.getString("context.chat.delete"));
         deleteItem.setStyle("-fx-text-fill: red;");
         deleteItem.setOnAction(e -> {
             collectionManager.removeChatFromFolder(chat); // Cleanup folder ref
@@ -135,10 +140,10 @@ public class ChatTreeCell extends TreeCell<ChatNode> {
         });
 
         // "Move to..." Submenu
-        Menu moveMenu = new Menu("Move to...");
+        Menu moveMenu = new Menu(bundle.getString("context.chat.move"));
 
         // Option to move to Root (Uncategorized)
-        MenuItem rootItem = new MenuItem("Uncategorized");
+        MenuItem rootItem = new MenuItem(bundle.getString("context.chat.uncategorized"));
         rootItem.setOnAction(e -> {
             collectionManager.moveChatToFolder(chat, null);
         });

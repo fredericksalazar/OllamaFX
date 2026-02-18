@@ -406,14 +406,76 @@ public class MainController implements Initializable {
     @FXML
     public void createNewChat() {
         System.out.println("Creating new chat...");
-        // Use a simple default name or fetch from bundle if desired.
-        // For now, let's keep it simple or use a localized "Chat"
-        ChatSession newSession = chatManager.createChat("Chat"); // Simplified
 
-        // Select in tree?
-        refreshChatTree();
-        // Logic to select the new item in tree...
-        // For now user can find it in Uncategorized.
+        // 1. Capture selection BEFORE creating chat (as creation triggers refresh via
+        // listener)
+        ChatFolder targetFolder = null;
+        TreeItem<ChatNode> selectedItem = chatTreeView.getSelectionModel().getSelectedItem();
+        if (selectedItem != null && selectedItem.getValue() != null) {
+            ChatNode node = selectedItem.getValue();
+            if (node.getType() == ChatNode.Type.FOLDER) {
+                targetFolder = node.getFolder();
+            } else if (node.getType() == ChatNode.Type.CHAT) {
+                // If a chat is selected, check if it belongs to a folder
+                ChatSession selectedChat = node.getChat();
+                for (ChatFolder folder : collectionManager.getFolders()) {
+                    if (folder.getChatIds().contains(selectedChat.getId().toString())) {
+                        targetFolder = folder;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // 2. Create the chat (This triggers listener -> refreshChatTree)
+        // Use a simple default name or fetch from bundle if desired.
+        java.util.ResourceBundle bundle = com.org.ollamafx.App.getBundle();
+        String defaultName = "New Chat";
+        if (bundle.containsKey("sidebar.newChat")) {
+            defaultName = bundle.getString("sidebar.newChat").trim().replace("+", "").trim();
+        }
+
+        ChatSession newSession = chatManager.createChat(defaultName);
+
+        // 3. Move to folder if one was selected
+        if (targetFolder != null) {
+            collectionManager.moveChatToFolder(newSession, targetFolder);
+            // Moving might trigger another refresh via collection listener, ensuring UI is
+            // sync
+        }
+
+        // 4. Select the new item in the tree after refresh
+        // We need to wait for the refresh to complete.
+        // Since refresh is on the JavaFX thread (from listener), we can queue selection
+        // using Platform.runLater to run AFTER the current event processing.
+        Platform.runLater(() -> {
+            selectChatInTree(newSession);
+            loadChatView(newSession);
+        });
+    }
+
+    private void selectChatInTree(ChatSession session) {
+        if (chatTreeView.getRoot() == null)
+            return;
+
+        // Helper to recursively find and select
+        findAndSelect(chatTreeView.getRoot(), session);
+    }
+
+    private boolean findAndSelect(TreeItem<ChatNode> item, ChatSession session) {
+        if (item.getValue() != null && item.getValue().getType() == ChatNode.Type.CHAT) {
+            if (item.getValue().getChat().getId().equals(session.getId())) {
+                chatTreeView.getSelectionModel().select(item);
+                chatTreeView.scrollTo(chatTreeView.getRow(item));
+                return true;
+            }
+        }
+
+        for (TreeItem<ChatNode> child : item.getChildren()) {
+            if (findAndSelect(child, session))
+                return true;
+        }
+        return false;
     }
 
     /**

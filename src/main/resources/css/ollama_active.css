@@ -165,24 +165,7 @@
 }
 
 /* --- CONTEXT MENU FIX --- */
-/* Ensure context menus (popups) have readable text regardless of sidebar state */
-.context-menu {
-    -fx-background-color: -color-bg-default;
-    /* Standard background */
-}
-
-.context-menu .menu-item .label {
-    -fx-text-fill: -color-fg-default !important;
-    /* Force Standard Text Color (Black/Dark) */
-}
-
-.context-menu .menu-item:focused {
-    -fx-background-color: -color-accent-emphasis;
-}
-
-.context-menu .menu-item:focused .label {
-    -fx-text-fill: white !important;
-}
+/* Removed custom overrides to use native AtlantaFX styles */
 
 
 /* Hide Scrollbar tracks */

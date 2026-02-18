@@ -38,7 +38,7 @@
                     </Button>
 
                     <!-- NEW CHAT BUTTON -->
-                    <Button fx:id="btnNewChat" onAction="#handleNewChat" styleClass="button-icon-small">
+                    <Button fx:id="btnNewChat" onAction="#createNewChat" styleClass="button-icon-small">
                          <graphic>
                             <FontIcon iconLiteral="fth-edit" iconSize="16" styleClass="font-icon"/>
                         </graphic>
