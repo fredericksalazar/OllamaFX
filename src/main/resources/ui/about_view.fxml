@@ -2,49 +2,170 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.shape.SVGPath?>
-<?import javafx.scene.text.Font?>
 
-<VBox alignment="CENTER" spacing="20.0" style="-fx-background-color: transparent;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.org.ollamafx.controller.AboutController">
-    <padding>
-        <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
-    </padding>
+<ScrollPane fitToWidth="true" style="-fx-background-color: transparent;" stylesheets="@../css/about.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.org.ollamafx.controller.AboutController">
 
-    <!-- App Logo / Icon -->
-    <javafx.scene.image.ImageView fitHeight="128.0" fitWidth="128.0" pickOnBounds="true" preserveRatio="true">
-        <image>
-            <javafx.scene.image.Image url="@../icons/icon.png" />
-        </image>
-        <effect>
-            <javafx.scene.effect.DropShadow color="#00000040" radius="10.0" offsetY="5.0" />
-        </effect>
-    </javafx.scene.image.ImageView>
+    <VBox alignment="TOP_CENTER" spacing="0" style="-fx-background-color: transparent;">
+        <padding>
+            <Insets bottom="28" left="28" right="28" top="24" />
+        </padding>
 
-    <!-- App Name -->
-    <Label styleClass="h1" text="%app.title">
-        <font>
-            <Font name="System Bold" size="36.0" />
-        </font>
-    </Label>
-    
-    <!-- Version -->
-    <Label fx:id="versionLabel" style="-fx-text-fill: -color-fg-subtle; -fx-font-size: 14px;" text="%about.version.placeholder" />
+        <!-- ═══════════════════════════════════════════════
+             HEADER COMPACTO: Logo inline con título
+             ═══════════════════════════════════════════════ -->
+        <HBox alignment="CENTER" spacing="14">
+            <ImageView fitHeight="60" fitWidth="60" pickOnBounds="true" preserveRatio="true">
+                <image>
+                    <Image url="@../icons/icon.png" />
+                </image>
+                <effect>
+                    <javafx.scene.effect.DropShadow color="#00000028" radius="8" offsetY="3" />
+                </effect>
+            </ImageView>
+            <VBox spacing="3" alignment="CENTER_LEFT">
+                <Label styleClass="header-app-title" text="%app.title" />
+                <Label fx:id="versionLabel" styleClass="header-version" text="%about.version.placeholder" />
+            </VBox>
+        </HBox>
 
-    <!-- Description -->
-    <Label text="%about.description" styleClass="body-large" wrapText="true" textAlignment="CENTER" />
-    
-    <!-- Credits -->
-    <VBox alignment="CENTER" spacing="5.0">
-        <Label text="%about.createdby" style="-fx-text-fill: -color-fg-subtle;" />
-        <Label text="%about.poweredby" style="-fx-text-fill: -color-fg-subtle; -fx-font-size: 11px;" />
+        <Region prefHeight="20" />
+
+        <!-- ═══════════════════════════════════════════════
+             3-BLOCK GRID LAYOUT
+             ═══════════════════════════════════════════════ -->
+        <GridPane hgap="14" vgap="14">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="58" />
+                <ColumnConstraints percentWidth="42" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints vgrow="ALWAYS" />
+                <RowConstraints />
+            </rowConstraints>
+
+            <!-- ─────────────────────────────────────────────
+                 BLOQUE SUPERIOR IZQUIERDO
+                 ───────────────────────────────────────────── -->
+            <VBox styleClass="about-card" spacing="16" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                <padding>
+                    <Insets bottom="22" left="22" right="22" top="22" />
+                </padding>
+
+                <!-- Mission -->
+                <VBox spacing="8">
+                    <Label styleClass="card-section-title" text="%about.mission.title" />
+                    <Label styleClass="card-tagline" text="%about.mission.tagline" />
+                    <Label styleClass="card-body-text" text="%about.mission.text" wrapText="true" />
+                </VBox>
+
+                <Separator styleClass="subtle-separator" />
+
+                <!-- Support / Donation -->
+                <VBox spacing="12">
+                    <Label styleClass="card-section-title" text="%about.support.title" />
+
+                    <!-- PayPal Row -->
+                    <HBox styleClass="donation-row, paypal-row" spacing="14" alignment="CENTER_LEFT">
+                        <padding>
+                            <Insets bottom="14" left="16" right="16" top="14" />
+                        </padding>
+                        <Label styleClass="donation-emoji" text="💙" />
+                        <VBox spacing="2" HBox.hgrow="ALWAYS">
+                            <Label styleClass="donation-row-title" text="%donate.paypal.title" />
+                            <Label styleClass="donation-row-subtitle" text="%donate.paypal.message" wrapText="true" />
+                        </VBox>
+                        <Button fx:id="paypalButton" onAction="#openPayPal" styleClass="donate-btn-paypal" minWidth="145" text="%donate.paypal.button" />
+                    </HBox>
+
+                    <!-- Coffee Row -->
+                    <HBox styleClass="donation-row, coffee-row" spacing="14" alignment="CENTER_LEFT">
+                        <padding>
+                            <Insets bottom="14" left="16" right="16" top="14" />
+                        </padding>
+                        <Label styleClass="donation-emoji" text="☕" />
+                        <VBox spacing="2" HBox.hgrow="ALWAYS">
+                            <Label styleClass="donation-row-title" text="%donate.coffee.title" />
+                            <Label styleClass="donation-row-subtitle" text="%donate.coffee.message" wrapText="true" />
+                        </VBox>
+                        <Button fx:id="coffeeButton" onAction="#openBuyMeCoffee" styleClass="donate-btn-coffee" minWidth="145" text="%donate.coffee.button" />
+                    </HBox>
+                </VBox>
+
+            </VBox>
+
+            <!-- ─────────────────────────────────────────────
+                 BLOQUE SUPERIOR DERECHO - Stats
+                 ───────────────────────────────────────────── -->
+            <VBox styleClass="about-card, stats-card" spacing="0" alignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                <padding>
+                    <Insets bottom="24" left="20" right="20" top="28" />
+                </padding>
+
+                <Label styleClass="stats-big-icon" text="👥" />
+                <Region prefHeight="14" />
+
+                <ProgressIndicator fx:id="downloadSpinner" prefHeight="26" prefWidth="26" />
+                <Region prefHeight="8" />
+
+                <Label fx:id="downloadsLabel" styleClass="stats-hero-number" text="..." />
+                <Region prefHeight="10" />
+
+                <Label styleClass="stats-trust-label" text="%stats.community.trust" />
+                <Region prefHeight="5" />
+                <Label styleClass="stats-join-label" text="%stats.community.join" />
+
+                <Region VBox.vgrow="ALWAYS" />
+
+                <Separator opacity="0.15" maxWidth="100" />
+                <Region prefHeight="10" />
+                <Label styleClass="stats-source-label" text="%stats.community.source" />
+
+            </VBox>
+
+            <!-- ─────────────────────────────────────────────
+                 BLOQUE INFERIOR - GitHub Centrado Vertical
+                 ───────────────────────────────────────────── -->
+            <VBox styleClass="about-card" spacing="16" alignment="CENTER" GridPane.columnIndex="0" GridPane.rowIndex="1" GridPane.columnSpan="2">
+                <padding>
+                    <Insets bottom="28" left="24" right="24" top="28" />
+                </padding>
+
+                <Label styleClass="github-big-icon" text="🐙" />
+
+                <VBox spacing="6" alignment="CENTER">
+                    <Label styleClass="card-section-title" text="%about.contribute.title" />
+                    <Label styleClass="card-body-text" text="%about.contribute.text" wrapText="true" textAlignment="CENTER" maxWidth="700" />
+                </VBox>
+
+                <Region prefHeight="8" />
+
+                <Button fx:id="githubButton" onAction="#openGitHubContribute" styleClass="github-btn" minWidth="180" text="%about.button.contribute" />
+            </VBox>
+
+        </GridPane>
+
+        <Region prefHeight="20" />
+
+        <!-- FOOTER -->
+        <VBox alignment="CENTER" spacing="3" style="-fx-opacity: 0.40;">
+            <Label text="%about.createdby" style="-fx-font-size: 12px;" />
+            <Label text="%about.poweredby" style="-fx-font-size: 11px;" />
+            <Label text="%about.license" style="-fx-font-size: 11px;" />
+        </VBox>
+
+        <Region prefHeight="12" />
+
     </VBox>
-
-    <!-- Links -->
-    <Hyperlink onAction="#openGitHub" text="%about.github" style="-fx-font-size: 14px;" />
-    
-    <Label text="%about.license" style="-fx-text-fill: -color-fg-subtle; -fx-font-size: 10px;" />
-
-</VBox>
+</ScrollPane>
