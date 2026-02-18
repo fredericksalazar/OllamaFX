@@ -7,17 +7,28 @@ package com.org.ollamafx.model;
 public class ChatNode {
     public enum Type {
         FOLDER,
+        SMART_COLLECTION,
         CHAT
     }
 
     private final Type type;
     private final ChatFolder folder;
+    private final SmartCollection smartCollection;
     private final ChatSession chat;
 
     // Constructor for Folder Node
     public ChatNode(ChatFolder folder) {
         this.type = Type.FOLDER;
         this.folder = folder;
+        this.chat = null;
+        this.smartCollection = null;
+    }
+
+    // Constructor for Smart Collection Node
+    public ChatNode(SmartCollection smartCollection) {
+        this.type = Type.SMART_COLLECTION;
+        this.smartCollection = smartCollection;
+        this.folder = null;
         this.chat = null;
     }
 
@@ -26,6 +37,7 @@ public class ChatNode {
         this.type = Type.CHAT;
         this.chat = chat;
         this.folder = null;
+        this.smartCollection = null;
     }
 
     public Type getType() {
@@ -34,6 +46,10 @@ public class ChatNode {
 
     public ChatFolder getFolder() {
         return folder;
+    }
+
+    public SmartCollection getSmartCollection() {
+        return smartCollection;
     }
 
     public ChatSession getChat() {

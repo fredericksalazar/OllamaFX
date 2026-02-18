@@ -49,6 +49,8 @@ public class ChatTreeCell extends TreeCell<ChatNode> {
             // Context Menus
             if (item.getType() == ChatNode.Type.FOLDER) {
                 setContextMenu(createFolderContextMenu(item.getFolder()));
+            } else if (item.getType() == ChatNode.Type.SMART_COLLECTION) {
+                setContextMenu(createSmartCollectionContextMenu(item.getSmartCollection()));
             } else {
                 setContextMenu(createChatContextMenu(item.getChat()));
             }
@@ -56,6 +58,42 @@ public class ChatTreeCell extends TreeCell<ChatNode> {
     }
     // Remove renderFolder and renderChat methods as we rely on TreeItem graphics
     // now.
+
+    private ContextMenu createSmartCollectionContextMenu(com.org.ollamafx.model.SmartCollection sc) {
+        ContextMenu menu = new ContextMenu();
+        // Localize later
+        MenuItem editItem = new MenuItem("Edit Smart Collection");
+        editItem.setOnAction(e -> {
+            Optional<com.org.ollamafx.model.SmartCollection> result = com.org.ollamafx.ui.SmartCollectionDialog
+                    .show(sc);
+
+            result.ifPresent(updated -> {
+                sc.setName(updated.getName());
+                sc.setCriteria(updated.getCriteria());
+                sc.setValue(updated.getValue());
+                sc.setIcon(updated.getIcon());
+                // save
+                collectionManager.updateSmartCollection(sc);
+            });
+        });
+
+        MenuItem deleteItem = new MenuItem("Delete Smart Collection");
+        deleteItem.setStyle("-fx-text-fill: red;");
+        deleteItem.setOnAction(e -> {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Delete Smart Collection");
+            alert.setHeaderText("Delete '" + sc.getName() + "'?");
+            alert.setContentText("This will only remove the collection view, not the chats.");
+            alert.showAndWait().ifPresent(response -> {
+                if (response == ButtonType.OK) {
+                    collectionManager.deleteSmartCollection(sc);
+                }
+            });
+        });
+
+        menu.getItems().addAll(editItem, new SeparatorMenuItem(), deleteItem);
+        return menu;
+    }
 
     private ContextMenu createFolderContextMenu(ChatFolder folder) {
         ContextMenu menu = new ContextMenu();
@@ -79,23 +117,45 @@ public class ChatTreeCell extends TreeCell<ChatNode> {
             // Refresh handled by listener
         });
 
-        Menu colorMenu = new Menu(bundle.getString("context.folder.color"));
+        // macOS-style Color Picker Row
+        CustomMenuItem colorItem = new CustomMenuItem();
+        colorItem.setHideOnClick(false); // We handle hiding manually
+
+        HBox colorBox = new HBox(8); // Spacing between dots
+        colorBox.setAlignment(Pos.CENTER);
+        colorBox.setStyle("-fx-padding: 5 10 5 10;"); // Add padding
+
         String[] colors = { "#FF3B30", "#FF9500", "#FFCC00", "#4CD964", "#5AC8FA", "#007AFF", "#5856D6", "#8E8E93" };
-        String[] names = { "Red", "Orange", "Yellow", "Green", "Teal", "Blue", "Purple", "Gray" }; // Can be localized
-                                                                                                   // later if needed
+        String[] colorNames = { "Red", "Orange", "Yellow", "Green", "Teal", "Blue", "Purple", "Gray" }; // For tooltip
+                                                                                                        // if needed
 
         for (int i = 0; i < colors.length; i++) {
-            String color = colors[i];
-            String name = names[i];
-            MenuItem colorItem = new MenuItem(name);
-            Circle dot = new Circle(6, Color.web(color));
-            colorItem.setGraphic(dot);
-            colorItem.setOnAction(e -> {
-                collectionManager.setFolderColor(folder, color);
-                // Refresh handled by listener in Controller
+            final String colorHex = colors[i];
+            Circle dot = new Circle(7, Color.web(colorHex));
+            dot.setStroke(Color.web("#000000", 0.2)); // Subtle stroke definition
+            dot.setStrokeWidth(1);
+
+            // Interaction
+            dot.setOnMouseEntered(ev -> {
+                dot.setScaleX(1.2);
+                dot.setScaleY(1.2);
+                dot.setCursor(javafx.scene.Cursor.HAND);
             });
-            colorMenu.getItems().add(colorItem);
+            dot.setOnMouseExited(ev -> {
+                dot.setScaleX(1.0);
+                dot.setScaleY(1.0);
+                dot.setCursor(javafx.scene.Cursor.DEFAULT);
+            });
+            dot.setOnMouseClicked(ev -> {
+                collectionManager.setFolderColor(folder, colorHex);
+                menu.hide(); // Close menu after selection
+            });
+            // Add checkmark if currently selected?
+            // Ideally yes, but for now simple action.
+
+            colorBox.getChildren().add(dot);
         }
+        colorItem.setContent(colorBox);
 
         MenuItem deleteItem = new MenuItem(bundle.getString("context.folder.delete"));
         deleteItem.setStyle("-fx-text-fill: red;");
@@ -112,7 +172,8 @@ public class ChatTreeCell extends TreeCell<ChatNode> {
             });
         });
 
-        menu.getItems().addAll(newChatHereItem, renameItem, colorMenu, new SeparatorMenuItem(), deleteItem);
+        menu.getItems().addAll(newChatHereItem, renameItem, new SeparatorMenuItem(), colorItem, new SeparatorMenuItem(),
+                deleteItem);
         return menu;
     }
 

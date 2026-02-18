@@ -58,6 +58,16 @@ public class ChatFolder {
         this.chatIds = chatIds;
     }
 
+    public void addChat(String chatId) {
+        if (!chatIds.contains(chatId)) {
+            chatIds.add(chatId);
+        }
+    }
+
+    public void removeChat(String chatId) {
+        chatIds.remove(chatId);
+    }
+
     public boolean isExpanded() {
         return expanded;
     }
@@ -66,14 +76,4 @@ public class ChatFolder {
         this.expanded = expanded;
     }
 
-    // Helpers
-    public void addChatId(String chatId) {
-        if (!chatIds.contains(chatId)) {
-            chatIds.add(chatId);
-        }
-    }
-
-    public void removeChatId(String chatId) {
-        chatIds.remove(chatId);
-    }
 }

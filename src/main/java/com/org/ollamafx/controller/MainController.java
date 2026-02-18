@@ -2,43 +2,51 @@ package com.org.ollamafx.controller;
 
 import com.org.ollamafx.manager.ChatManager;
 import com.org.ollamafx.manager.ModelManager;
+import com.org.ollamafx.manager.OllamaServiceManager;
+import com.org.ollamafx.manager.ChatCollectionManager;
 import com.org.ollamafx.model.ChatSession;
-import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
-import javafx.scene.Parent;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TreeView;
-import javafx.scene.control.TreeItem;
-import javafx.scene.layout.BorderPane;
-
 import com.org.ollamafx.model.ChatNode;
 import com.org.ollamafx.model.ChatFolder;
+import com.org.ollamafx.model.SmartCollection;
 import com.org.ollamafx.ui.ChatTreeCell;
-import com.org.ollamafx.manager.ChatCollectionManager;
-
-import org.kordamp.ikonli.javafx.FontIcon;
-import org.kordamp.ikonli.feather.Feather;
-
-import javafx.scene.paint.Color;
-
-import java.io.IOException;
-import java.net.URL;
-import java.util.ResourceBundle;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.animation.FadeTransition;
 import javafx.animation.Timeline;
 import javafx.animation.KeyFrame;
-import javafx.util.Duration;
-import com.org.ollamafx.manager.OllamaServiceManager;
-import javafx.application.Platform;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Parent;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
+import javafx.scene.control.MenuButton;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.TextInputDialog;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.SVGPath;
-import javafx.geometry.Pos;
-import javafx.geometry.Insets;
+import javafx.util.Duration;
+
+import org.kordamp.ikonli.feather.Feather;
+import org.kordamp.ikonli.javafx.FontIcon;
+
+import java.io.IOException;
+import java.net.URL;
+import java.util.List;
+import java.util.Optional;
+import java.util.ResourceBundle;
 
 public class MainController implements Initializable {
 
@@ -160,6 +168,18 @@ public class MainController implements Initializable {
     private void setupChatTree() {
         chatTreeView.setCellFactory(tv -> new ChatTreeCell());
         chatTreeView.setShowRoot(false);
+
+        // Context Menu for empty space / root
+        ContextMenu rootMenu = new ContextMenu();
+        MenuItem smartColItem = new MenuItem("New Smart Collection");
+        smartColItem.setOnAction(e -> {
+            Optional<SmartCollection> result = com.org.ollamafx.ui.SmartCollectionDialog.show(null);
+            result.ifPresent(sc -> {
+                collectionManager.createSmartCollection(sc.getName(), sc.getCriteria(), sc.getValue(), sc.getIcon());
+            });
+        });
+        rootMenu.getItems().add(smartColItem);
+        chatTreeView.setContextMenu(rootMenu);
     }
 
     public void refreshChatTree() {
@@ -167,6 +187,36 @@ public class MainController implements Initializable {
 
         TreeItem<ChatNode> root = new TreeItem<>(new ChatNode((ChatFolder) null)); // Dummy Root
         root.setExpanded(true);
+
+        // 0. Add Smart Collections
+        for (SmartCollection sc : collectionManager.getSmartCollections()) {
+            javafx.scene.Node scIcon = createSmartCollectionIcon(sc);
+
+            TreeItem<ChatNode> scItem = new TreeItem<>(new ChatNode(sc), scIcon);
+            scItem.setExpanded(sc.isExpanded());
+
+            scItem.expandedProperty().addListener((obs, oldVal, newVal) -> {
+                sc.setExpanded(newVal);
+                collectionManager.updateSmartCollection(sc);
+            });
+
+            // Dynamic Filtering
+            List<ChatSession> filteredChats = collectionManager.getChatsForSmartCollection(sc);
+            for (ChatSession chat : filteredChats) {
+                FontIcon chatIcon = new FontIcon(Feather.MESSAGE_SQUARE);
+                chatIcon.getStyleClass().add("chat-icon");
+                // Use a distinct node type or just ChatNode? ChatNode(ChatSession) works,
+                // but we might want to know it belongs to a SmartCollection context?
+                // For now, simple ChatNode.
+                scItem.getChildren().add(new TreeItem<>(new ChatNode(chat), chatIcon));
+            }
+
+            // Optional: Add count to name? Done by cell factory if we updated toString or
+            // cell renderer.
+            // For now relies on ChatNode.toString().
+
+            root.getChildren().add(scItem);
+        }
 
         // 1. Add Folders
         for (ChatFolder folder : collectionManager.getFolders()) {
@@ -205,6 +255,54 @@ public class MainController implements Initializable {
         }
 
         chatTreeView.setRoot(root);
+    }
+
+    private javafx.scene.Node createSmartCollectionIcon(SmartCollection sc) {
+        Feather icon = Feather.ACTIVITY; // Default
+        if (sc.getIcon() != null) {
+            try {
+                // Determine icon based on internal mapping or criteria
+                // sc.getIcon() returns string name like "clock"
+                switch (sc.getIcon().toLowerCase()) {
+                    case "clock":
+                        icon = Feather.CLOCK;
+                        break;
+                    case "tag":
+                        icon = Feather.TAG;
+                        break;
+                    case "cpu":
+                        icon = Feather.CPU;
+                        break;
+                    case "star":
+                        icon = Feather.STAR;
+                        break;
+                    default:
+                        icon = Feather.ACTIVITY;
+                }
+            } catch (Exception e) {
+                // ignore
+            }
+        } else {
+            // Fallback based on criteria
+            if (sc.getCriteria() != null) {
+                switch (sc.getCriteria()) {
+                    case DATE:
+                        icon = Feather.CLOCK;
+                        break;
+                    case KEYWORD:
+                        icon = Feather.TAG;
+                        break;
+                    case MODEL:
+                        icon = Feather.CPU;
+                        break;
+                }
+            }
+        }
+
+        FontIcon fontIcon = new FontIcon(icon);
+        fontIcon.setIconSize(16);
+        fontIcon.setIconColor(Color.web("#007AFF")); // Apple Blue by default for smart collections
+        return fontIcon;
     }
 
     private javafx.scene.Node createFolderIcon(ChatFolder folder) {
