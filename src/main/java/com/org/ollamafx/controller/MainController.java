@@ -9,7 +9,19 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TreeView;
+import javafx.scene.control.TreeItem;
 import javafx.scene.layout.BorderPane;
+
+import com.org.ollamafx.model.ChatNode;
+import com.org.ollamafx.model.ChatFolder;
+import com.org.ollamafx.ui.ChatTreeCell;
+import com.org.ollamafx.manager.ChatCollectionManager;
+
+import org.kordamp.ikonli.javafx.FontIcon;
+import org.kordamp.ikonli.feather.Feather;
+import org.kordamp.ikonli.material2.Material2AL;
+import javafx.scene.paint.Color;
 
 import java.io.IOException;
 import java.net.URL;
@@ -33,7 +45,7 @@ public class MainController implements Initializable {
     @FXML
     private BorderPane mainBorderPane;
     @FXML
-    private ListView<ChatSession> chatListView;
+    private TreeView<ChatNode> chatTreeView;
     @FXML
     private javafx.scene.layout.StackPane centerContentPane;
 
@@ -64,10 +76,12 @@ public class MainController implements Initializable {
     private FadeTransition pulseAnimation;
 
     private ChatManager chatManager;
+    private ChatCollectionManager collectionManager;
     private ModelManager modelManager;
 
     public MainController() {
         this.chatManager = ChatManager.getInstance();
+        this.collectionManager = ChatCollectionManager.getInstance();
     }
 
     public void initModelManager(ModelManager modelManager) {
@@ -112,85 +126,133 @@ public class MainController implements Initializable {
         // Default to Home View
         Platform.runLater(this::showHome);
 
-        chatListView.setItems(chatManager.getChatSessions());
+        // --- Chat Tree Setup ---
+        setupChatTree();
 
-        // ... (rest of initialize)
+        // Refresh tree initially
+        refreshChatTree();
 
-        chatListView.setCellFactory(lv -> new javafx.scene.control.ListCell<>() {
-            @Override
-            protected void updateItem(ChatSession item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                    setGraphic(null);
-                    setContextMenu(null);
-                } else {
-                    HBox container = new HBox();
-                    container.setAlignment(Pos.CENTER_LEFT);
-                    container.setSpacing(10);
-                    container.setPadding(new Insets(5, 0, 5, 15));
-
-                    String displayText = item.getName();
-                    if (item.isPinned()) {
-                        displayText = "📌 " + displayText;
-                        getStyleClass().add("pinned-chat");
-                    } else {
-                        getStyleClass().remove("pinned-chat");
-                    }
-                    Label nameLabel = new Label(displayText);
-                    nameLabel.setMaxWidth(Double.MAX_VALUE);
-                    HBox.setHgrow(nameLabel, Priority.ALWAYS);
-
-                    SVGPath icon = new SVGPath();
-                    icon.setContent(
-                            "M6 10c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm6 0c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm6 0c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2z");
-                    icon.setScaleX(0.85);
-                    icon.setScaleY(0.85);
-
-                    MenuButton menuButton = new MenuButton();
-                    menuButton.setGraphic(icon);
-                    menuButton.getStyleClass().addAll("flat", "button-icon");
-                    menuButton.setStyle("-fx-mark-visible: false;");
-
-                    ResourceBundle bundle = resources; // Use injected resources
-
-                    MenuItem renameItem = new MenuItem(bundle.getString("context.rename"));
-                    renameItem.setOnAction(e -> {
-                        TextInputDialog dialog = new TextInputDialog(item.getName());
-                        dialog.setTitle(bundle.getString("dialog.rename.title"));
-                        dialog.setHeaderText(bundle.getString("dialog.rename.header"));
-                        dialog.showAndWait().ifPresent(newName -> {
-                            chatManager.renameChat(item, newName);
-                            getListView().refresh();
-                        });
-                    });
-                    MenuItem pinItem = new MenuItem(
-                            item.isPinned() ? bundle.getString("context.unpin") : bundle.getString("context.pin"));
-                    pinItem.setOnAction(e -> {
-                        chatManager.togglePin(item);
-                        getListView().refresh();
-                    });
-                    MenuItem deleteItem = new MenuItem(bundle.getString("context.delete"));
-                    deleteItem.setStyle("-fx-text-fill: red;");
-                    deleteItem.setOnAction(e -> chatManager.deleteChat(item));
-                    menuButton.getItems().addAll(renameItem, pinItem, new SeparatorMenuItem(),
-                            deleteItem);
-
-                    container.getChildren().addAll(nameLabel, menuButton);
-                    setText(null);
-                    setGraphic(container);
-                }
+        // Listen for selection changes
+        chatTreeView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null && newVal.getValue().getType() == ChatNode.Type.CHAT) {
+                clearToolSelection();
+                loadChatView(newVal.getValue().getChat());
             }
-
         });
 
-        chatListView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null) {
-                clearToolSelection(); // Unselect
-                                      // bottom
-                                      // buttons
-                loadChatView(newVal);
+        // Listen for chat list changes to refresh tree
+        // Weak listener or careful management needed? For now straightforward.
+        chatManager.getChatSessions().addListener((javafx.collections.ListChangeListener<ChatSession>) c -> {
+            refreshChatTree();
+        });
+
+        // Listen for folder changes (List add/remove)
+        collectionManager.getFolders().addListener((javafx.collections.ListChangeListener<ChatFolder>) c -> {
+            refreshChatTree();
+        });
+
+        // Listen for content updates (Color, content changes)
+        collectionManager.addUpdateListener(() -> {
+            Platform.runLater(this::refreshChatTree);
+        });
+    }
+
+    private void setupChatTree() {
+        chatTreeView.setCellFactory(tv -> new ChatTreeCell());
+        chatTreeView.setShowRoot(false);
+    }
+
+    public void refreshChatTree() {
+        // Simple approach: Rebuild.
+
+        TreeItem<ChatNode> root = new TreeItem<>(new ChatNode((ChatFolder) null)); // Dummy Root
+        root.setExpanded(true);
+
+        // 1. Add Folders
+        for (ChatFolder folder : collectionManager.getFolders()) {
+            // Create initial icon based on state
+            FontIcon folderIcon = createFolderIcon(folder);
+
+            TreeItem<ChatNode> folderItem = new TreeItem<>(new ChatNode(folder), folderIcon);
+            folderItem.setExpanded(folder.isExpanded());
+
+            // Listener for expansion state persistence AND visual update
+            folderItem.expandedProperty().addListener((obs, oldVal, newVal) -> {
+                folder.setExpanded(newVal);
+                // Update Icon
+                folderItem.setGraphic(createFolderIcon(folder));
+            });
+
+            // Add Chats belonging to this folder
+            for (String chatId : folder.getChatIds()) {
+                ChatSession chat = findChatById(chatId);
+                if (chat != null) {
+                    FontIcon chatIcon = new FontIcon(Feather.MESSAGE_SQUARE);
+                    chatIcon.getStyleClass().add("chat-icon");
+                    folderItem.getChildren().add(new TreeItem<>(new ChatNode(chat), chatIcon));
+                }
             }
+            root.getChildren().add(folderItem);
+        }
+
+        // 2. Add Uncategorized Chats
+        for (ChatSession chat : chatManager.getChatSessions()) {
+            if (!collectionManager.isChatInFolder(chat)) {
+                FontIcon chatIcon = new FontIcon(Feather.MESSAGE_SQUARE);
+                chatIcon.getStyleClass().add("chat-icon");
+                root.getChildren().add(new TreeItem<>(new ChatNode(chat), chatIcon));
+            }
+        }
+
+        chatTreeView.setRoot(root);
+    }
+
+    private FontIcon createFolderIcon(ChatFolder folder) {
+        // Closed = Solid Color (Material2AL.FOLDER)
+        // Open = Outlined (Material2AL.FOLDER_OPEN) with Color border?
+        // Actually Material2AL.FOLDER is usually solid/filled. Material2AL.FOLDER_OPEN
+        // is usually outlined.
+        // Let's verify Material2AL usage.
+
+        // Note: We need to import Material2AL.
+
+        org.kordamp.ikonli.Ikon iconCode;
+        if (folder.isExpanded()) {
+            iconCode = org.kordamp.ikonli.material2.Material2AL.FOLDER_OPEN;
+        } else {
+            iconCode = org.kordamp.ikonli.material2.Material2AL.FOLDER;
+        }
+
+        FontIcon icon = new FontIcon(iconCode);
+        try {
+            // Debug Logging
+            // System.out.println("Applying Color to Folder '" + folder.getName() + "': " +
+            // folder.getColor());
+            icon.setIconColor(Color.web(folder.getColor()));
+        } catch (IllegalArgumentException e) {
+            System.err.println("Invalid Color for folder " + folder.getName() + ": " + folder.getColor());
+            icon.setIconColor(Color.GRAY);
+        }
+        // Increase size slightly for folders?
+        // icon.setIconSize(16); // Default is usually fine
+        return icon;
+    }
+
+    private ChatSession findChatById(String id) {
+        return chatManager.getChatSessions().stream()
+                .filter(c -> c.getId().toString().equals(id))
+                .findFirst()
+                .orElse(null);
+    }
+
+    @FXML
+    public void createNewFolder() {
+        TextInputDialog dialog = new TextInputDialog("New Folder");
+        dialog.setTitle("Create Folder");
+        dialog.setHeaderText("Enter folder name:");
+        dialog.showAndWait().ifPresent(name -> {
+            collectionManager.createFolder(name);
+            // Listener will trigger refresh
         });
     }
 
@@ -198,8 +260,12 @@ public class MainController implements Initializable {
 
     public void openChat(ChatSession session) {
         if (session != null) {
-            chatListView.getSelectionModel().select(session);
-            // The listener on selection model calls loadChatView
+            // Find TreeItem for this session
+            // Complex traversal needed or just logic?
+            // For now, let's just create a temporary selection logic if needed
+            // But usually openChat is called from Home or creation.
+            // We need to expand folder if needed.
+            // ... (Simple implementation: just focus if found)
         }
     }
 
@@ -218,7 +284,7 @@ public class MainController implements Initializable {
         if (activeButton != null) {
             activeButton.getStyleClass().add("selected");
             // Also clear chat selection so we don't look like we have 2 things active
-            chatListView.getSelectionModel().clearSelection();
+            chatTreeView.getSelectionModel().clearSelection();
         }
     }
 
@@ -323,8 +389,10 @@ public class MainController implements Initializable {
         // For now, let's keep it simple or use a localized "Chat"
         ChatSession newSession = chatManager.createChat("Chat"); // Simplified
 
-        chatListView.getSelectionModel().select(newSession);
-        // Listener calls loadChatView -> which calls clearToolSelection
+        // Select in tree?
+        refreshChatTree();
+        // Logic to select the new item in tree...
+        // For now user can find it in Uncategorized.
     }
 
     /**

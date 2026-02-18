@@ -11,18 +11,27 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.control.TreeView?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.Tooltip?>
 
 <BorderPane fx:id="mainBorderPane" prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.org.ollamafx.controller.MainController">
     <left>
 
         <VBox fx:id="sidebarVBox" prefWidth="300.0" spacing="0.0" styleClass="sidebar" BorderPane.alignment="CENTER">
             <children>
-                <!-- TITLE REMOVED -->
+                <!-- SIDEBAR HEADER (New) -->
+                <HBox alignment="CENTER_LEFT" spacing="10.0" style="-fx-padding: 10 15 10 15;">
+                    <Label text="Chats" styleClass="sidebar-title" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                    <Button fx:id="btnNewFolder" onAction="#createNewFolder" styleClass="button-icon" text="📁+">
+                         <tooltip>
+                            <Tooltip text="New Folder" />
+                        </tooltip>
+                    </Button>
+                </HBox>
 
-                <!-- SECTION LABEL REMOVED -->
-
-                <!-- CHAT LIST (Takes available space) -->
-                <ListView fx:id="chatListView" VBox.vgrow="ALWAYS" />
+                <!-- CHAT TREE (Takes available space) -->
+                <TreeView fx:id="chatTreeView" VBox.vgrow="ALWAYS" styleClass="chat-tree-view" showRoot="false"/>
                 
                 <!-- BOTTOM TOOLS SECTION -->
                 <VBox spacing="2.0" styleClass="sidebar-bottom-section">

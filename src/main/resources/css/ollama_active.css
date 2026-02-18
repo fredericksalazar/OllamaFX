@@ -1493,3 +1493,70 @@ t beef them up. */
     -fx-background-color: -color-bg-subtle;
     -fx-padding: 20;
 }
+/* --- SMART COLLECTIONS TREE VIEW (Refined for AtlantaFX) --- */
+
+.chat-tree-view {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 5px;
+}
+
+.chat-tree-view .tree-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 6px 8px; /* Comfortable padding */
+    -fx-text-fill: -color-fg-default;
+    -fx-font-size: 13px;
+    -fx-graphic-text-gap: 8px; /* Space between icon and text */
+}
+
+/* Hover State */
+.chat-tree-view .tree-cell:filled:hover {
+    -fx-background-color: -color-bg-subtle;
+    -fx-background-radius: 4px;
+}
+
+/* Selected State */
+.chat-tree-view .tree-cell:filled:selected {
+    -fx-background-color: -color-accent-subtle;
+    -fx-text-fill: -color-accent-fg;
+    -fx-background-radius: 4px;
+}
+
+.chat-tree-view .tree-cell:filled:selected .text {
+    -fx-fill: -color-accent-fg;
+}
+
+/* Drag Over Feedback */
+.tree-cell.drag-over {
+    -fx-background-color: -color-accent-subtle; /* Highlight background */
+    -fx-border-color: -color-accent-emphasis;
+    -fx-border-width: 2px;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-border-style: dashed;
+}
+
+/* Icon Colors (Ikonli FontIcon) */
+.ikonli-font-icon {
+    -fx-icon-color: -color-fg-muted;
+    -fx-icon-size: 16px;
+}
+
+.tree-cell:filled:selected .ikonli-font-icon {
+    -fx-icon-color: -color-accent-fg;
+}
+
+/* Disclosure Node (Arrow) */
+.tree-cell .tree-disclosure-node .arrow {
+    -fx-background-color: -color-fg-muted;
+    -fx-padding: 0.2em; /* Smaller arrow */
+}
+
+.tree-cell:filled:selected .tree-disclosure-node .arrow {
+    -fx-background-color: -color-accent-fg;
+}
+
+/* --- Chat Icon Style --- */
+.chat-icon {
+    -fx-icon-color: -color-fg-muted;
+}
