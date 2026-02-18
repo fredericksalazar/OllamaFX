@@ -92,6 +92,14 @@
                             <Insets left="20.0" top="10.0" bottom="10.0"/>
                         </padding>
                     </Button>
+                    <Button fx:id="btnTrash" alignment="BASELINE_LEFT" contentDisplay="LEFT" graphicTextGap="10" maxWidth="Infinity" mnemonicParsing="false" onAction="#showTrash" styleClass="button" text="%sidebar.trash">
+                        <tooltip>
+                            <javafx.scene.control.Tooltip text="%sidebar.trash" />
+                        </tooltip>
+                        <padding>
+                            <Insets left="20.0" top="10.0" bottom="10.0"/>
+                        </padding>
+                    </Button>
                     <Button fx:id="btnAbout" alignment="BASELINE_LEFT" contentDisplay="LEFT" graphicTextGap="10" maxWidth="Infinity" mnemonicParsing="false" onAction="#showAbout" styleClass="button" text="%sidebar.about">
                         <tooltip>
                             <javafx.scene.control.Tooltip text="%sidebar.about" />

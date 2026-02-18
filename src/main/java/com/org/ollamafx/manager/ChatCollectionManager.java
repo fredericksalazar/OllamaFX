@@ -60,6 +60,15 @@ public class ChatCollectionManager {
         return folders;
     }
 
+    /**
+     * Devuelve la carpeta que contiene el chat, o null si está en Uncategorized.
+     */
+    public ChatFolder getFolderForChat(ChatSession chat) {
+        if (chat == null)
+            return null;
+        return chatFolderMap.get(chat.getId().toString());
+    }
+
     public ObservableList<SmartCollection> getSmartCollections() {
         return smartCollections;
     }
@@ -86,13 +95,31 @@ public class ChatCollectionManager {
     }
 
     public void deleteFolder(ChatFolder folder) {
+        // Delegar a TrashManager — no eliminar directamente
+        TrashManager.getInstance().trashFolder(folder);
+    }
+
+    /**
+     * Remueve la carpeta de la lista activa sin pasar por TrashManager (usado
+     * internamente).
+     */
+    public void removeFolderFromList(ChatFolder folder) {
         folders.remove(folder);
-        // Remove mappings
+        // Limpiar el mapa de chats
         for (String chatId : folder.getChatIds()) {
             chatFolderMap.remove(chatId);
         }
         saveCollections();
         notifyUpdate();
+    }
+
+    /** Restaura una carpeta a la lista activa (usado por TrashManager). */
+    public void restoreFolderToList(ChatFolder folder) {
+        if (!folders.contains(folder)) {
+            folders.add(folder);
+            saveCollections();
+            notifyUpdate();
+        }
     }
 
     public void addChatToFolder(ChatSession chat, ChatFolder folder) {
@@ -143,10 +170,6 @@ public class ChatCollectionManager {
 
     public boolean isChatInFolder(ChatSession chat) {
         return chat != null && chatFolderMap.containsKey(chat.getId().toString());
-    }
-
-    public ChatFolder getFolderForChat(ChatSession chat) {
-        return chat != null ? chatFolderMap.get(chat.getId().toString()) : null;
     }
 
     public void renameFolder(ChatFolder folder, String newName) {
@@ -271,6 +294,15 @@ public class ChatCollectionManager {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+
+        // Crear carpeta "General" si no existe ninguna carpeta
+        boolean hasGeneral = folders.stream()
+                .anyMatch(f -> "General".equalsIgnoreCase(f.getName()));
+        if (folders.isEmpty() || !hasGeneral) {
+            ChatFolder general = new ChatFolder("General", "#8E8E93");
+            folders.add(0, general);
+            saveCollections();
         }
     }
 

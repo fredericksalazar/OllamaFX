@@ -68,6 +68,8 @@ public class MainController implements Initializable {
     private javafx.scene.control.Button btnAbout;
     @FXML
     private javafx.scene.control.Button btnHome;
+    @FXML
+    private javafx.scene.control.Button btnTrash;
 
     @FXML
     private HBox ollamaStatusBar;
@@ -176,6 +178,8 @@ public class MainController implements Initializable {
         btnAbout.setGraphic(sidebarIcon(
                 "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z",
                 16));
+        btnTrash.setGraphic(sidebarIcon(
+                "M3 6h18M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2", 16));
     }
 
     /**
@@ -430,6 +434,8 @@ public class MainController implements Initializable {
             btnSettings.getStyleClass().remove("selected");
         if (btnAbout != null)
             btnAbout.getStyleClass().remove("selected");
+        if (btnTrash != null)
+            btnTrash.getStyleClass().remove("selected");
 
         // Add to target
         if (activeButton != null) {
@@ -449,6 +455,8 @@ public class MainController implements Initializable {
             btnSettings.getStyleClass().remove("selected");
         if (btnAbout != null)
             btnAbout.getStyleClass().remove("selected");
+        if (btnTrash != null)
+            btnTrash.getStyleClass().remove("selected");
     }
 
     /**
@@ -531,6 +539,15 @@ public class MainController implements Initializable {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @FXML
+    public void showTrash() {
+        setActiveTool(btnTrash);
+        com.org.ollamafx.ui.TrashView trashView = new com.org.ollamafx.ui.TrashView();
+        trashView.prefWidthProperty().bind(centerContentPane.widthProperty());
+        trashView.prefHeightProperty().bind(centerContentPane.heightProperty());
+        centerContentPane.getChildren().setAll(trashView);
     }
 
     @FXML
