@@ -8,9 +8,9 @@
    =================================================================== */
 
 .header-app-title {
-    -fx-font-size: 26px;
+    -fx-font-size: 22px;
+    /* Title Large */
     -fx-font-weight: 500;
-    /* Removed bold */
 }
 
 .header-version {
@@ -36,20 +36,21 @@
    =================================================================== */
 
 .card-section-title {
-    -fx-font-size: 17px;
+    -fx-font-size: 15px;
+    /* Title Small */
     -fx-font-weight: 500;
-    /* Removed bold */
 }
 
 .card-tagline {
-    -fx-font-size: 14px;
+    -fx-font-size: 13px;
+    /* Body */
     -fx-font-weight: 500;
-    /* Removed bold */
     -fx-text-fill: -color-accent-emphasis;
 }
 
 .card-body-text {
-    -fx-font-size: 14px;
+    -fx-font-size: 13px;
+    /* Body */
     -fx-text-fill: -color-fg-muted;
     -fx-line-spacing: 2px;
 }
@@ -101,13 +102,14 @@
 }
 
 .donation-row-title {
-    -fx-font-size: 15px;
+    -fx-font-size: 13px;
+    /* Body */
     -fx-font-weight: 500;
-    /* Removed bold */
 }
 
 .donation-row-subtitle {
-    -fx-font-size: 13px;
+    -fx-font-size: 12px;
+    /* Caption */
     -fx-text-fill: -color-fg-muted;
 }
 
@@ -120,9 +122,9 @@
     -fx-text-fill: white;
     -fx-background-radius: 8px;
     -fx-padding: 9px 16px;
-    -fx-font-size: 13.5px;
+    -fx-font-size: 13px;
+    /* Body */
     -fx-font-weight: 500;
-    /* Removed bold */
     -fx-cursor: hand;
     -fx-graphic-text-gap: 8px;
 }
@@ -139,9 +141,9 @@
     -fx-text-fill: #1a1a1a;
     -fx-background-radius: 8px;
     -fx-padding: 9px 16px;
-    -fx-font-size: 13.5px;
+    -fx-font-size: 13px;
+    /* Body */
     -fx-font-weight: 500;
-    /* Removed bold */
     -fx-cursor: hand;
     -fx-graphic-text-gap: 8px;
 }
@@ -176,21 +178,22 @@
 }
 
 .stats-hero-number {
-    -fx-font-size: 56px;
+    -fx-font-size: 48px;
+    /* Display — más elegante que 56px */
     -fx-font-weight: 500;
-    /* Removed bold */
     -fx-text-fill: -color-accent-emphasis;
 }
 
 .stats-trust-label {
-    -fx-font-size: 16px;
+    -fx-font-size: 15px;
+    /* Title Small */
     -fx-font-weight: 500;
-    /* Removed bold */
     -fx-text-alignment: center;
 }
 
 .stats-join-label {
-    -fx-font-size: 13px;
+    -fx-font-size: 12px;
+    /* Caption */
     -fx-text-fill: -color-fg-muted;
 }
 
@@ -214,9 +217,9 @@
     -fx-background-radius: 8px;
     -fx-border-width: 1.5px;
     -fx-padding: 10px 24px;
-    -fx-font-size: 14px;
+    -fx-font-size: 13px;
+    /* Body */
     -fx-font-weight: 500;
-    /* Removed bold */
     -fx-cursor: hand;
     -fx-graphic-text-gap: 8px;
 }

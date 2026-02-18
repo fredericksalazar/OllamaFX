@@ -75,11 +75,35 @@ public class ChatManager {
     }
 
     public void deleteChat(ChatSession session) {
+        // Delegar a TrashManager — no borrar archivo físico aquí
+        com.org.ollamafx.manager.TrashManager.getInstance().trashChat(session);
+    }
+
+    /**
+     * Remueve el chat de la lista activa sin borrar el archivo (usado por
+     * TrashManager).
+     */
+    public void removeChatFromList(ChatSession session) {
         chatSessions.remove(session);
-        File file = new File(storageDir, session.getId().toString() + ".json");
-        if (file.exists()) {
-            file.delete();
+    }
+
+    /** Restaura un chat a la lista activa (usado por TrashManager al restaurar). */
+    public void restoreChatToList(ChatSession session) {
+        if (!chatSessions.contains(session)) {
+            setupSessionListeners(session);
+            chatSessions.add(session);
+            saveChat(session);
         }
+    }
+
+    /**
+     * Borra el archivo físico del chat (llamado por TrashManager al eliminar
+     * permanentemente).
+     */
+    public void physicallyDeleteChat(ChatSession session) {
+        File file = new File(storageDir, session.getId().toString() + ".json");
+        if (file.exists())
+            file.delete();
     }
 
     public void renameChat(ChatSession session, String newName) {

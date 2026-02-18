@@ -11,18 +11,45 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.control.TreeView?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <BorderPane fx:id="mainBorderPane" prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.org.ollamafx.controller.MainController">
     <left>
 
         <VBox fx:id="sidebarVBox" prefWidth="300.0" spacing="0.0" styleClass="sidebar" BorderPane.alignment="CENTER">
             <children>
-                <!-- TITLE REMOVED -->
+                <!-- SIDEBAR HEADER (Apple Notes Style) -->
+                <HBox alignment="CENTER_LEFT" spacing="5.0" styleClass="sidebar-header">
+                    <Label text="CHATS" styleClass="sidebar-section-label" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
+                    
+                    <!-- NEW FOLDER BUTTON -->
+                    <Button fx:id="btnNewFolder" onAction="#createNewFolder" styleClass="button-icon-small">
+                        <graphic>
+                            <FontIcon iconLiteral="fth-folder-plus" iconSize="16" styleClass="font-icon"/>
+                        </graphic>
+                        <tooltip>
+                            <Tooltip text="New Folder" />
+                        </tooltip>
+                    </Button>
 
-                <!-- SECTION LABEL REMOVED -->
+                    <!-- NEW CHAT BUTTON -->
+                    <Button fx:id="btnNewChat" onAction="#createNewChat" styleClass="button-icon-small">
+                         <graphic>
+                            <FontIcon iconLiteral="fth-edit" iconSize="16" styleClass="font-icon"/>
+                        </graphic>
+                        <tooltip>
+                            <Tooltip text="New Chat" />
+                        </tooltip>
+                    </Button>
+                </HBox>
 
-                <!-- CHAT LIST (Takes available space) -->
-                <ListView fx:id="chatListView" VBox.vgrow="ALWAYS" />
+                <!-- CHAT TREE (Takes available space) -->
+                <TreeView fx:id="chatTreeView" VBox.vgrow="ALWAYS" styleClass="chat-tree-view" showRoot="false"/>
                 
                 <!-- BOTTOM TOOLS SECTION -->
                 <VBox spacing="2.0" styleClass="sidebar-bottom-section">
@@ -32,10 +59,7 @@
                         </VBox.margin>
                     </Separator>
                     
-                    <Button fx:id="btnHome" alignment="BASELINE_LEFT" maxWidth="Infinity" mnemonicParsing="false" onAction="#showHome" styleClass="button" text="%sidebar.home">
-                        <graphic>
-                            <Region styleClass="icon-region, icon-home" />
-                        </graphic>
+                    <Button fx:id="btnHome" alignment="BASELINE_LEFT" contentDisplay="LEFT" graphicTextGap="10" maxWidth="Infinity" mnemonicParsing="false" onAction="#showHome" styleClass="button" text="%sidebar.home">
                         <tooltip>
                             <javafx.scene.control.Tooltip text="%sidebar.home" />
                         </tooltip>
@@ -44,21 +68,15 @@
                         </padding>
                     </Button>
                     
-                    <Button fx:id="btnAvailable" alignment="BASELINE_LEFT" maxWidth="Infinity" mnemonicParsing="false" onAction="#showAvailableModels" styleClass="button" text="%sidebar.availableModels">
-                         <graphic>
-                            <Region styleClass="icon-region, icon-download" />
-                        </graphic>
+                    <Button fx:id="btnAvailable" alignment="BASELINE_LEFT" contentDisplay="LEFT" graphicTextGap="10" maxWidth="Infinity" mnemonicParsing="false" onAction="#showAvailableModels" styleClass="button" text="%sidebar.availableModels">
                         <tooltip>
                             <javafx.scene.control.Tooltip text="%sidebar.availableModels" />
                         </tooltip>
-                         <padding>
+                        <padding>
                             <Insets left="20.0" top="10.0" bottom="10.0"/>
                         </padding>
                     </Button>
-                    <Button fx:id="btnLocal" alignment="BASELINE_LEFT" maxWidth="Infinity" mnemonicParsing="false" onAction="#showLocalModels" styleClass="button" text="%sidebar.localModels">
-                        <graphic>
-                            <Region styleClass="icon-region, icon-cube" />
-                        </graphic>
+                    <Button fx:id="btnLocal" alignment="BASELINE_LEFT" contentDisplay="LEFT" graphicTextGap="10" maxWidth="Infinity" mnemonicParsing="false" onAction="#showLocalModels" styleClass="button" text="%sidebar.localModels">
                         <tooltip>
                             <javafx.scene.control.Tooltip text="%sidebar.localModels" />
                         </tooltip>
@@ -66,10 +84,7 @@
                             <Insets left="20.0" top="10.0" bottom="10.0"/>
                         </padding>
                     </Button>
-                    <Button fx:id="btnSettings" alignment="BASELINE_LEFT" maxWidth="Infinity" mnemonicParsing="false" onAction="#openSettings" styleClass="button" text="%sidebar.settings">
-                        <graphic>
-                            <Region styleClass="icon-region, icon-settings" />
-                        </graphic>
+                    <Button fx:id="btnSettings" alignment="BASELINE_LEFT" contentDisplay="LEFT" graphicTextGap="10" maxWidth="Infinity" mnemonicParsing="false" onAction="#openSettings" styleClass="button" text="%sidebar.settings">
                         <tooltip>
                             <javafx.scene.control.Tooltip text="%sidebar.settings" />
                         </tooltip>
@@ -77,10 +92,15 @@
                             <Insets left="20.0" top="10.0" bottom="10.0"/>
                         </padding>
                     </Button>
-                    <Button fx:id="btnAbout" alignment="BASELINE_LEFT" maxWidth="Infinity" mnemonicParsing="false" onAction="#showAbout" styleClass="button" text="%sidebar.about">
-                        <graphic>
-                            <Region styleClass="icon-region, icon-info" />
-                        </graphic>
+                    <Button fx:id="btnTrash" alignment="BASELINE_LEFT" contentDisplay="LEFT" graphicTextGap="10" maxWidth="Infinity" mnemonicParsing="false" onAction="#showTrash" styleClass="button" text="%sidebar.trash">
+                        <tooltip>
+                            <javafx.scene.control.Tooltip text="%sidebar.trash" />
+                        </tooltip>
+                        <padding>
+                            <Insets left="20.0" top="10.0" bottom="10.0"/>
+                        </padding>
+                    </Button>
+                    <Button fx:id="btnAbout" alignment="BASELINE_LEFT" contentDisplay="LEFT" graphicTextGap="10" maxWidth="Infinity" mnemonicParsing="false" onAction="#showAbout" styleClass="button" text="%sidebar.about">
                         <tooltip>
                             <javafx.scene.control.Tooltip text="%sidebar.about" />
                         </tooltip>

@@ -223,6 +223,13 @@ public class HomeController implements Initializable {
     }
 
     @FXML
+    private void createNewFolder() {
+        if (mainController != null) {
+            mainController.createNewFolder();
+        }
+    }
+
+    @FXML
     private void loadFile() {
         // TODO: Implement file loading logic (Document Manager?)
     }

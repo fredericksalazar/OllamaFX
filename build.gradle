@@ -20,6 +20,13 @@ dependencies {
     implementation 'com.github.oshi:oshi-core-java11:6.4.0'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
     implementation 'org.commonmark:commonmark:0.21.0'
+    
+    // Icon Pack
+    implementation 'org.kordamp.ikonli:ikonli-javafx:12.3.1'
+    implementation 'org.kordamp.ikonli:ikonli-feather-pack:12.3.1'
+    implementation 'org.kordamp.ikonli:ikonli-material2-pack:12.3.1'
+
+    implementation 'org.kordamp.ikonli:ikonli-fontawesome5-pack:12.3.1'
 
     // Cross-platform natives for Shadow JAR
     runtimeOnly "org.openjfx:javafx-graphics:21:linux"
@@ -189,4 +196,11 @@ task createInstaller(type: Exec) {
         mkdir 'releases'
         println "Creating Installer with icon..."
     }
+}
+tasks.named('startScripts') {
+    dependsOn tasks.named('shadowJar')
+}
+
+tasks.named('startShadowScripts') {
+    dependsOn tasks.named('jar')
 }

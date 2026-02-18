@@ -69,6 +69,7 @@
     /* Compact but comfortable */
     -fx-text-fill: -color-fg-default;
     -fx-font-size: 13px;
+    /* macOS Finder base size */
     -fx-alignment: CENTER_LEFT;
     -fx-background-radius: 6px;
     -fx-border-width: 0;
@@ -83,6 +84,53 @@
     -fx-background-color: rgba(0, 0, 0, 0.04);
     /* Subtle hover */
 }
+
+/* --- FINDER TOOLBAR & ADD BUTTON --- */
+.sidebar-toolbar {
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1px 0 0 0;
+    /* Separator from Tree */
+    -fx-padding: 5px;
+}
+
+.button-icon-add {
+    -fx-background-color: transparent;
+    -fx-padding: 2px 6px;
+    -fx-background-radius: 4px;
+    -fx-cursor: hand;
+    -fx-alignment: CENTER;
+}
+
+.button-icon-add:hover {
+    -fx-background-color: rgba(0, 0, 0, 0.06);
+}
+
+.button-icon-add:pressed {
+    -fx-background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Hide the default MenuButton arrow for a clean look */
+.button-icon-add>.arrow-button {
+    -fx-padding: 0;
+    -fx-background-color: transparent;
+}
+
+.button-icon-add>.arrow-button>.arrow {
+    -fx-padding: 0;
+    -fx-shape: null;
+    -fx-background-color: transparent;
+}
+
+.icon-plus {
+    -fx-shape: "M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z";
+    -fx-background-color: -color-fg-muted;
+    -fx-min-width: 14px;
+    -fx-min-height: 14px;
+    -fx-max-width: 14px;
+    -fx-max-height: 14px;
+}
+
+/* ----------------------------------- */
 
 /* FINDER STYLE SELECTION: Light Grey Background, Blue Text */
 .sidebar .list-cell:selected {
@@ -105,38 +153,127 @@
 /* Sidebar Buttons (General) - No Bold */
 .sidebar .button {
     -fx-font-weight: normal;
+    -fx-font-size: 13px;
+    /* macOS Finder base size */
 }
 
 .sidebar .app-title {
     -fx-font-weight: normal;
 }
 
+/* Sidebar Section Headers (CHATS) */
 .sidebar-section-label {
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-text-fill: -color-fg-muted;
+    -fx-opacity: 0.8;
+}
+
+/* --- SIDEBAR TREE VIEW ---
+   Complementa AtlantaFX sin sobreescribir su sistema de colores.
+   AtlantaFX define: tree-cell bg = -color-cell-bg, padding = 0.5em vertical,
+   disclosure-node padding = 0.35em 0.5em, indent = 1.2em
+   ----------------------------------------------------------------- */
+.chat-tree-view {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    /* Elimina el borde nativo del TreeView */
+}
+
+/* Celdas vacías: invisibles */
+.chat-tree-view .tree-cell:empty {
+    -fx-background-color: transparent;
+    -fx-mouse-transparent: true;
+}
+
+/* Celda base: solo ajustamos fuente y transparencia de fondo.
+   AtlantaFX maneja el padding, indent y colores de selección. */
+.chat-tree-view .tree-cell {
+    -fx-background-color: transparent;
+    /* Fondo transparente para que el sidebar sea uniforme */
+    -fx-font-size: 13px;
+    /* macOS Finder base — único ajuste necesario */
+    -fx-padding: 0.2em 0.5em;
+    /* Ligeramente más compacto que el default 0.5em de AtlantaFX */
+}
+
+/* Hover: sutil, respetando el sistema de colores */
+.chat-tree-view .tree-cell:filled:hover {
+    -fx-background-color: -color-base-8;
+    /* Variable nativa de AtlantaFX para hover */
+    -fx-background-radius: 6px;
+}
+
+/* Selección: usa colores nativos de AtlantaFX */
+.chat-tree-view .tree-cell:filled:selected {
+    -fx-background-color: -color-base-7;
+    /* Selección nativa AtlantaFX */
+    -fx-text-fill: -color-fg-default;
+    -fx-background-radius: 6px;
     -fx-font-weight: normal;
-    /* Even headers should be normal/thin */
-    -fx-opacity: 0.7;
+    /* Sin bold — más limpio */
 }
 
-/* --- CONTEXT MENU FIX --- */
-/* Ensure context menus (popups) have readable text regardless of sidebar state */
-.context-menu {
-    -fx-background-color: -color-bg-default;
-    /* Standard background */
+/* Flecha de disclosure: usa el color nativo de AtlantaFX */
+.chat-tree-view .tree-cell .tree-disclosure-node {
+    -fx-background-color: transparent;
+    /* No tocar el padding — AtlantaFX lo maneja bien */
 }
 
-.context-menu .menu-item .label {
-    -fx-text-fill: -color-fg-default !important;
-    /* Force Standard Text Color (Black/Dark) */
+.chat-tree-view .tree-cell .tree-disclosure-node .arrow {
+    -fx-background-color: -color-fg-muted;
+    /* Color nativo de AtlantaFX para la flecha */
 }
 
+/* --- CONTEXT MENU ---
+   AtlantaFX ya define: background con borde simulado (insets 0,1),
+   padding 5px, border-radius 4px, dropshadow.
+   Solo ajustamos el font-size del menu-item.
+   NO sobreescribir background-color del context-menu (rompe el borde nativo).
+   ----------------------------------------------------------------- */
+.context-menu .menu-item {
+    -fx-font-size: 13px;
+    /* macOS native — único ajuste necesario */
+}
+
+/* Hover/focus: usa el color de acento nativo de AtlantaFX */
+.context-menu .menu-item:hover,
 .context-menu .menu-item:focused {
     -fx-background-color: -color-accent-emphasis;
 }
 
-.context-menu .menu-item:focused .label {
-    -fx-text-fill: white !important;
+.context-menu .menu-item:hover>.label,
+.context-menu .menu-item:focused>.label {
+    -fx-text-fill: white;
 }
 
+/* --- FX DIALOG (Reemplaza TextInputDialog) ---
+   Diálogo modal minimalista alineado con CupertinoLight / AtlantaFX.
+   ----------------------------------------------------------------- */
+.fx-dialog-pane {
+    -fx-background-color: -color-bg-default;
+    -fx-background-radius: 12px;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1px;
+    -fx-border-radius: 12px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.18), 24, 0.3, 0, 6);
+}
+
+.fx-dialog-pane .dialog-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-text-fill: -color-fg-default;
+}
+
+.fx-dialog-pane .dialog-input {
+    -fx-font-size: 13px;
+    /* Usa el TextField nativo de AtlantaFX — solo ajustamos tamaño */
+}
+
+.fx-dialog-pane .dialog-body {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-fg-muted;
+}
 
 /* Hide Scrollbar tracks */
 .sidebar .list-view .scroll-bar:vertical {
@@ -355,8 +492,8 @@
 .transparent-area {
     -fx-background-color: transparent;
     -fx-background-insets: 0;
-    -fx-font-size: 16px;
-    /* Texto grande como en Gemini */
+    -fx-font-size: 15px;
+    /* Texto de input, ligeramente mayor que body */
     -fx-prompt-text-fill: #a0a0a0;
     -fx-padding: 0;
     /* Sin padding extra */
@@ -414,6 +551,7 @@
     -fx-background-radius: 18px;
     -fx-padding: 10px 15px;
     -fx-font-size: 14px;
+    /* Texto de conversación: 14px es correcto */
     -fx-max-width: 600px;
     /* Fixed max width to prevent super wide bubbles */
     -fx-effect: null;
@@ -726,8 +864,8 @@
 .markdown-area text {
     -fx-fill: -color-fg-default;
     -fx-font-family: "System";
-    -fx-font-size: 16px;
-    /* Increased from 14px for better readability */
+    -fx-font-size: 14px;
+    /* Alineado con chat-bubble para consistencia */
     -fx-font-smoothing-type: lcd;
     /* Better anti-aliasing */
 }
@@ -779,6 +917,7 @@
     -fx-border-width: 1px;
     -fx-padding: 8px;
     -fx-font-size: 13px;
+    /* Alineado con body */
     -fx-font-family: "System";
     -fx-highlight-fill: -color-accent-emphasis;
     -fx-highlight-text-fill: white;
@@ -793,8 +932,6 @@
 .sidebar-text-area .content {
     -fx-background-color: transparent;
 }
-
-t beef them up. */
 
 /* Headers - Gemini Style (Larger, Bolder) */
 /* Aliasing widely used classes for headers */
@@ -1492,4 +1629,123 @@ t beef them up. */
 .detail-panel {
     -fx-background-color: -color-bg-subtle;
     -fx-padding: 20;
+}
+
+/* --- SMART COLLECTIONS TREE VIEW (Refined for AtlantaFX) --- */
+
+.chat-tree-view {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 5px;
+}
+
+.chat-tree-view .tree-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 6px 8px;
+    /* Comfortable padding */
+    -fx-text-fill: -color-fg-default;
+    -fx-font-size: 13px;
+    -fx-graphic-text-gap: 8px;
+    /* Space between icon and text */
+}
+
+/* Hover State */
+.chat-tree-view .tree-cell:filled:hover {
+    -fx-background-color: -color-bg-subtle;
+    -fx-background-radius: 4px;
+}
+
+/* Selected State */
+.chat-tree-view .tree-cell:filled:selected {
+    -fx-background-color: -color-accent-subtle;
+    -fx-text-fill: -color-accent-fg;
+    -fx-background-radius: 4px;
+}
+
+.chat-tree-view .tree-cell:filled:selected .text {
+    -fx-fill: -color-accent-fg;
+}
+
+/* Drag Over Feedback */
+.tree-cell.drag-over {
+    -fx-background-color: -color-accent-subtle;
+    /* Highlight background */
+    -fx-border-color: -color-accent-emphasis;
+    -fx-border-width: 2px;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-border-style: dashed;
+}
+
+/* Icon Colors (Ikonli FontIcon) */
+.ikonli-font-icon {
+    -fx-icon-color: -color-fg-muted;
+    -fx-icon-size: 16px;
+}
+
+.tree-cell:filled:selected .ikonli-font-icon {
+    -fx-icon-color: -color-accent-fg;
+}
+
+/* Disclosure Node (Arrow) */
+.tree-cell .tree-disclosure-node .arrow {
+    -fx-background-color: -color-fg-muted;
+    -fx-padding: 0.2em;
+    /* Smaller arrow */
+}
+
+.tree-cell:filled:selected .tree-disclosure-node .arrow {
+    -fx-background-color: -color-accent-fg;
+}
+
+/* --- Chat Icon Style --- */
+/* --- Chat Icon Style --- */
+.chat-icon {
+    -fx-fill: -color-text-secondary;
+}
+
+/* --- NEW SIDEBAR HEADER (Apple Notes Style) --- */
+.sidebar-header {
+    -fx-padding: 10px 15px 5px 15px;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.sidebar-section-label {
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
+    -fx-opacity: 0.8;
+}
+
+/* Generic Small Icon Button */
+.button-icon-small {
+    -fx-background-color: transparent;
+    -fx-min-width: 28px;
+    -fx-min-height: 28px;
+    -fx-max-width: 28px;
+    -fx-max-height: 28px;
+    -fx-padding: 0;
+    -fx-cursor: hand;
+    -fx-alignment: center;
+}
+
+.button-icon-small:hover {
+    -fx-background-color: rgba(0, 0, 0, 0.05);
+    -fx-background-radius: 4px;
+}
+
+.button-icon-small:pressed {
+    -fx-background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Icon: New Folder & New Chat (FontIcon Style) */
+.button-icon-small .font-icon {
+    -fx-icon-color: -color-fg-muted;
+    -fx-icon-size: 18px;
+    /* Slightly larger for better visibility */
+}
+
+.button-icon-small:hover .font-icon {
+    -fx-icon-color: -color-fg-default;
 }

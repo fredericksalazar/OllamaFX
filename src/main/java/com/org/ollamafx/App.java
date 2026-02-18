@@ -38,7 +38,7 @@ public class App extends Application {
 
     public static java.util.ResourceBundle getBundle() {
         String lang = com.org.ollamafx.manager.ConfigManager.getInstance().getLanguage();
-        java.util.Locale locale = new java.util.Locale(lang);
+        java.util.Locale locale = java.util.Locale.of(lang);
         java.util.Locale.setDefault(locale);
         return java.util.ResourceBundle.getBundle("messages", locale);
     }
