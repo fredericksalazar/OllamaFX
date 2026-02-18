@@ -38,6 +38,7 @@ import com.org.ollamafx.manager.ModelManager;
 import com.org.ollamafx.manager.OllamaManager;
 import com.org.ollamafx.model.ChatMessage;
 import com.org.ollamafx.model.ChatSession;
+import atlantafx.base.controls.RingProgressIndicator;
 import com.org.ollamafx.model.OllamaModel;
 import com.org.ollamafx.ui.MarkdownOutput;
 
@@ -636,10 +637,19 @@ public class ChatController {
                     // Case 2: Wrapped in VBox (New structure with Copy Button)
                     else if (content instanceof VBox) {
                         VBox wrapper = (VBox) content;
-                        for (Node child : wrapper.getChildren()) {
-                            if (child instanceof MarkdownOutput) {
-                                ((MarkdownOutput) child).updateContent(text);
-                                break;
+                        if (!wrapper.getChildren().isEmpty()) {
+                            Node firstChild = wrapper.getChildren().get(0);
+                            if (firstChild instanceof RingProgressIndicator) {
+                                // First token received: Replace ring indicator with MarkdownOutput + Footer
+                                wrapper.getChildren().clear();
+                                setupAssistantContent(wrapper, text);
+                            } else {
+                                for (Node child : wrapper.getChildren()) {
+                                    if (child instanceof MarkdownOutput) {
+                                        ((MarkdownOutput) child).updateContent(text);
+                                        break;
+                                    }
+                                }
                             }
                         }
                     }
@@ -683,7 +693,28 @@ public class ChatController {
         if (currentGenerationTask != null) {
             currentGenerationTask.cancel(true); // Interrupt thread as well
         }
+
+        // Remove thinking indicator if it's still there
+        Platform.runLater(this::cleanupThinkingIndicator);
+
         setGeneratingState(false);
+    }
+
+    private void cleanupThinkingIndicator() {
+        if (!messagesContainer.getChildren().isEmpty()) {
+            Node lastNode = messagesContainer.getChildren().get(messagesContainer.getChildren().size() - 1);
+            if (lastNode instanceof HBox) {
+                HBox container = (HBox) lastNode;
+                if (!container.getChildren().isEmpty() && container.getChildren().get(0) instanceof VBox) {
+                    VBox wrapper = (VBox) container.getChildren().get(0);
+                    if (!wrapper.getChildren().isEmpty()
+                            && wrapper.getChildren().get(0) instanceof RingProgressIndicator) {
+                        // Remove the whole message container if it's just a placeholder ring
+                        messagesContainer.getChildren().remove(lastNode);
+                    }
+                }
+            }
+        }
     }
 
     private void addMessage(String text, boolean isUser) {
@@ -725,56 +756,65 @@ public class ChatController {
                             messagesContainer.widthProperty().subtract(100)));
 
             try {
-                MarkdownOutput markdownOutput = new MarkdownOutput();
-                // We let the wrapper constrain the width, but MarkdownOutput needs to fill it
-                markdownOutput.setMaxWidth(Double.MAX_VALUE);
-
-                // Set Initial Content
-                markdownOutput.setMarkdown(text);
-
-                // --- Copy Button Footer ---
-                HBox footer = new HBox();
-                footer.setAlignment(Pos.CENTER_RIGHT);
-                footer.setPadding(new Insets(5, 0, 0, 0));
-
-                Button copyBtn = new Button();
-                copyBtn.getStyleClass().add("chat-copy-button");
-
-                SVGPath copyIcon = new SVGPath();
-                copyIcon.setContent(
-                        "M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z");
-                copyIcon.setStyle("-fx-fill: -color-fg-muted; -fx-scale-x: 0.9; -fx-scale-y: 0.9;");
-                copyIcon.getStyleClass().add("icon");
-
-                copyBtn.setGraphic(copyIcon);
-                copyBtn.setTooltip(new Tooltip("Copy full response"));
-
-                copyBtn.setOnAction(e -> {
-                    ClipboardContent content = new ClipboardContent();
-                    content.putString(markdownOutput.getMarkdown());
-                    Clipboard.getSystemClipboard().setContent(content);
-
-                    // Visual Feedback (Green Tick)
-                    copyIcon.setStyle("-fx-fill: -color-success-fg; -fx-scale-x: 0.9; -fx-scale-y: 0.9;");
-                    javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(
-                            Duration.seconds(1));
-                    pause.setOnFinished(
-                            ev -> copyIcon.setStyle("-fx-fill: -color-fg-muted; -fx-scale-x: 0.9; -fx-scale-y: 0.9;"));
-                    pause.play();
-                });
-
-                footer.getChildren().add(copyBtn);
-                contentWrapper.getChildren().addAll(markdownOutput, footer);
+                if (text.isEmpty()) {
+                    // Start in Thinking State with a small ring indicator
+                    RingProgressIndicator ring = new RingProgressIndicator();
+                    ring.setProgress(-1); // Indeterminate
+                    ring.getStyleClass().add("thinking-ring");
+                    contentWrapper.getChildren().add(ring);
+                } else {
+                    setupAssistantContent(contentWrapper, text);
+                }
 
                 container.getChildren().add(contentWrapper);
             } catch (Throwable t) {
                 t.printStackTrace();
-                Label errorLabel = new Label("Error loading Markdown Component: " + t.getMessage());
+                Label errorLabel = new Label("Error loading Message Component: " + t.getMessage());
                 errorLabel.setStyle("-fx-text-fill: red;");
                 container.getChildren().add(errorLabel);
             }
             messagesContainer.getChildren().add(container);
         }
+    }
+
+    private void setupAssistantContent(VBox contentWrapper, String text) {
+        MarkdownOutput markdownOutput = new MarkdownOutput();
+        markdownOutput.setMaxWidth(Double.MAX_VALUE);
+        markdownOutput.setMarkdown(text);
+
+        // --- Copy Button Footer ---
+        HBox footer = new HBox();
+        footer.setAlignment(Pos.CENTER_RIGHT);
+        footer.setPadding(new Insets(5, 0, 0, 0));
+
+        Button copyBtn = new Button();
+        copyBtn.getStyleClass().add("chat-copy-button");
+
+        SVGPath copyIcon = new SVGPath();
+        copyIcon.setContent(
+                "M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z");
+        copyIcon.setStyle("-fx-fill: -color-fg-muted; -fx-scale-x: 0.9; -fx-scale-y: 0.9;");
+        copyIcon.getStyleClass().add("icon");
+
+        copyBtn.setGraphic(copyIcon);
+        copyBtn.setTooltip(new Tooltip("Copy full response"));
+
+        copyBtn.setOnAction(e -> {
+            ClipboardContent content = new ClipboardContent();
+            content.putString(markdownOutput.getMarkdown());
+            Clipboard.getSystemClipboard().setContent(content);
+
+            // Visual Feedback (Green Tick)
+            copyIcon.setStyle("-fx-fill: -color-success-fg; -fx-scale-x: 0.9; -fx-scale-y: 0.9;");
+            javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(
+                    Duration.seconds(1));
+            pause.setOnFinished(
+                    ev -> copyIcon.setStyle("-fx-fill: -color-fg-muted; -fx-scale-x: 0.9; -fx-scale-y: 0.9;"));
+            pause.play();
+        });
+
+        footer.getChildren().add(copyBtn);
+        contentWrapper.getChildren().addAll(markdownOutput, footer);
     }
 
     @FXML
