@@ -1,0 +1,228 @@
+/* ===================================================================
+   OllamaFX - About View Styles
+   3-Block Layout: top-left (mission+donate), top-right (stats), bottom (github)
+   =================================================================== */
+
+/* ===================================================================
+   HEADER COMPACTO
+   =================================================================== */
+
+.header-app-title {
+    -fx-font-size: 26px;
+    -fx-font-weight: 500;
+    /* Removed bold */
+}
+
+.header-version {
+    -fx-font-size: 13px;
+    -fx-text-fill: -color-fg-subtle;
+}
+
+/* ===================================================================
+   BASE CARD
+   =================================================================== */
+
+.about-card {
+    -fx-background-radius: 12px;
+    -fx-border-radius: 12px;
+    -fx-border-width: 1px;
+    -fx-border-color: -color-border-default;
+    -fx-background-color: -color-bg-subtle;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.04), 6, 0, 0, 2);
+}
+
+/* ===================================================================
+   LEFT CARD - Mission + Donations
+   =================================================================== */
+
+.card-section-title {
+    -fx-font-size: 17px;
+    -fx-font-weight: 500;
+    /* Removed bold */
+}
+
+.card-tagline {
+    -fx-font-size: 14px;
+    -fx-font-weight: 500;
+    /* Removed bold */
+    -fx-text-fill: -color-accent-emphasis;
+}
+
+.card-body-text {
+    -fx-font-size: 14px;
+    -fx-text-fill: -color-fg-muted;
+    -fx-line-spacing: 2px;
+}
+
+.subtle-separator {
+    -fx-opacity: 0.25;
+}
+
+/* ===================================================================
+   DONATION ROWS
+   =================================================================== */
+
+.donation-row {
+    -fx-background-radius: 9px;
+    -fx-border-radius: 9px;
+    -fx-border-width: 1px;
+    -fx-cursor: hand;
+}
+
+.donation-row:hover {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.09), 8, 0, 0, 3);
+    -fx-translate-y: -2px;
+}
+
+/* PayPal */
+.paypal-row {
+    -fx-background-color: rgba(0, 112, 186, 0.05);
+    -fx-border-color: rgba(0, 112, 186, 0.20);
+}
+
+.paypal-row:hover {
+    -fx-background-color: rgba(0, 112, 186, 0.09);
+    -fx-border-color: rgba(0, 112, 186, 0.38);
+}
+
+/* Coffee */
+.coffee-row {
+    -fx-background-color: rgba(255, 165, 0, 0.05);
+    -fx-border-color: rgba(255, 165, 0, 0.22);
+}
+
+.coffee-row:hover {
+    -fx-background-color: rgba(255, 165, 0, 0.09);
+    -fx-border-color: rgba(255, 165, 0, 0.42);
+}
+
+.donation-emoji {
+    -fx-font-size: 30px;
+}
+
+.donation-row-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: 500;
+    /* Removed bold */
+}
+
+.donation-row-subtitle {
+    -fx-font-size: 13px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+/* ===================================================================
+   DONATION BUTTONS
+   =================================================================== */
+
+.donate-btn-paypal {
+    -fx-background-color: #0070ba;
+    -fx-text-fill: white;
+    -fx-background-radius: 8px;
+    -fx-padding: 9px 16px;
+    -fx-font-size: 13.5px;
+    -fx-font-weight: 500;
+    /* Removed bold */
+    -fx-cursor: hand;
+    -fx-graphic-text-gap: 8px;
+}
+
+.donate-btn-paypal:hover {
+    -fx-background-color: #005ea6;
+    -fx-effect: dropshadow(gaussian, rgba(0, 112, 186, 0.35), 8, 0, 0, 3);
+    -fx-scale-x: 1.03;
+    -fx-scale-y: 1.03;
+}
+
+.donate-btn-coffee {
+    -fx-background-color: #FFDD00;
+    -fx-text-fill: #1a1a1a;
+    -fx-background-radius: 8px;
+    -fx-padding: 9px 16px;
+    -fx-font-size: 13.5px;
+    -fx-font-weight: 500;
+    /* Removed bold */
+    -fx-cursor: hand;
+    -fx-graphic-text-gap: 8px;
+}
+
+.donate-btn-coffee:hover {
+    -fx-background-color: #FFC700;
+    -fx-effect: dropshadow(gaussian, rgba(255, 165, 0, 0.40), 8, 0, 0, 3);
+    -fx-scale-x: 1.03;
+    -fx-scale-y: 1.03;
+}
+
+/* Emoji label inside button graphic */
+.btn-icon {
+    -fx-font-size: 16px;
+}
+
+/* ===================================================================
+   RIGHT CARD - Stats
+   =================================================================== */
+
+.stats-card {
+    -fx-background-color: linear-gradient(to bottom, rgba(102, 126, 234, 0.08), rgba(118, 75, 162, 0.06));
+    -fx-border-color: rgba(102, 126, 234, 0.20);
+}
+
+.stats-card:hover {
+    -fx-effect: dropshadow(gaussian, rgba(102, 126, 234, 0.15), 14, 0, 0, 5);
+}
+
+.stats-big-icon {
+    -fx-font-size: 48px;
+}
+
+.stats-hero-number {
+    -fx-font-size: 56px;
+    -fx-font-weight: 500;
+    /* Removed bold */
+    -fx-text-fill: -color-accent-emphasis;
+}
+
+.stats-trust-label {
+    -fx-font-size: 16px;
+    -fx-font-weight: 500;
+    /* Removed bold */
+    -fx-text-alignment: center;
+}
+
+.stats-join-label {
+    -fx-font-size: 13px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.stats-source-label {
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-subtle;
+}
+
+/* ===================================================================
+   BOTTOM CARD - GitHub
+   =================================================================== */
+
+.github-big-icon {
+    -fx-font-size: 48px;
+}
+
+.github-btn {
+    -fx-background-color: transparent;
+    -fx-border-color: -color-border-default;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-border-width: 1.5px;
+    -fx-padding: 10px 24px;
+    -fx-font-size: 14px;
+    -fx-font-weight: 500;
+    /* Removed bold */
+    -fx-cursor: hand;
+    -fx-graphic-text-gap: 8px;
+}
+
+.github-btn:hover {
+    -fx-border-color: -color-accent-emphasis;
+    -fx-text-fill: -color-accent-emphasis;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.07), 7, 0, 0, 2);
+}

@@ -5,6 +5,7 @@ import com.org.ollamafx.controller.MainController;
 import com.org.ollamafx.manager.ModelLibraryManager;
 import com.org.ollamafx.manager.ModelManager;
 import javafx.application.Application;
+import javafx.application.HostServices;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -16,9 +17,14 @@ import com.org.ollamafx.manager.ChatManager;
 public class App extends Application {
 
     private static java.util.concurrent.ExecutorService executorService;
+    private static HostServices hostServices;
 
     public static java.util.concurrent.ExecutorService getExecutorService() {
         return executorService;
+    }
+
+    public static HostServices getAppHostServices() {
+        return hostServices;
     }
 
     @Override
@@ -52,6 +58,7 @@ public class App extends Application {
         });
 
         primaryStage = stage;
+        hostServices = getHostServices();
 
         ChatManager.getInstance().loadChats();
         Application.setUserAgentStylesheet(new atlantafx.base.theme.CupertinoLight().getUserAgentStylesheet());
@@ -62,7 +69,6 @@ public class App extends Application {
         ModelLibraryManager.UpdateStatus cacheStatus = ModelLibraryManager.getInstance().getUpdateStatus();
 
         boolean needsSplash = (cacheStatus == ModelLibraryManager.UpdateStatus.OUTDATED_HARD);
-
 
         if (needsSplash) {
             // Cache is missing or expired (> 10 days) -> Show Splash Screen
