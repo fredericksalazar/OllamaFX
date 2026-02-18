@@ -62,7 +62,20 @@
     -fx-font-size: 16px;
     -fx-padding: 12px 30px;
     -fx-background-radius: 30px;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 5, 0, 0, 2);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 8, 0, 0, 3);
+    -fx-cursor: hand;
+    /* Remove manual background/text colors to let 'accent' class handle it */
+}
+
+.hero-button:hover {
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+    /* AtlantaFX handles hover color darkening/lightening automatically */
+}
+
+.hero-button .font-icon {
+    -fx-icon-color: -color-fg-emphasis;
+    /* White text for accent buttons */
 }
 
 /* CAROUSELS */
