@@ -84,6 +84,53 @@
     /* Subtle hover */
 }
 
+/* --- FINDER TOOLBAR & ADD BUTTON --- */
+.sidebar-toolbar {
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1px 0 0 0;
+    /* Separator from Tree */
+    -fx-padding: 5px;
+}
+
+.button-icon-add {
+    -fx-background-color: transparent;
+    -fx-padding: 2px 6px;
+    -fx-background-radius: 4px;
+    -fx-cursor: hand;
+    -fx-alignment: CENTER;
+}
+
+.button-icon-add:hover {
+    -fx-background-color: rgba(0, 0, 0, 0.06);
+}
+
+.button-icon-add:pressed {
+    -fx-background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Hide the default MenuButton arrow for a clean look */
+.button-icon-add>.arrow-button {
+    -fx-padding: 0;
+    -fx-background-color: transparent;
+}
+
+.button-icon-add>.arrow-button>.arrow {
+    -fx-padding: 0;
+    -fx-shape: null;
+    -fx-background-color: transparent;
+}
+
+.icon-plus {
+    -fx-shape: "M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z";
+    -fx-background-color: -color-fg-muted;
+    -fx-min-width: 14px;
+    -fx-min-height: 14px;
+    -fx-max-width: 14px;
+    -fx-max-height: 14px;
+}
+
+/* ----------------------------------- */
+
 /* FINDER STYLE SELECTION: Light Grey Background, Blue Text */
 .sidebar .list-cell:selected {
     -fx-background-color: rgba(0, 0, 0, 0.05) !important;
@@ -1493,6 +1540,7 @@ t beef them up. */
     -fx-background-color: -color-bg-subtle;
     -fx-padding: 20;
 }
+
 /* --- SMART COLLECTIONS TREE VIEW (Refined for AtlantaFX) --- */
 
 .chat-tree-view {
@@ -1503,10 +1551,12 @@ t beef them up. */
 
 .chat-tree-view .tree-cell {
     -fx-background-color: transparent;
-    -fx-padding: 6px 8px; /* Comfortable padding */
+    -fx-padding: 6px 8px;
+    /* Comfortable padding */
     -fx-text-fill: -color-fg-default;
     -fx-font-size: 13px;
-    -fx-graphic-text-gap: 8px; /* Space between icon and text */
+    -fx-graphic-text-gap: 8px;
+    /* Space between icon and text */
 }
 
 /* Hover State */
@@ -1528,7 +1578,8 @@ t beef them up. */
 
 /* Drag Over Feedback */
 .tree-cell.drag-over {
-    -fx-background-color: -color-accent-subtle; /* Highlight background */
+    -fx-background-color: -color-accent-subtle;
+    /* Highlight background */
     -fx-border-color: -color-accent-emphasis;
     -fx-border-width: 2px;
     -fx-border-radius: 4px;
@@ -1549,7 +1600,8 @@ t beef them up. */
 /* Disclosure Node (Arrow) */
 .tree-cell .tree-disclosure-node .arrow {
     -fx-background-color: -color-fg-muted;
-    -fx-padding: 0.2em; /* Smaller arrow */
+    -fx-padding: 0.2em;
+    /* Smaller arrow */
 }
 
 .tree-cell:filled:selected .tree-disclosure-node .arrow {
@@ -1557,6 +1609,53 @@ t beef them up. */
 }
 
 /* --- Chat Icon Style --- */
+/* --- Chat Icon Style --- */
 .chat-icon {
+    -fx-fill: -color-text-secondary;
+}
+
+/* --- NEW SIDEBAR HEADER (Apple Notes Style) --- */
+.sidebar-header {
+    -fx-padding: 10px 15px 5px 15px;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.sidebar-section-label {
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
+    -fx-opacity: 0.8;
+}
+
+/* Generic Small Icon Button */
+.button-icon-small {
+    -fx-background-color: transparent;
+    -fx-min-width: 28px;
+    -fx-min-height: 28px;
+    -fx-max-width: 28px;
+    -fx-max-height: 28px;
+    -fx-padding: 0;
+    -fx-cursor: hand;
+    -fx-alignment: center;
+}
+
+.button-icon-small:hover {
+    -fx-background-color: rgba(0, 0, 0, 0.05);
+    -fx-background-radius: 4px;
+}
+
+.button-icon-small:pressed {
+    -fx-background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Icon: New Folder & New Chat (FontIcon Style) */
+.button-icon-small .font-icon {
     -fx-icon-color: -color-fg-muted;
+    -fx-icon-size: 18px;
+    /* Slightly larger for better visibility */
+}
+
+.button-icon-small:hover .font-icon {
+    -fx-icon-color: -color-fg-default;
 }

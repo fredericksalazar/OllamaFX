@@ -26,6 +26,8 @@ dependencies {
     implementation 'org.kordamp.ikonli:ikonli-feather-pack:12.3.1'
     implementation 'org.kordamp.ikonli:ikonli-material2-pack:12.3.1'
 
+    implementation 'org.kordamp.ikonli:ikonli-fontawesome5-pack:12.3.1'
+
     // Cross-platform natives for Shadow JAR
     runtimeOnly "org.openjfx:javafx-graphics:21:linux"
     runtimeOnly "org.openjfx:javafx-graphics:21:win"

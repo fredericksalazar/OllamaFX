@@ -20,7 +20,7 @@ import com.org.ollamafx.manager.ChatCollectionManager;
 
 import org.kordamp.ikonli.javafx.FontIcon;
 import org.kordamp.ikonli.feather.Feather;
-import org.kordamp.ikonli.material2.Material2AL;
+
 import javafx.scene.paint.Color;
 
 import java.io.IOException;
@@ -171,7 +171,7 @@ public class MainController implements Initializable {
         // 1. Add Folders
         for (ChatFolder folder : collectionManager.getFolders()) {
             // Create initial icon based on state
-            FontIcon folderIcon = createFolderIcon(folder);
+            javafx.scene.Node folderIcon = createFolderIcon(folder);
 
             TreeItem<ChatNode> folderItem = new TreeItem<>(new ChatNode(folder), folderIcon);
             folderItem.setExpanded(folder.isExpanded());
@@ -207,35 +207,35 @@ public class MainController implements Initializable {
         chatTreeView.setRoot(root);
     }
 
-    private FontIcon createFolderIcon(ChatFolder folder) {
-        // Closed = Solid Color (Material2AL.FOLDER)
-        // Open = Outlined (Material2AL.FOLDER_OPEN) with Color border?
-        // Actually Material2AL.FOLDER is usually solid/filled. Material2AL.FOLDER_OPEN
-        // is usually outlined.
-        // Let's verify Material2AL usage.
+    private javafx.scene.Node createFolderIcon(ChatFolder folder) {
+        // SVG Path for a standard folder icon (Material Design style)
+        String folderPathContent = "M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z";
 
-        // Note: We need to import Material2AL.
+        SVGPath svgPath = new SVGPath();
+        svgPath.setContent(folderPathContent);
 
-        org.kordamp.ikonli.Ikon iconCode;
-        if (folder.isExpanded()) {
-            iconCode = org.kordamp.ikonli.material2.Material2AL.FOLDER_OPEN;
-        } else {
-            iconCode = org.kordamp.ikonli.material2.Material2AL.FOLDER;
+        String colorHex = folder.getColor();
+        if (colorHex == null || colorHex.isEmpty()) {
+            colorHex = "#8E8E93"; // Default Gray
         }
 
-        FontIcon icon = new FontIcon(iconCode);
         try {
-            // Debug Logging
-            // System.out.println("Applying Color to Folder '" + folder.getName() + "': " +
-            // folder.getColor());
-            icon.setIconColor(Color.web(folder.getColor()));
+            svgPath.setFill(Color.web(colorHex));
         } catch (IllegalArgumentException e) {
-            System.err.println("Invalid Color for folder " + folder.getName() + ": " + folder.getColor());
-            icon.setIconColor(Color.GRAY);
+            svgPath.setFill(Color.GRAY);
         }
-        // Increase size slightly for folders?
-        // icon.setIconSize(16); // Default is usually fine
-        return icon;
+
+        // Scale it down to icon size (approx 16x16 or 20x20)
+        // The original path is on a 24x24 grid.
+        svgPath.setScaleX(0.75);
+        svgPath.setScaleY(0.75);
+
+        // Wrap in a StackPane to ensure proper sizing/alignment in the TreeCell
+        StackPane iconContainer = new StackPane(svgPath);
+        iconContainer.setPrefSize(20, 20);
+        iconContainer.setMaxSize(20, 20);
+
+        return iconContainer;
     }
 
     private ChatSession findChatById(String id) {
@@ -246,15 +246,36 @@ public class MainController implements Initializable {
     }
 
     @FXML
+    private MenuButton btnAdd; // Finder-style add menu
+
+    @FXML
     public void createNewFolder() {
         TextInputDialog dialog = new TextInputDialog("New Folder");
-        dialog.setTitle("Create Folder");
-        dialog.setHeaderText("Enter folder name:");
+        dialog.setTitle("New Folder");
+        dialog.setHeaderText("Enter name for new folder:");
+        dialog.setContentText("Name:");
+
+        // Style the dialog if possible to match theme (omitted for brevity)
+
         dialog.showAndWait().ifPresent(name -> {
-            collectionManager.createFolder(name);
-            // Listener will trigger refresh
+            if (!name.trim().isEmpty()) {
+                collectionManager.createFolder(name.trim());
+            }
         });
     }
+
+    @FXML
+    public void handleNewChat() {
+        // Create a new empty chat in the root (Uncategorized)
+        ChatSession newChat = chatManager.createChat("New Chat");
+        // Select it immediately
+        // Logic to select in tree...
+        // We rely on refresh causing the tree to rebuild.
+        // Ideally we should select the new item.
+        // For now, let's just ensure it's created.
+    }
+
+    // Listener will trigger refresh
 
     // --- Helper to handle Active State Visuals ---
 
