@@ -270,6 +270,11 @@
     /* Usa el TextField nativo de AtlantaFX — solo ajustamos tamaño */
 }
 
+.fx-dialog-pane .dialog-body {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-fg-muted;
+}
+
 /* Hide Scrollbar tracks */
 .sidebar .list-view .scroll-bar:vertical {
     -fx-background-color: transparent;

@@ -20,21 +20,13 @@ import javafx.stage.Window;
 import java.util.Optional;
 
 /**
- * Reemplaza TextInputDialog con un diálogo minimalista alineado
+ * Reemplaza TextInputDialog y Alert con diálogos minimalistas alineados
  * con el lenguaje de diseño de OllamaFX / AtlantaFX CupertinoLight.
  */
 public class FxDialog {
 
     /**
      * Muestra un diálogo de entrada de texto modal.
-     *
-     * @param owner        Ventana padre (para centrar el diálogo)
-     * @param title        Título del diálogo (mostrado como label superior)
-     * @param placeholder  Texto placeholder del campo de texto
-     * @param initialValue Valor inicial del campo (puede ser vacío)
-     * @param confirmLabel Texto del botón de confirmación (ej. "Crear",
-     *                     "Renombrar")
-     * @return Optional con el texto ingresado, o empty si se canceló
      */
     public static Optional<String> showInputDialog(
             Window owner,
@@ -43,17 +35,14 @@ public class FxDialog {
             String initialValue,
             String confirmLabel) {
 
-        // --- Stage ---
         Stage dialog = new Stage();
         dialog.initModality(Modality.WINDOW_MODAL);
         dialog.initOwner(owner);
-        dialog.initStyle(StageStyle.UNDECORATED); // Sin barra de título nativa
+        dialog.initStyle(StageStyle.UNDECORATED);
         dialog.setResizable(false);
 
-        // --- Resultado ---
         final String[] result = { null };
 
-        // --- UI ---
         Label titleLabel = new Label(title);
         titleLabel.getStyleClass().add("dialog-title");
 
@@ -61,10 +50,6 @@ public class FxDialog {
         inputField.setPromptText(placeholder);
         inputField.getStyleClass().add("dialog-input");
         inputField.setPrefWidth(260);
-        // Seleccionar todo el texto inicial para facilitar reemplazo
-        if (initialValue != null && !initialValue.isEmpty()) {
-            inputField.selectAll();
-        }
 
         Button confirmBtn = new Button(confirmLabel);
         confirmBtn.getStyleClass().addAll("button", "accent");
@@ -84,7 +69,6 @@ public class FxDialog {
         content.getStyleClass().add("fx-dialog-pane");
         content.setPrefWidth(320);
 
-        // --- Acciones ---
         confirmBtn.setOnAction(e -> {
             String text = inputField.getText().trim();
             if (!text.isEmpty()) {
@@ -95,24 +79,17 @@ public class FxDialog {
 
         cancelBtn.setOnAction(e -> dialog.close());
 
-        // Enter confirma, Escape cancela
         content.setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.ESCAPE) {
+            if (e.getCode() == KeyCode.ESCAPE)
                 dialog.close();
-            }
         });
 
-        // --- Scene ---
         Scene scene = new Scene(content);
-        // Heredar el tema de AtlantaFX
         Application.setUserAgentStylesheet(new CupertinoLight().getUserAgentStylesheet());
-        // Aplicar nuestro CSS personalizado
         scene.getStylesheets().add(
                 FxDialog.class.getResource("/css/ollama_active.css").toExternalForm());
 
         dialog.setScene(scene);
-
-        // Foco automático en el campo de texto
         dialog.setOnShown(e -> {
             inputField.requestFocus();
             if (initialValue != null && !initialValue.isEmpty()) {
@@ -121,7 +98,86 @@ public class FxDialog {
         });
 
         dialog.showAndWait();
-
         return Optional.ofNullable(result[0]);
+    }
+
+    /**
+     * Muestra un diálogo de confirmación modal (sin campo de texto).
+     *
+     * @param owner        Ventana padre
+     * @param title        Título principal del diálogo
+     * @param body         Mensaje descriptivo (puede ser null)
+     * @param confirmLabel Texto del botón de confirmación (ej. "Eliminar")
+     * @param cancelLabel  Texto del botón de cancelación (ej. "Cancelar")
+     * @return true si el usuario confirmó, false si canceló
+     */
+    public static boolean showConfirmDialog(
+            Window owner,
+            String title,
+            String body,
+            String confirmLabel,
+            String cancelLabel) {
+
+        Stage dialog = new Stage();
+        dialog.initModality(Modality.WINDOW_MODAL);
+        dialog.initOwner(owner);
+        dialog.initStyle(StageStyle.UNDECORATED);
+        dialog.setResizable(false);
+
+        final boolean[] confirmed = { false };
+
+        Label titleLabel = new Label(title);
+        titleLabel.getStyleClass().add("dialog-title");
+
+        VBox content = new VBox(12);
+        content.setPadding(new Insets(20, 24, 20, 24));
+        content.getStyleClass().add("fx-dialog-pane");
+        content.setPrefWidth(320);
+        content.getChildren().add(titleLabel);
+
+        if (body != null && !body.isBlank()) {
+            Label bodyLabel = new Label(body);
+            bodyLabel.getStyleClass().add("dialog-body");
+            bodyLabel.setWrapText(true);
+            bodyLabel.setMaxWidth(272);
+            content.getChildren().add(bodyLabel);
+        }
+
+        Button confirmBtn = new Button(confirmLabel);
+        confirmBtn.getStyleClass().addAll("button", "danger");
+        confirmBtn.setDefaultButton(true);
+        confirmBtn.setPrefWidth(90);
+
+        Button cancelBtn = new Button(cancelLabel);
+        cancelBtn.getStyleClass().add("button");
+        cancelBtn.setCancelButton(true);
+        cancelBtn.setPrefWidth(90);
+
+        HBox buttons = new HBox(8, cancelBtn, confirmBtn);
+        buttons.setAlignment(Pos.CENTER_RIGHT);
+        content.getChildren().add(buttons);
+
+        confirmBtn.setOnAction(e -> {
+            confirmed[0] = true;
+            dialog.close();
+        });
+        cancelBtn.setOnAction(e -> dialog.close());
+
+        content.setOnKeyPressed(e -> {
+            if (e.getCode() == KeyCode.ESCAPE)
+                dialog.close();
+        });
+
+        Scene scene = new Scene(content);
+        Application.setUserAgentStylesheet(new CupertinoLight().getUserAgentStylesheet());
+        scene.getStylesheets().add(
+                FxDialog.class.getResource("/css/ollama_active.css").toExternalForm());
+
+        dialog.setScene(scene);
+        // Foco en Cancelar por seguridad (acción destructiva)
+        dialog.setOnShown(e -> cancelBtn.requestFocus());
+        dialog.showAndWait();
+
+        return confirmed[0];
     }
 }

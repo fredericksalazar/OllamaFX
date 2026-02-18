@@ -131,7 +131,14 @@ public class ChatCollectionManager {
     }
 
     public void moveChatToFolder(ChatSession chat, ChatFolder targetFolder) {
-        addChatToFolder(chat, targetFolder); // Logic is same as add (handles move)
+        if (chat == null)
+            return;
+        if (targetFolder == null) {
+            // Mover a "Uncategorized" = quitar de cualquier carpeta actual
+            removeChatFromFolder(chat);
+        } else {
+            addChatToFolder(chat, targetFolder);
+        }
     }
 
     public boolean isChatInFolder(ChatSession chat) {
