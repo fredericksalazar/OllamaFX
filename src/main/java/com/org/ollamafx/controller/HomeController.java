@@ -235,6 +235,22 @@ public class HomeController implements Initializable {
     }
 
     @FXML
+    public void openPayPal() {
+        String url = "https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=fredefass01@gmail.com&item_name=OllamaFX+Support&amount=10.00&currency_code=USD";
+        if (com.org.ollamafx.App.getAppHostServices() != null) {
+            com.org.ollamafx.App.getAppHostServices().showDocument(url);
+        }
+    }
+
+    @FXML
+    public void openBuyMeACoffee() {
+        String url = "https://www.buymeacoffee.com/fredericksalazar";
+        if (com.org.ollamafx.App.getAppHostServices() != null) {
+            com.org.ollamafx.App.getAppHostServices().showDocument(url);
+        }
+    }
+
+    @FXML
     private HBox recentChatsContainer;
 
     private void updateRecentChats() {
