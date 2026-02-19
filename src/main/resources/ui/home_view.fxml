@@ -6,6 +6,7 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
@@ -24,33 +25,75 @@
                      <children>
                         <!-- Background Gradient or Image -->
                         <Region styleClass="hero-background" />
-                        
-                        <VBox spacing="15.0" styleClass="hero-content">
-                           <children>
-                              <Label styleClass="hero-title" text="%home.hero.title" wrapText="true" />
-                              <Label styleClass="hero-subtitle" text="%home.hero.subtitle" wrapText="true" />
-                                  <HBox spacing="15.0">
-                                      <Button fx:id="btnNewFolder" mnemonicParsing="false" onAction="#createNewFolder" styleClass="button, accent, hero-button" text="%home.action.newfolder">
-                                           <graphic>
-                                              <FontIcon iconLiteral="fth-folder-plus" iconSize="18" styleClass="font-icon"/>
-                                          </graphic>
-                                      </Button>
-                                      <Button fx:id="btnNewChat" mnemonicParsing="false" onAction="#createNewChat" styleClass="button, accent, hero-button" text="%home.action.newchat">
-                                           <graphic>
-                                              <FontIcon iconLiteral="fth-message-square" iconSize="18" styleClass="font-icon"/>
-                                          </graphic>
-                                      </Button>
-                                      <Button fx:id="btnLoadFile" mnemonicParsing="false" onAction="#loadFile" styleClass="button, accent, hero-button" text="%home.action.loadfile">
-                                           <graphic>
-                                              <FontIcon iconLiteral="fth-upload" iconSize="18" styleClass="font-icon"/>
-                                          </graphic>
-                                      </Button>
-                                  </HBox>
-                           </children>
+
+                        <!-- STRUCTURED HERO CONTENT -->
+                        <BorderPane pickOnBounds="false">
+                           <left>
+                              <VBox spacing="15.0" styleClass="hero-content" BorderPane.alignment="CENTER_LEFT">
+                                 <children>
+                                    <Label styleClass="hero-title" text="%home.hero.title" wrapText="true" />
+                                    <Label styleClass="hero-subtitle" text="%home.hero.subtitle" wrapText="true" />
+                                    <HBox spacing="15.0">
+                                        <Button fx:id="btnNewFolder" mnemonicParsing="false" onAction="#createNewFolder" styleClass="button, accent, hero-button" text="%home.action.newfolder">
+                                             <graphic>
+                                                <FontIcon iconLiteral="fth-folder-plus" iconSize="18" styleClass="font-icon"/>
+                                            </graphic>
+                                        </Button>
+                                        <Button fx:id="btnNewChat" mnemonicParsing="false" onAction="#createNewChat" styleClass="button, accent, hero-button" text="%home.action.newchat">
+                                             <graphic>
+                                                <FontIcon iconLiteral="fth-message-square" iconSize="18" styleClass="font-icon"/>
+                                            </graphic>
+                                        </Button>
+                                        <Button fx:id="btnLoadFile" mnemonicParsing="false" onAction="#loadFile" styleClass="button, accent, hero-button" text="%home.action.loadfile">
+                                             <graphic>
+                                                <FontIcon iconLiteral="fth-upload" iconSize="18" styleClass="font-icon"/>
+                                            </graphic>
+                                        </Button>
+                                    </HBox>
+                                 </children>
+                              </VBox>
+                           </left>
+                           <right>
+                              <!-- Donation Section exactly matching hero-button styles but smaller -->
+                              <VBox alignment="TOP_LEFT" pickOnBounds="false" spacing="8.0" maxWidth="500.0" BorderPane.alignment="TOP_RIGHT">
+                                 <children>
+                                    <HBox alignment="CENTER_LEFT" pickOnBounds="false" spacing="10.0">
+                                       <children>
+                                          <Button mnemonicParsing="false" onAction="#openPayPal" styleClass="button, accent, hero-button" style="-fx-padding: 6px 16px; -fx-font-size: 13px;" text="PayPal">
+                                             <graphic>
+                                                <FontIcon iconLiteral="fab-paypal" iconSize="15" styleClass="font-icon" style="-fx-font-family: 'Font Awesome 5 Brands Regular'; -fx-icon-color: white;" />
+                                             </graphic>
+                                             <tooltip>
+                                                <javafx.scene.control.Tooltip text="Apoyar el proyecto" />
+                                             </tooltip>
+                                          </Button>
+                                          <Button mnemonicParsing="false" onAction="#openBuyMeACoffee" styleClass="button, hero-button" style="-fx-padding: 6px 16px; -fx-font-size: 13px; -fx-background-color: #FFDD00; -fx-text-fill: black;" text="Buy Me a Coffee">
+                                             <graphic>
+                                                <FontIcon iconLiteral="fas-coffee" iconSize="15" styleClass="font-icon" style="-fx-font-family: 'Font Awesome 5 Free Solid'; -fx-icon-color: black;" />
+                                             </graphic>
+                                             <tooltip>
+                                                <javafx.scene.control.Tooltip text="Apoyar el proyecto" />
+                                             </tooltip>
+                                          </Button>
+                                       </children>
+                                    </HBox>
+                                    <HBox alignment="TOP_LEFT" pickOnBounds="false" spacing="6.0">
+                                       <children>
+                                          <FontIcon iconLiteral="fas-heart" iconSize="14" styleClass="font-icon" style="-fx-font-family: 'Font Awesome 5 Free Solid'; -fx-icon-color: #ff3b30;" />
+                                          <Label styleClass="text-muted, font-small" text="Apoya el proyecto y&#10;ayúdanos a seguir mejorando" textAlignment="LEFT" lineSpacing="2" />
+                                       </children>
+                                       <VBox.margin>
+                                          <Insets left="2.0" top="2.0" />
+                                       </VBox.margin>
+                                    </HBox>
+                                 </children>
+                              </VBox>
+                           </right>
                            <StackPane.margin>
                               <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
                            </StackPane.margin>
-                        </VBox>
+                        </BorderPane>
+                        
                      </children>
                   </StackPane>
 
