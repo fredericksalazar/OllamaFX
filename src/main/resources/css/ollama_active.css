@@ -470,17 +470,77 @@
     -fx-scale-y: 1.1;
 }
 
+/* Botón de Adjuntar (Icono) */
+.attach-button-icon {
+    -fx-background-radius: 18px;
+    -fx-border-radius: 18px;
+    -fx-min-width: 36px;
+    -fx-min-height: 36px;
+    -fx-max-width: 36px;
+    -fx-max-height: 36px;
+    -fx-padding: 0;
+    -fx-cursor: hand;
+    -fx-alignment: CENTER;
+    -fx-content-display: GRAPHIC_ONLY;
+}
+
+.attach-button-icon .font-icon {
+    -fx-icon-color: -color-fg-muted;
+}
+
+.attach-button-icon:pressed {
+    -fx-effect: none;
+    -fx-translate-y: 1px;
+}
+
+.attach-button-icon:hover .font-icon {
+    -fx-icon-color: -color-fg-default;
+}
+
+/* Colores para modo Light */
+.root.light .attach-button-icon {
+    -fx-background-color: #f2f2f7;
+}
+
+.root.light .attach-button-icon:hover {
+    -fx-background-color: #e5e5ea;
+}
+
+.root.light .attach-button-icon:pressed {
+    -fx-background-color: #d1d1d6;
+}
+
+/* Colores para modo Dark */
+.root.dark .attach-button-icon {
+    -fx-background-color: #2c2c2e;
+}
+
+.root.dark .attach-button-icon:hover {
+    -fx-background-color: #3a3a3c;
+}
+
+.root.dark .attach-button-icon:pressed {
+    -fx-background-color: #48484a;
+}
+
 /* Botón de Enviar (Icono) */
 .send-button-icon {
     -fx-background-color: -color-accent-emphasis;
     -fx-text-fill: white;
-    -fx-background-radius: 50%;
+    -fx-background-radius: 18px;
+    -fx-border-radius: 18px;
     -fx-min-width: 36px;
     -fx-min-height: 36px;
-    -fx-font-size: 14px;
+    -fx-max-width: 36px;
+    -fx-max-height: 36px;
+    -fx-padding: 0;
     -fx-cursor: hand;
     -fx-alignment: CENTER;
-    -fx-content-display: TEXT_ONLY;
+    -fx-content-display: GRAPHIC_ONLY;
+}
+
+.send-button-icon .font-icon {
+    -fx-icon-color: white;
 }
 
 .send-button-icon:hover {
@@ -1701,7 +1761,7 @@
 /* --- Chat Icon Style --- */
 /* --- Chat Icon Style --- */
 .chat-icon {
-    -fx-fill: -color-text-secondary;
+    -fx-fill: -color-fg-muted;
 }
 
 /* --- NEW SIDEBAR HEADER (Apple Notes Style) --- */
@@ -1757,4 +1817,65 @@
     -fx-min-height: 18px;
     -fx-max-width: 18px;
     -fx-max-height: 18px;
+}
+
+/* --- MULTIMODAL: Image Preview Strip --- */
+.image-preview-strip {
+    -fx-padding: 6px 0 2px 0;
+    -fx-spacing: 8px;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.image-thumbnail {
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.10), 4, 0, 0, 1);
+}
+
+.image-remove-btn {
+    -fx-background-color: rgba(0, 0, 0, 0.55);
+    -fx-text-fill: white;
+    -fx-font-size: 10px;
+    -fx-min-width: 18px;
+    -fx-min-height: 18px;
+    -fx-max-width: 18px;
+    -fx-max-height: 18px;
+    -fx-background-radius: 50%;
+    -fx-padding: 0;
+    -fx-cursor: hand;
+}
+
+.image-remove-btn:hover {
+    -fx-background-color: rgba(220, 38, 38, 0.85);
+}
+
+.image-count-label {
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-weight: normal;
+}
+
+.vision-warning-label {
+    -fx-font-size: 11px;
+    -fx-text-fill: #b45309;
+    -fx-font-weight: normal;
+    -fx-padding: 2px 0;
+}
+
+.root.dark .vision-warning-label {
+    -fx-text-fill: #fbbf24;
+}
+
+/* Drag overlay hint */
+.drag-overlay {
+    -fx-background-color: rgba(0, 122, 255, 0.08);
+    -fx-border-color: #007AFF;
+    -fx-border-width: 2px;
+    -fx-border-style: dashed;
+    -fx-border-radius: 12px;
+    -fx-background-radius: 12px;
+}
+
+/* Inline image thumbnail in user chat bubble */
+.chat-bubble-image {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.12), 3, 0, 0, 1);
 }

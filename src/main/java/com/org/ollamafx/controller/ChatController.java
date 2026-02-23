@@ -15,12 +15,17 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.Tooltip;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.DragEvent;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.control.TextField;
 import javafx.animation.Timeline;
@@ -28,6 +33,7 @@ import javafx.animation.KeyFrame;
 import javafx.util.Duration;
 import atlantafx.base.controls.ProgressSliderSkin;
 
+import java.io.File;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
@@ -38,9 +44,11 @@ import com.org.ollamafx.manager.ModelManager;
 import com.org.ollamafx.manager.OllamaManager;
 import com.org.ollamafx.model.ChatMessage;
 import com.org.ollamafx.model.ChatSession;
-import atlantafx.base.controls.RingProgressIndicator;
 import com.org.ollamafx.model.OllamaModel;
+import com.org.ollamafx.ui.ImagePreviewStrip;
 import com.org.ollamafx.ui.MarkdownOutput;
+import com.org.ollamafx.util.ImageUtils;
+import atlantafx.base.controls.RingProgressIndicator;
 
 import io.github.ollama4j.models.generate.OllamaStreamHandler;
 
@@ -51,6 +59,10 @@ public class ChatController {
     private final StringBuilder activeResponseBuffer = new StringBuilder();
     private long lastUiUpdate = 0;
     private static final long UI_UPDATE_INTERVAL_MS = 30; // ~30fps for text updates
+
+    // Multimodal: Image preview strip
+    private ImagePreviewStrip imagePreviewStrip;
+    private Label visionWarningLabel;
 
     @FXML
     private ComboBox<String> modelSelector;
@@ -68,6 +80,8 @@ public class ChatController {
     private Button sendButton;
     @FXML
     private Button cancelButton;
+    @FXML
+    private Button attachButton;
 
     // Adaptive UI Elements
     @FXML
@@ -121,6 +135,21 @@ public class ChatController {
                 }
                 event.consume(); // Prevent new line
                 sendMessage();
+            } else if (event.isShortcutDown() && event.getCode() == KeyCode.V) {
+                // Intercept Paste (Ctrl+V / Cmd+V)
+                Clipboard clipboard = Clipboard.getSystemClipboard();
+                if (clipboard.hasFiles()) {
+                    boolean handledImagePaste = false;
+                    for (File file : clipboard.getFiles()) {
+                        if (ImageUtils.isValidImageFile(file)) {
+                            imagePreviewStrip.addImage(file);
+                            handledImagePaste = true;
+                        }
+                    }
+                    if (handledImagePaste) {
+                        event.consume(); // Only consume if we successfully grabbed images
+                    }
+                }
             }
         });
 
@@ -136,6 +165,8 @@ public class ChatController {
                 currentSession.setModelName(modelName);
                 ChatManager.getInstance().saveChats();
             }
+            // Update vision warning when model changes
+            updateVisionWarning();
         });
 
         // Creativity (Temperature)
@@ -163,6 +194,10 @@ public class ChatController {
 
         // Initialize Advanced Parameters
         initializeAdvancedParameters();
+
+        // --- Multimodal: Image Preview Strip ---
+        initializeImagePreviewStrip();
+        initializeDragAndDrop();
 
         updateUIState(true); // Initial state is welcome screen
     }
@@ -307,6 +342,11 @@ public class ChatController {
         this.currentSession = session;
         messagesContainer.getChildren().clear();
 
+        // Clear any pending images when switching chats
+        if (imagePreviewStrip != null) {
+            imagePreviewStrip.clearImages();
+        }
+
         if (session != null) {
             // Adaptive UI: Specific state based on message count
             boolean newChat = session.getMessages().isEmpty();
@@ -332,7 +372,7 @@ public class ChatController {
             systemPromptField.setText(session.getSystemPrompt() != null ? session.getSystemPrompt() : "");
 
             for (ChatMessage msg : session.getMessages()) {
-                addMessage(msg.getContent(), "user".equals(msg.getRole()));
+                addMessage(msg.getContent(), "user".equals(msg.getRole()), msg.hasImages() ? msg.getImages() : null);
             }
         }
     }
@@ -341,7 +381,7 @@ public class ChatController {
     private void sendMessage() {
         // Logic to send message to Ollama
         String text = inputField.getText();
-        if (text.isEmpty() || currentSession == null)
+        if ((text.isEmpty() && !imagePreviewStrip.hasImages()) || currentSession == null)
             return;
 
         // Transition to Active Chat State immediately on send
@@ -354,30 +394,40 @@ public class ChatController {
 
         String modelName = modelSelector.getValue();
         if (modelName == null) {
-            addMessage("Error: " + App.getBundle().getString("chat.selectModel"), false);
+            addMessage("Error: " + App.getBundle().getString("chat.selectModel"), false, null);
             if (statusLabel != null)
                 statusLabel.setText(App.getBundle().getString("chat.status.ready"));
             return;
         }
 
-        // Add user message
-        addMessage(text, true);
+        // Capture images before clearing
+        List<String> images = imagePreviewStrip.hasImages() ? imagePreviewStrip.getBase64Images() : null;
+
+        // Add user message with inline thumbnails
+        addMessage(text, true, images);
         // Capture session and model to ensure thread safety across tab switches
         final ChatSession targetSession = currentSession;
         final String targetModel = modelName;
 
         // Add user message to session synchronously
         if (targetSession != null) {
-            targetSession.addMessage(new ChatMessage("user", text));
+            targetSession.addMessage(new ChatMessage("user", text, images));
             targetSession.setModelName(targetModel);
             ChatManager.getInstance().saveChats();
         }
 
         inputField.clear();
+        imagePreviewStrip.clearImages();
         setGeneratingState(true);
 
-        if (statusLabel != null)
-            statusLabel.setText(App.getBundle().getString("chat.status.thinking"));
+        // Use image-specific status if images were attached
+        if (statusLabel != null) {
+            if (images != null && !images.isEmpty()) {
+                statusLabel.setText(App.getBundle().getString("chat.status.analyzingImage"));
+            } else {
+                statusLabel.setText(App.getBundle().getString("chat.status.thinking"));
+            }
+        }
 
         activeResponseBuffer.setLength(0);
 
@@ -389,9 +439,12 @@ public class ChatController {
         }
 
         // Add Assistant Placeholder to UI Synchronously
-        addMessage("", false);
+        addMessage("", false, null);
         if (statusLabel != null)
             statusLabel.setText(App.getBundle().getString("chat.status.generating"));
+
+        // Capture images for closure
+        final List<String> finalImages = images;
 
         currentGenerationTask = App.getExecutorService().submit(() -> {
             try {
@@ -417,7 +470,7 @@ public class ChatController {
                 String systemPrompt = targetSession != null ? targetSession.getSystemPrompt()
                         : systemPromptField.getText();
 
-                OllamaManager.getInstance().askModelStream(targetModel, text, options,
+                OllamaManager.getInstance().askModelStream(targetModel, text, finalImages, options,
                         systemPrompt,
                         new OllamaStreamHandler() {
                             @Override
@@ -474,7 +527,7 @@ public class ChatController {
                 Platform.runLater(() -> {
                     // Only show error if active
                     if (currentSession == targetSession) {
-                        addMessage("Error: " + e.getMessage(), false);
+                        addMessage("Error: " + e.getMessage(), false, null);
                     }
                     setGeneratingState(false);
                 });
@@ -717,12 +770,39 @@ public class ChatController {
         }
     }
 
-    private void addMessage(String text, boolean isUser) {
+    private void addMessage(String text, boolean isUser, List<String> images) {
         if (isUser) {
-            HBox bubbleContainer = new HBox();
-            bubbleContainer.setAlignment(Pos.CENTER_RIGHT);
+            VBox userBubbleWrapper = new VBox(4);
+            userBubbleWrapper.setAlignment(Pos.CENTER_RIGHT);
 
-            Label bubble = new Label(text);
+            // Inline image thumbnails (if any)
+            if (images != null && !images.isEmpty()) {
+                HBox thumbnailRow = new HBox(6);
+                thumbnailRow.setAlignment(Pos.CENTER_RIGHT);
+                thumbnailRow.setPadding(new Insets(0, 0, 4, 0));
+                for (String base64 : images) {
+                    try {
+                        byte[] bytes = java.util.Base64.getDecoder().decode(base64);
+                        javafx.scene.image.Image img = new javafx.scene.image.Image(
+                                new java.io.ByteArrayInputStream(bytes), 80, 80, true, true);
+                        ImageView iv = new ImageView(img);
+                        iv.setFitWidth(80);
+                        iv.setFitHeight(80);
+                        iv.setPreserveRatio(true);
+                        Rectangle clip = new Rectangle(80, 80);
+                        clip.setArcWidth(12);
+                        clip.setArcHeight(12);
+                        iv.setClip(clip);
+                        iv.getStyleClass().add("chat-bubble-image");
+                        thumbnailRow.getChildren().add(iv);
+                    } catch (Exception ignored) {
+                        // Skip malformed base64
+                    }
+                }
+                userBubbleWrapper.getChildren().add(thumbnailRow);
+            }
+
+            Label bubble = new Label(text.isEmpty() ? App.getBundle().getString("chat.image.marker") : text);
             bubble.setWrapText(true);
             bubble.getStyleClass().add("chat-bubble");
             bubble.getStyleClass().add("chat-bubble-user");
@@ -734,7 +814,11 @@ public class ChatController {
                             messagesContainer.widthProperty().subtract(60) // Safety padding
                     ));
 
-            bubbleContainer.getChildren().add(bubble);
+            userBubbleWrapper.getChildren().add(bubble);
+
+            HBox bubbleContainer = new HBox();
+            bubbleContainer.setAlignment(Pos.CENTER_RIGHT);
+            bubbleContainer.getChildren().add(userBubbleWrapper);
             messagesContainer.getChildren().add(bubbleContainer);
         } else {
             // Assistant Message
@@ -849,5 +933,134 @@ public class ChatController {
     }
 
     // Default Sidebar state logic moved to setChatSession and initialize
+
+    // --- Multimodal: Drag & Drop and Image Preview ---
+
+    private void initializeImagePreviewStrip() {
+        imagePreviewStrip = new ImagePreviewStrip();
+
+        visionWarningLabel = new Label();
+        visionWarningLabel.getStyleClass().add("vision-warning-label");
+        visionWarningLabel.setVisible(false);
+        visionWarningLabel.setManaged(false);
+
+        // Listen for image changes to toggle warning
+        imagePreviewStrip.emptyProperty().addListener((obs, wasEmpty, isEmpty) -> {
+            updateVisionWarning();
+        });
+
+        // Inject strip + warning into inputCapsule (between TextArea and toolbar)
+        if (inputCapsule != null && inputCapsule.getChildren().size() >= 2) {
+            // Index 0 = TextArea, Index 1 = bottom HBox toolbar
+            inputCapsule.getChildren().add(1, visionWarningLabel);
+            inputCapsule.getChildren().add(1, imagePreviewStrip);
+        }
+    }
+
+    private void initializeDragAndDrop() {
+        // Drag over handler for inputField
+        inputField.setOnDragOver(this::handleDragOver);
+        inputField.setOnDragDropped(this::handleDragDropped);
+        inputField.setOnDragExited(e -> inputField.getStyleClass().remove("drag-overlay"));
+
+        // Also allow drops on the messages container
+        messagesContainer.setOnDragOver(this::handleDragOver);
+        messagesContainer.setOnDragDropped(this::handleDragDropped);
+    }
+
+    private void handleDragOver(DragEvent event) {
+        if (event.getDragboard().hasFiles()) {
+            boolean hasImages = event.getDragboard().getFiles().stream()
+                    .anyMatch(ImageUtils::isSupportedFormat);
+            if (hasImages) {
+                event.acceptTransferModes(TransferMode.COPY);
+                if (!inputField.getStyleClass().contains("drag-overlay")) {
+                    inputField.getStyleClass().add("drag-overlay");
+                }
+            }
+        }
+        event.consume();
+    }
+
+    private void handleDragDropped(DragEvent event) {
+        inputField.getStyleClass().remove("drag-overlay");
+        boolean success = false;
+        if (event.getDragboard().hasFiles()) {
+            for (File file : event.getDragboard().getFiles()) {
+                String error = imagePreviewStrip.addImage(file);
+                if (error != null) {
+                    // Show error as status label briefly
+                    if (statusLabel != null) {
+                        String msg = App.getBundle().getString(error);
+                        statusLabel.setText(msg);
+                        // Reset after 3 seconds
+                        javafx.animation.PauseTransition reset = new javafx.animation.PauseTransition(
+                                Duration.seconds(3));
+                        reset.setOnFinished(ev -> statusLabel.setText(App.getBundle().getString("chat.status.ready")));
+                        reset.play();
+                    }
+                } else {
+                    success = true;
+                }
+            }
+        }
+        event.setDropCompleted(success);
+        event.consume();
+    }
+
+    @FXML
+    private void onAttachClicked() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle(App.getBundle().getString("chat.attachTitle"));
+
+        // Add filters for valid image types
+        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg",
+                "*.jpeg", "*.webp");
+        fileChooser.getExtensionFilters().add(extFilter);
+
+        // Allow multiple file selection
+        List<File> selectedFiles = fileChooser.showOpenMultipleDialog(attachButton.getScene().getWindow());
+
+        if (selectedFiles != null && !selectedFiles.isEmpty()) {
+            for (File file : selectedFiles) {
+                if (ImageUtils.isValidImageFile(file)) {
+                    imagePreviewStrip.addImage(file);
+                }
+            }
+        }
+    }
+
+    private void updateVisionWarning() {
+        if (visionWarningLabel == null || imagePreviewStrip == null)
+            return;
+
+        if (!imagePreviewStrip.hasImages()) {
+            visionWarningLabel.setVisible(false);
+            visionWarningLabel.setManaged(false);
+            return;
+        }
+
+        // Check if current model supports vision
+        String selectedModel = modelSelector.getValue();
+        boolean isVisionModel = false;
+        if (selectedModel != null) {
+            // Check badges from the model manager's local models
+            isVisionModel = ModelManager.getInstance().getLocalModels().stream()
+                    .filter(m -> (m.getName() + ":" + m.getTag()).equals(selectedModel))
+                    .findFirst()
+                    .map(m -> m.getBadges().stream()
+                            .anyMatch(b -> b.toLowerCase().contains("vision")))
+                    .orElse(false);
+        }
+
+        if (!isVisionModel) {
+            visionWarningLabel.setText(App.getBundle().getString("chat.image.visionWarning"));
+            visionWarningLabel.setVisible(true);
+            visionWarningLabel.setManaged(true);
+        } else {
+            visionWarningLabel.setVisible(false);
+            visionWarningLabel.setManaged(false);
+        }
+    }
 
 }

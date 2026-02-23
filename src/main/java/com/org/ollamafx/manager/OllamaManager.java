@@ -387,7 +387,8 @@ public class OllamaManager {
         return result.getResponse();
     }
 
-    public void askModelStream(String modelName, String prompt, Map<String, Object> requestOptions, String systemPrompt,
+    public void askModelStream(String modelName, String prompt, List<String> images,
+            Map<String, Object> requestOptions, String systemPrompt,
             OllamaStreamHandler handler)
             throws Exception {
 
@@ -396,16 +397,28 @@ public class OllamaManager {
         payload.put("model", modelName);
         payload.put("stream", true);
 
-        List<Map<String, String>> messages = new ArrayList<>();
-        if (systemPrompt != null && !systemPrompt.trim().isEmpty()) {
-            Map<String, String> sysMsg = new HashMap<>();
+        List<Map<String, Object>> messages = new ArrayList<>();
+
+        // Some vision models don't support system prompts alongside images.
+        // Only include system prompt when there are no images.
+        boolean hasImages = images != null && !images.isEmpty();
+        if (!hasImages && systemPrompt != null && !systemPrompt.trim().isEmpty()) {
+            Map<String, Object> sysMsg = new HashMap<>();
             sysMsg.put("role", "system");
             sysMsg.put("content", systemPrompt);
             messages.add(sysMsg);
         }
-        Map<String, String> userMsg = new HashMap<>();
+
+        Map<String, Object> userMsg = new HashMap<>();
         userMsg.put("role", "user");
-        userMsg.put("content", prompt);
+        // Ensure content is never empty — use a default for image-only messages
+        String messageContent = (prompt != null && !prompt.trim().isEmpty())
+                ? prompt
+                : (hasImages ? "What is in this image?" : prompt);
+        userMsg.put("content", messageContent);
+        if (hasImages) {
+            userMsg.put("images", images);
+        }
         messages.add(userMsg);
 
         payload.put("messages", messages);
@@ -422,6 +435,11 @@ public class OllamaManager {
         }
 
         String jsonBody = mapper.writeValueAsString(payload);
+        // Debug: log payload (truncate images for readability)
+        if (hasImages) {
+            System.out.println("[OllamaFX] Sending multimodal request to model: " + modelName
+                    + ", images count: " + images.size());
+        }
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(ConfigManager.getInstance().getOllamaHost() + "/api/chat"))
@@ -434,7 +452,27 @@ public class OllamaManager {
                 HttpResponse.BodyHandlers.ofInputStream());
 
         if (response.statusCode() != 200) {
-            throw new Exception("Ollama API Error: " + response.statusCode());
+            // Read error body for diagnostics
+            String errorBody = "";
+            try (var errorReader = new BufferedReader(
+                    new InputStreamReader(response.body(), StandardCharsets.UTF_8))) {
+                errorBody = errorReader.lines().collect(Collectors.joining("\n"));
+            } catch (Exception ignored) {
+            }
+
+            // Try to parse JSON to get a clean error string for the UI
+            String displayError = errorBody;
+            try {
+                com.fasterxml.jackson.databind.JsonNode node = mapper.readTree(errorBody);
+                if (node.has("error")) {
+                    displayError = node.get("error").asText();
+                }
+            } catch (Exception e) {
+                // Fallback to raw errorBody if not JSON
+            }
+
+            System.err.println("[OllamaFX] API Error " + response.statusCode() + ": " + errorBody);
+            throw new Exception(displayError);
         }
 
         this.activeStream = response.body(); // Capture stream
