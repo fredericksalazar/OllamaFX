@@ -1,6 +1,9 @@
 package com.org.ollamafx.manager;
 
 import com.org.ollamafx.model.OllamaModel;
+import com.org.ollamafx.util.SecurityUtils;
+import com.org.ollamafx.util.Utils;
+
 import io.github.ollama4j.OllamaAPI;
 import io.github.ollama4j.models.response.LibraryModel;
 import io.github.ollama4j.models.response.Model;
@@ -10,6 +13,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -45,7 +49,7 @@ public class OllamaManager {
 
     private OllamaManager() {
         this.httpClient = HttpClient.newBuilder()
-                .connectTimeout(java.time.Duration.ofSeconds(10))
+                .connectTimeout(Duration.ofSeconds(10))
                 .build();
         this.mapper = new ObjectMapper();
         updateClient();
@@ -80,7 +84,7 @@ public class OllamaManager {
                 OffsetDateTime modifiedAt = model.getModifiedAt();
                 String formattedDate = (modifiedAt != null) ? modifiedAt.format(formatter) : "N/A";
                 OllamaModel localModel = new OllamaModel(baseName, "Installed locally", "N/A", tag,
-                        com.org.ollamafx.util.Utils.formatSize(model.getSize()), formattedDate);
+                        Utils.formatSize(model.getSize()), formattedDate);
                 localModelsList.add(localModel);
             }
         } catch (Exception e) {
@@ -103,7 +107,7 @@ public class OllamaManager {
     // --- SCRAPING LIBRARY LISTS ---
 
     public List<OllamaModel> getLibraryModels(String sort) {
-        if (sort != null && !sort.isEmpty() && !com.org.ollamafx.util.SecurityUtils.isValidModelName(sort)) {
+        if (sort != null && !sort.isEmpty() && !SecurityUtils.isValidModelName(sort)) {
             return new ArrayList<>();
         }
         List<OllamaModel> models = new ArrayList<>();
@@ -170,7 +174,7 @@ public class OllamaManager {
      * @throws IOException Si la conexión a la página web falla.
      */
     public List<OllamaModel> scrapeModelDetails(String modelName) throws IOException {
-        if (!com.org.ollamafx.util.SecurityUtils.isValidModelName(modelName)) {
+        if (!SecurityUtils.isValidModelName(modelName)) {
             throw new IllegalArgumentException("Invalid model name.");
         }
         String url = "https://ollama.com/library/" + modelName;
@@ -272,14 +276,14 @@ public class OllamaManager {
      * @param callback  Callback para actualizar la UI
      */
     public void pullModel(String modelName, String tag, ProgressCallback callback) throws Exception {
-        if (!com.org.ollamafx.util.SecurityUtils.isValidModelName(modelName) ||
-                !com.org.ollamafx.util.SecurityUtils.isValidModelName(tag)) {
+        if (!SecurityUtils.isValidModelName(modelName) ||
+                !SecurityUtils.isValidModelName(tag)) {
             throw new IllegalArgumentException("Invalid model name or tag.");
         }
         String fullName = modelName + ":" + tag;
 
         // Usamos ProcessBuilder para ejecutar "ollama pull" y leer la salida
-        ProcessBuilder builder = new ProcessBuilder(com.org.ollamafx.util.Utils.getOllamaExecutable(), "pull",
+        ProcessBuilder builder = new ProcessBuilder(Utils.getOllamaExecutable(), "pull",
                 fullName);
         builder.redirectErrorStream(true); // Combinar stderr y stdout
 
@@ -332,12 +336,12 @@ public class OllamaManager {
     }
 
     public void deleteModel(String modelName, String tag) throws Exception {
-        if (!com.org.ollamafx.util.SecurityUtils.isValidModelName(modelName) ||
-                !com.org.ollamafx.util.SecurityUtils.isValidModelName(tag)) {
+        if (!SecurityUtils.isValidModelName(modelName) ||
+                !SecurityUtils.isValidModelName(tag)) {
             throw new IllegalArgumentException("Invalid model name or tag.");
         }
         String fullName = modelName + ":" + tag;
-        ProcessBuilder builder = new ProcessBuilder(com.org.ollamafx.util.Utils.getOllamaExecutable(), "rm", fullName);
+        ProcessBuilder builder = new ProcessBuilder(Utils.getOllamaExecutable(), "rm", fullName);
         builder.redirectErrorStream(true);
         Process process = builder.start();
 
@@ -363,6 +367,11 @@ public class OllamaManager {
      * @return The AI's response text
      * @throws Exception If the request fails
      */
+    /**
+     * @deprecated Use {@link #askModelStream} instead. This synchronous method is
+     *             no longer called.
+     */
+    @Deprecated
     public String askModel(String modelName, String prompt) throws Exception {
 
         // Create a chat message object

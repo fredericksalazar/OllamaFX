@@ -3,14 +3,16 @@ package com.org.ollamafx.manager;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.org.ollamafx.model.ModelDetailsCache;
+import com.org.ollamafx.model.ModelDetailsEntry;
+import com.org.ollamafx.model.OllamaModel;
+
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 public class ModelDetailsCacheManager {
 
     private static final String CACHE_FILE_NAME = "details_cache.json";
-    // Cache expiry for details can be longer, e.g., 3 days
-    private static final long CACHE_EXPIRY_MS = 3L * 24 * 60 * 60 * 1000;
 
     private final File cacheFile;
     private final ObjectMapper mapper;
@@ -74,21 +76,14 @@ public class ModelDetailsCacheManager {
         }
     }
 
-    public com.org.ollamafx.model.ModelDetailsEntry getDetails(String modelName) {
+    public ModelDetailsEntry getDetails(String modelName) {
         return memoryCache.getEntry(modelName);
     }
 
-    public void saveDetails(String modelName, java.util.List<com.org.ollamafx.model.OllamaModel> tags) {
-        com.org.ollamafx.model.ModelDetailsEntry entry = new com.org.ollamafx.model.ModelDetailsEntry(tags,
+    public void saveDetails(String modelName, List<OllamaModel> tags) {
+        ModelDetailsEntry entry = new ModelDetailsEntry(tags,
                 System.currentTimeMillis());
         memoryCache.addEntry(modelName, entry);
         saveCache(); // Persist immediately (or could debounce)
-    }
-
-    public boolean isEntryValid(com.org.ollamafx.model.ModelDetailsEntry entry) {
-        if (entry == null)
-            return false;
-        long age = System.currentTimeMillis() - entry.getLastUpdated();
-        return age < CACHE_EXPIRY_MS;
     }
 }

@@ -2,6 +2,8 @@ package com.org.ollamafx.manager;
 
 import com.org.ollamafx.model.LibraryCache;
 import com.org.ollamafx.model.OllamaModel;
+import com.org.ollamafx.util.Utils;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -9,7 +11,10 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ModelLibraryManager {
@@ -77,7 +82,7 @@ public class ModelLibraryManager {
      */
     public boolean isOllamaInstalled() {
         try {
-            ProcessBuilder pb = new ProcessBuilder("ollama", "--version");
+            ProcessBuilder pb = new ProcessBuilder(Utils.getOllamaExecutable(), "--version");
             Process p = pb.start();
             int exitCode = p.waitFor();
             return exitCode == 0;
@@ -122,7 +127,7 @@ public class ModelLibraryManager {
         // --- FASE 1: DESCUBRIMIENTO ---
         currentStatus = "Descubriendo catálogo...";
 
-        java.util.Set<String> uniqueModels = discoverAllModelNames();
+        Set<String> uniqueModels = discoverAllModelNames();
 
         if (uniqueModels.isEmpty()) {
             System.err.println("ModelLibraryManager: No se encontraron modelos.");
@@ -135,7 +140,7 @@ public class ModelLibraryManager {
         // --- FASE 2: PROCESAMIENTO ---
         List<OllamaModel> allFoundModels = new ArrayList<>();
         List<String> sortedList = new ArrayList<>(uniqueModels);
-        java.util.Collections.sort(sortedList);
+        Collections.sort(sortedList);
 
         int current = 0;
 
@@ -257,8 +262,8 @@ public class ModelLibraryManager {
         }
     }
 
-    private java.util.Set<String> discoverAllModelNames() {
-        java.util.Set<String> uniqueNames = new java.util.HashSet<>();
+    private Set<String> discoverAllModelNames() {
+        Set<String> uniqueNames = new HashSet<>();
         int page = 1;
         boolean hasMore = true;
         int MAX_PAGES = 500;

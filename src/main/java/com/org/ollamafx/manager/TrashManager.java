@@ -1,6 +1,7 @@
 package com.org.ollamafx.manager;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -12,6 +13,8 @@ import javafx.collections.ObservableList;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,13 +46,13 @@ public class TrashManager {
         objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-        objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         load();
         cleanOldItems(); // Limpiar items antiguos al inicio
     }
 
-    public static TrashManager getInstance() {
+    public static synchronized TrashManager getInstance() {
         if (instance == null) {
             instance = new TrashManager();
         }
@@ -247,12 +250,12 @@ public class TrashManager {
      */
     private void cleanOldItems() {
         List<TrashItem> toDelete = new ArrayList<>();
-        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now();
 
         for (TrashItem item : trashItems) {
             try {
-                java.time.LocalDateTime deletedAt = java.time.LocalDateTime.parse(item.getDeletedAt());
-                long days = java.time.temporal.ChronoUnit.DAYS.between(deletedAt, now);
+                LocalDateTime deletedAt = LocalDateTime.parse(item.getDeletedAt());
+                long days = ChronoUnit.DAYS.between(deletedAt, now);
                 if (days >= 30) {
                     toDelete.add(item);
                 }

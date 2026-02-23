@@ -25,6 +25,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
+import javafx.scene.control.Tooltip;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -35,6 +36,7 @@ import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import javafx.geometry.Insets;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
@@ -227,7 +229,7 @@ public class ModelDetailController {
             card.getStyleClass().add("apple-card-row");
             card.setAlignment(Pos.CENTER_LEFT);
             card.setSpacing(15);
-            card.setPadding(new javafx.geometry.Insets(10, 15, 10, 15)); // Add padding for better look
+            card.setPadding(new Insets(10, 15, 10, 15)); // Add padding for better look
 
             // TRAFFIC LIGHT INDICATOR (Label Badge)
             Label statusBadge = new Label();
@@ -260,14 +262,14 @@ public class ModelDetailController {
             }
 
             // Create tooltip for full description
-            javafx.scene.control.Tooltip tip = new javafx.scene.control.Tooltip();
+            Tooltip tip = new Tooltip();
             if (status == OllamaModel.CompatibilityStatus.RECOMMENDED)
                 tip.setText(App.getBundle().getString("status.recommended"));
             else if (status == OllamaModel.CompatibilityStatus.CAUTION)
                 tip.setText(App.getBundle().getString("status.caution"));
             else
                 tip.setText(App.getBundle().getString("status.incompatible"));
-            javafx.scene.control.Tooltip.install(statusBadge, tip);
+            Tooltip.install(statusBadge, tip);
 
             // Left: Icon placeholder or just padding? Let's use a tech icon or just clean
             // text.
