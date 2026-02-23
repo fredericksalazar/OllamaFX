@@ -25,28 +25,39 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.charset.StandardCharsets;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.HashMap;
+import io.github.ollama4j.models.chat.OllamaChatMessage;
+import io.github.ollama4j.models.chat.OllamaChatMessageRole;
+import io.github.ollama4j.models.chat.OllamaChatRequest;
+import io.github.ollama4j.models.chat.OllamaChatRequestBuilder;
+import io.github.ollama4j.models.chat.OllamaChatResult;
+import io.github.ollama4j.models.generate.OllamaStreamHandler;
 
 public class OllamaManager {
 
     private static OllamaManager instance;
-    private final OllamaAPI client;
+    private OllamaAPI client;
     private final HttpClient httpClient;
     private final ObjectMapper mapper;
-    private volatile java.io.InputStream activeStream; // To support forceful cancellation
+    private volatile InputStream activeStream; // To support forceful cancellation
 
     private OllamaManager() {
-        String host = ConfigManager.getInstance().getOllamaHost();
-        if (host == null || host.isEmpty()) {
-            host = "http://localhost:11434";
-        }
-        this.client = new OllamaAPI(host);
-        this.client.setRequestTimeoutSeconds(60);
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(java.time.Duration.ofSeconds(10))
                 .build();
         this.mapper = new ObjectMapper();
+        updateClient();
+    }
+
+    public void updateClient() {
+        String host = ConfigManager.getInstance().getOllamaHost();
+        if (host == null || host.isEmpty()) {
+            host = "http://127.0.0.1:11434";
+        }
+        this.client = new OllamaAPI(host);
+        this.client.setRequestTimeoutSeconds(60);
     }
 
     public static synchronized OllamaManager getInstance() {
@@ -268,13 +279,14 @@ public class OllamaManager {
         String fullName = modelName + ":" + tag;
 
         // Usamos ProcessBuilder para ejecutar "ollama pull" y leer la salida
-        ProcessBuilder builder = new ProcessBuilder("ollama", "pull", fullName);
+        ProcessBuilder builder = new ProcessBuilder(com.org.ollamafx.util.Utils.getOllamaExecutable(), "pull",
+                fullName);
         builder.redirectErrorStream(true); // Combinar stderr y stdout
 
         Process process = builder.start();
 
-        try (java.io.BufferedReader reader = new java.io.BufferedReader(
-                new java.io.InputStreamReader(process.getInputStream()))) {
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(process.getInputStream()))) {
 
             String line;
             while ((line = reader.readLine()) != null) {
@@ -325,12 +337,12 @@ public class OllamaManager {
             throw new IllegalArgumentException("Invalid model name or tag.");
         }
         String fullName = modelName + ":" + tag;
-        ProcessBuilder builder = new ProcessBuilder("ollama", "rm", fullName);
+        ProcessBuilder builder = new ProcessBuilder(com.org.ollamafx.util.Utils.getOllamaExecutable(), "rm", fullName);
         builder.redirectErrorStream(true);
         Process process = builder.start();
 
-        try (java.io.BufferedReader reader = new java.io.BufferedReader(
-                new java.io.InputStreamReader(process.getInputStream()))) {
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(process.getInputStream()))) {
             while (reader.readLine() != null) {
                 // Drain the buffer
             }
@@ -356,19 +368,18 @@ public class OllamaManager {
         // Create a chat message object
         // We need to use the Chat API, not Generate, for better compatibility and
         // future history support.
-        java.util.List<io.github.ollama4j.models.chat.OllamaChatMessage> messages = new java.util.ArrayList<>();
-        messages.add(new io.github.ollama4j.models.chat.OllamaChatMessage(
-                io.github.ollama4j.models.chat.OllamaChatMessageRole.USER, prompt));
+        List<OllamaChatMessage> messages = new ArrayList<>();
+        messages.add(new OllamaChatMessage(OllamaChatMessageRole.USER, prompt));
 
-        io.github.ollama4j.models.chat.OllamaChatRequest request = io.github.ollama4j.models.chat.OllamaChatRequestBuilder
+        OllamaChatRequest request = OllamaChatRequestBuilder
                 .getInstance(modelName).withMessages(messages).build();
 
-        io.github.ollama4j.models.chat.OllamaChatResult result = client.chat(request);
+        OllamaChatResult result = client.chat(request);
         return result.getResponse();
     }
 
     public void askModelStream(String modelName, String prompt, Map<String, Object> requestOptions, String systemPrompt,
-            io.github.ollama4j.models.generate.OllamaStreamHandler handler)
+            OllamaStreamHandler handler)
             throws Exception {
 
         // Build Payload manually
@@ -410,7 +421,7 @@ public class OllamaManager {
                 .build();
 
         // Use send (blocking) but handle interruption gracefully
-        HttpResponse<java.io.InputStream> response = httpClient.send(request,
+        HttpResponse<InputStream> response = httpClient.send(request,
                 HttpResponse.BodyHandlers.ofInputStream());
 
         if (response.statusCode() != 200) {

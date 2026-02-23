@@ -9,7 +9,7 @@ public class ConfigManager {
 
     private static final String KEY_OLLAMA_HOST = "ollama_host";
     private static final String KEY_THEME = "app_theme";
-    private static final String DEFAULT_HOST = "http://localhost:11434";
+    private static final String DEFAULT_HOST = "http://127.0.0.1:11434";
     private static final String DEFAULT_THEME = "dark"; // dark or light
 
     private ConfigManager() {

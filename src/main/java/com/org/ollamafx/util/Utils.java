@@ -133,4 +133,25 @@ public class Utils {
             return 0;
         }
     }
+
+    /**
+     * Resuelve la ruta al ejecutable de Ollama.
+     * En aplicaciones empaquetadas en macOS, el PATH no incluye /usr/local/bin o
+     * /opt/homebrew/bin.
+     */
+    public static String getOllamaExecutable() {
+        String os = System.getProperty("os.name").toLowerCase();
+        if (os.contains("mac") || os.contains("nix") || os.contains("nux") || os.contains("aix")) {
+            java.io.File homebrewPath = new java.io.File("/opt/homebrew/bin/ollama");
+            if (homebrewPath.exists() && homebrewPath.canExecute()) {
+                return homebrewPath.getAbsolutePath();
+            }
+            java.io.File usrLocalPath = new java.io.File("/usr/local/bin/ollama");
+            if (usrLocalPath.exists() && usrLocalPath.canExecute()) {
+                return usrLocalPath.getAbsolutePath();
+            }
+        }
+        // Fallback al PATH del sistema (funciona en terminal o Windows)
+        return "ollama";
+    }
 }

@@ -29,49 +29,49 @@ dependencies {
     implementation 'org.kordamp.ikonli:ikonli-fontawesome5-pack:12.3.1'
 
     // Cross-platform natives for Shadow JAR
-    runtimeOnly "org.openjfx:javafx-graphics:21:linux"
-    runtimeOnly "org.openjfx:javafx-graphics:21:win"
-    runtimeOnly "org.openjfx:javafx-base:21:linux"
-    runtimeOnly "org.openjfx:javafx-base:21:win"
-    runtimeOnly "org.openjfx:javafx-controls:21:linux"
-    runtimeOnly "org.openjfx:javafx-controls:21:win"
-    runtimeOnly "org.openjfx:javafx-fxml:21:linux"
-    runtimeOnly "org.openjfx:javafx-fxml:21:win"
-    runtimeOnly "org.openjfx:javafx-fxml:21:linux"
-    runtimeOnly "org.openjfx:javafx-fxml:21:win"
-    runtimeOnly "org.openjfx:javafx-web:21:linux"
-    runtimeOnly "org.openjfx:javafx-web:21:win"
-    runtimeOnly "org.openjfx:javafx-media:21:linux"
-    runtimeOnly "org.openjfx:javafx-media:21:win"
+    runtimeOnly "org.openjfx:javafx-graphics:17.0.6:linux"
+    runtimeOnly "org.openjfx:javafx-graphics:17.0.6:win"
+    runtimeOnly "org.openjfx:javafx-base:17.0.6:linux"
+    runtimeOnly "org.openjfx:javafx-base:17.0.6:win"
+    runtimeOnly "org.openjfx:javafx-controls:17.0.6:linux"
+    runtimeOnly "org.openjfx:javafx-controls:17.0.6:win"
+    runtimeOnly "org.openjfx:javafx-fxml:17.0.6:linux"
+    runtimeOnly "org.openjfx:javafx-fxml:17.0.6:win"
+    runtimeOnly "org.openjfx:javafx-fxml:17.0.6:linux"
+    runtimeOnly "org.openjfx:javafx-fxml:17.0.6:win"
+    runtimeOnly "org.openjfx:javafx-web:17.0.6:linux"
+    runtimeOnly "org.openjfx:javafx-web:17.0.6:win"
+    runtimeOnly "org.openjfx:javafx-media:17.0.6:linux"
+    runtimeOnly "org.openjfx:javafx-media:17.0.6:win"
 
     // Mac & Apple Silicon Support
-    runtimeOnly "org.openjfx:javafx-graphics:21:mac"
-    runtimeOnly "org.openjfx:javafx-graphics:21:mac-aarch64"
-    runtimeOnly "org.openjfx:javafx-base:21:mac"
-    runtimeOnly "org.openjfx:javafx-base:21:mac-aarch64"
-    runtimeOnly "org.openjfx:javafx-controls:21:mac"
-    runtimeOnly "org.openjfx:javafx-controls:21:mac-aarch64"
-    runtimeOnly "org.openjfx:javafx-fxml:21:mac"
-    runtimeOnly "org.openjfx:javafx-fxml:21:mac-aarch64"
-    runtimeOnly "org.openjfx:javafx-web:21:mac"
-    runtimeOnly "org.openjfx:javafx-web:21:mac-aarch64"
-    runtimeOnly "org.openjfx:javafx-media:21:mac"
-    runtimeOnly "org.openjfx:javafx-media:21:mac-aarch64"
+    runtimeOnly "org.openjfx:javafx-graphics:17.0.6:mac"
+    runtimeOnly "org.openjfx:javafx-graphics:17.0.6:mac-aarch64"
+    runtimeOnly "org.openjfx:javafx-base:17.0.6:mac"
+    runtimeOnly "org.openjfx:javafx-base:17.0.6:mac-aarch64"
+    runtimeOnly "org.openjfx:javafx-controls:17.0.6:mac"
+    runtimeOnly "org.openjfx:javafx-controls:17.0.6:mac-aarch64"
+    runtimeOnly "org.openjfx:javafx-fxml:17.0.6:mac"
+    runtimeOnly "org.openjfx:javafx-fxml:17.0.6:mac-aarch64"
+    runtimeOnly "org.openjfx:javafx-web:17.0.6:mac"
+    runtimeOnly "org.openjfx:javafx-web:17.0.6:mac-aarch64"
+    runtimeOnly "org.openjfx:javafx-media:17.0.6:mac"
+    runtimeOnly "org.openjfx:javafx-media:17.0.6:mac-aarch64"
 }
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(17)
     }
 }
 
 javafx {
-    version = "21"
+    version = "17.0.6"
     modules = [ 'javafx.controls', 'javafx.fxml', 'javafx.web']
 }
 
 application {
-    mainClass = 'com.org.ollamafx.Launcher'
+    mainClass = 'com.org.ollamafx.Main'
     applicationDefaultJvmArgs = ['-Xdock:name=OllamaFX', '-Xdock:icon=src/main/resources/icons/icon.png']
 }
 
@@ -89,13 +89,11 @@ processResources {
 }
 
 shadowJar {
-    archiveBaseName.set('OllamaFX')
-    archiveClassifier.set('')
-    archiveVersion.set(version)
+    archiveFileName.set('OllamaFX.jar')
     mergeServiceFiles()
     exclude 'module-info.class'
     manifest {
-        attributes 'Main-Class': 'com.org.ollamafx.Launcher'
+        attributes 'Main-Class': 'com.org.ollamafx.Main'
     }
 }
 
@@ -185,8 +183,8 @@ task createInstaller(type: Exec) {
     commandLine 'jpackage', 
         '--input', 'build/libs',
         '--name', 'OllamaFX',
-        '--main-jar', "OllamaFX-${version}.jar",
-        '--main-class', 'com.org.ollamafx.Launcher',
+        '--main-jar', "OllamaFX.jar",
+        '--main-class', 'com.org.ollamafx.Main',
         '--type', 'dmg',
         '--icon', 'src/main/resources/icons/icon.icns',
         '--dest', 'releases',

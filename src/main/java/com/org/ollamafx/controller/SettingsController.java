@@ -129,6 +129,7 @@ public class SettingsController {
         String newHost = hostTextField.getText();
         if (newHost != null && !newHost.trim().isEmpty()) {
             configManager.setOllamaHost(newHost.trim());
+            com.org.ollamafx.manager.OllamaManager.getInstance().updateClient();
             statusLabel.setText("✓ " + bundle.getString("settings.status.saved"));
             statusLabel.setStyle("-fx-text-fill: -color-success-fg;");
 
