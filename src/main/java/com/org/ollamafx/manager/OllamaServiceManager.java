@@ -25,7 +25,7 @@ public class OllamaServiceManager {
      */
     public boolean isInstalled() {
         try {
-            ProcessBuilder pb = new ProcessBuilder("ollama", "--version");
+            ProcessBuilder pb = new ProcessBuilder(com.org.ollamafx.util.Utils.getOllamaExecutable(), "--version");
             Process p = pb.start();
             boolean finished = p.waitFor(5, TimeUnit.SECONDS);
             return finished && p.exitValue() == 0;
@@ -57,7 +57,7 @@ public class OllamaServiceManager {
         }
 
         try {
-            ProcessBuilder pb = new ProcessBuilder("ollama", "serve");
+            ProcessBuilder pb = new ProcessBuilder(com.org.ollamafx.util.Utils.getOllamaExecutable(), "serve");
             pb.redirectErrorStream(true);
 
             // Inherit IO might be useful for debug but can clutter app logs.
