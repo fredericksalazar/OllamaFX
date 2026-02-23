@@ -8,7 +8,6 @@ import com.org.ollamafx.model.ChatSession;
 import com.org.ollamafx.model.SmartCollection;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.beans.property.SimpleLongProperty;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,7 +48,7 @@ public class ChatCollectionManager {
         loadSmartCollections(); // Load smart collections
     }
 
-    public static ChatCollectionManager getInstance() {
+    public static synchronized ChatCollectionManager getInstance() {
         if (instance == null) {
             instance = new ChatCollectionManager();
         }
@@ -211,7 +210,7 @@ public class ChatCollectionManager {
     }
 
     public List<ChatSession> getChatsForSmartCollection(SmartCollection sc) {
-        List<ChatSession> allChats = com.org.ollamafx.manager.ChatManager.getInstance().getChatSessions();
+        List<ChatSession> allChats = ChatManager.getInstance().getChatSessions();
         List<ChatSession> filtered = new ArrayList<>();
 
         if (sc == null || sc.getCriteria() == null)

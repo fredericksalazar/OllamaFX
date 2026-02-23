@@ -1,5 +1,7 @@
 package com.org.ollamafx.manager;
 
+import com.org.ollamafx.util.Utils;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -13,7 +15,7 @@ public class OllamaServiceManager {
     private OllamaServiceManager() {
     }
 
-    public static OllamaServiceManager getInstance() {
+    public static synchronized OllamaServiceManager getInstance() {
         if (instance == null) {
             instance = new OllamaServiceManager();
         }
@@ -25,7 +27,7 @@ public class OllamaServiceManager {
      */
     public boolean isInstalled() {
         try {
-            ProcessBuilder pb = new ProcessBuilder(com.org.ollamafx.util.Utils.getOllamaExecutable(), "--version");
+            ProcessBuilder pb = new ProcessBuilder(Utils.getOllamaExecutable(), "--version");
             Process p = pb.start();
             boolean finished = p.waitFor(5, TimeUnit.SECONDS);
             return finished && p.exitValue() == 0;
@@ -57,7 +59,7 @@ public class OllamaServiceManager {
         }
 
         try {
-            ProcessBuilder pb = new ProcessBuilder(com.org.ollamafx.util.Utils.getOllamaExecutable(), "serve");
+            ProcessBuilder pb = new ProcessBuilder(Utils.getOllamaExecutable(), "serve");
             pb.redirectErrorStream(true);
 
             // Inherit IO might be useful for debug but can clutter app logs.
@@ -66,21 +68,17 @@ public class OllamaServiceManager {
             this.ollamaProcess = pb.start();
 
             // Give it a moment to spin up
-            int Retries = 10;
-            while (Retries > 0) {
+            int retries = 0;
+            while (!isRunning() && retries < 30) {
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException ie) {
                     Thread.currentThread().interrupt();
                     return false;
                 }
-
-                if (isRunning()) {
-                    return true;
-                }
-                Retries--;
+                retries++;
             }
-            return false; // Timed out
+            return isRunning();
         } catch (IOException e) {
             e.printStackTrace();
             return false;

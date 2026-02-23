@@ -1,11 +1,19 @@
 // src/main/java/com/org/ollamafx/model/OllamaModel.java
 package com.org.ollamafx.model;
 
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-// Ignore any unknown properties and specifically the internal StringProperty fields
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.ArrayList;
+import java.util.List;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class OllamaModel {
     private final StringProperty name;
@@ -22,27 +30,27 @@ public class OllamaModel {
         INCOMPATIBLE // Red
     }
 
-    private final javafx.beans.property.ObjectProperty<CompatibilityStatus> compatibilityStatus = new javafx.beans.property.SimpleObjectProperty<>(
+    private final ObjectProperty<CompatibilityStatus> compatibilityStatus = new SimpleObjectProperty<>(
             CompatibilityStatus.CAUTION);
 
     private final StringProperty contextLength;
     private final StringProperty inputType;
-    private final java.util.List<String> badges;
+    private final List<String> badges;
     private final StringProperty readmeContent;
 
-    @com.fasterxml.jackson.annotation.JsonCreator
+    @JsonCreator
     public OllamaModel(
-            @com.fasterxml.jackson.annotation.JsonProperty("name") String name,
-            @com.fasterxml.jackson.annotation.JsonProperty("description") String description,
-            @com.fasterxml.jackson.annotation.JsonProperty("pull_count") String pullCount,
-            @com.fasterxml.jackson.annotation.JsonProperty("tag") String tag,
-            @com.fasterxml.jackson.annotation.JsonProperty("size") String size,
-            @com.fasterxml.jackson.annotation.JsonProperty("last_updated") String lastUpdated,
-            @com.fasterxml.jackson.annotation.JsonProperty("context_length") String contextLength,
-            @com.fasterxml.jackson.annotation.JsonProperty("input_type") String inputType,
-            @com.fasterxml.jackson.annotation.JsonProperty("badges") java.util.List<String> badges,
-            @com.fasterxml.jackson.annotation.JsonProperty("readme_content") String readmeContent,
-            @com.fasterxml.jackson.annotation.JsonProperty("compatibility_status") CompatibilityStatus status) {
+            @JsonProperty("name") String name,
+            @JsonProperty("description") String description,
+            @JsonProperty("pull_count") String pullCount,
+            @JsonProperty("tag") String tag,
+            @JsonProperty("size") String size,
+            @JsonProperty("last_updated") String lastUpdated,
+            @JsonProperty("context_length") String contextLength,
+            @JsonProperty("input_type") String inputType,
+            @JsonProperty("badges") List<String> badges,
+            @JsonProperty("readme_content") String readmeContent,
+            @JsonProperty("compatibility_status") CompatibilityStatus status) {
         this.name = new SimpleStringProperty(name);
         this.description = new SimpleStringProperty(description);
         this.pullCount = new SimpleStringProperty(pullCount);
@@ -51,7 +59,7 @@ public class OllamaModel {
         this.lastUpdated = new SimpleStringProperty(lastUpdated);
         this.contextLength = new SimpleStringProperty(contextLength);
         this.inputType = new SimpleStringProperty(inputType);
-        this.badges = badges != null ? badges : new java.util.ArrayList<>();
+        this.badges = badges != null ? badges : new ArrayList<>();
         this.readmeContent = new SimpleStringProperty(readmeContent != null ? readmeContent : "");
         if (status != null) {
             this.compatibilityStatus.set(status);
@@ -61,16 +69,16 @@ public class OllamaModel {
     public OllamaModel(String name, String description, String pullCount, String tag, String size, String lastUpdated,
             String contextLength, String inputType) {
         this(name, description, pullCount, tag, size, lastUpdated, contextLength, inputType,
-                new java.util.ArrayList<>(), "", null);
+                new ArrayList<>(), "", null);
     }
 
     public OllamaModel(String name, String description, String pullCount, String tag, String size, String lastUpdated) {
-        this(name, description, pullCount, tag, size, lastUpdated, "Unknown", "Text", new java.util.ArrayList<>(), "",
+        this(name, description, pullCount, tag, size, lastUpdated, "Unknown", "Text", new ArrayList<>(), "",
                 null);
     }
 
     // Getters para las propiedades de JavaFX (esenciales para las TableView)
-    @com.fasterxml.jackson.annotation.JsonIgnore
+    @JsonIgnore
     public StringProperty nameProperty() {
         return name;
     }
@@ -124,21 +132,21 @@ public class OllamaModel {
         return tag.get();
     }
 
-    @com.fasterxml.jackson.annotation.JsonProperty("context_length")
+    @JsonProperty("context_length")
     public String getContextLength() {
         return contextLength.get();
     }
 
-    @com.fasterxml.jackson.annotation.JsonProperty("input_type")
+    @JsonProperty("input_type")
     public String getInputType() {
         return inputType.get();
     }
 
-    public java.util.List<String> getBadges() {
+    public List<String> getBadges() {
         return badges;
     }
 
-    @com.fasterxml.jackson.annotation.JsonProperty("readme_content")
+    @JsonProperty("readme_content")
     public String getReadmeContent() {
         return readmeContent.get();
     }
@@ -147,7 +155,7 @@ public class OllamaModel {
         return description.get();
     }
 
-    @com.fasterxml.jackson.annotation.JsonProperty("pull_count")
+    @JsonProperty("pull_count")
     public String getPullCount() {
         return pullCount.get();
     }
@@ -156,19 +164,19 @@ public class OllamaModel {
         return size.get();
     }
 
-    @com.fasterxml.jackson.annotation.JsonProperty("last_updated")
+    @JsonProperty("last_updated")
     public String getLastUpdated() {
         return lastUpdated.get();
     }
 
     // ...
 
-    @com.fasterxml.jackson.annotation.JsonIgnore
-    public javafx.beans.property.ObjectProperty<CompatibilityStatus> compatibilityStatusProperty() {
+    @JsonIgnore
+    public ObjectProperty<CompatibilityStatus> compatibilityStatusProperty() {
         return compatibilityStatus;
     }
 
-    @com.fasterxml.jackson.annotation.JsonProperty("compatibility_status")
+    @JsonProperty("compatibility_status")
     public CompatibilityStatus getCompatibilityStatus() {
         return compatibilityStatus.get();
     }

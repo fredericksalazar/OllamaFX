@@ -2,24 +2,40 @@
 package com.org.ollamafx;
 
 import com.org.ollamafx.controller.MainController;
+import com.org.ollamafx.manager.ChatManager;
+import com.org.ollamafx.manager.ConfigManager;
 import com.org.ollamafx.manager.ModelLibraryManager;
 import com.org.ollamafx.manager.ModelManager;
+import com.org.ollamafx.manager.OllamaServiceManager;
+import com.org.ollamafx.util.Utils;
+
+import atlantafx.base.theme.CupertinoLight;
+
 import javafx.application.Application;
 import javafx.application.HostServices;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
+import java.awt.Taskbar;
+import java.awt.Toolkit;
+import java.io.File;
 import java.io.IOException;
-import com.org.ollamafx.manager.ChatManager;
+import java.util.Locale;
+import java.util.ResourceBundle;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class App extends Application {
 
-    private static java.util.concurrent.ExecutorService executorService;
+    private static ExecutorService executorService;
     private static HostServices hostServices;
 
-    public static java.util.concurrent.ExecutorService getExecutorService() {
+    public static ExecutorService getExecutorService() {
         return executorService;
     }
 
@@ -29,18 +45,18 @@ public class App extends Application {
 
     @Override
     public void init() throws Exception {
-        executorService = java.util.concurrent.Executors.newCachedThreadPool(r -> {
+        executorService = Executors.newCachedThreadPool(r -> {
             Thread t = new Thread(r);
             t.setDaemon(true);
             return t;
         });
     }
 
-    public static java.util.ResourceBundle getBundle() {
-        String lang = com.org.ollamafx.manager.ConfigManager.getInstance().getLanguage();
-        java.util.Locale locale = new java.util.Locale(lang);
-        java.util.Locale.setDefault(locale);
-        return java.util.ResourceBundle.getBundle("messages", locale);
+    public static ResourceBundle getBundle() {
+        String lang = ConfigManager.getInstance().getLanguage();
+        Locale locale = new Locale(lang);
+        Locale.setDefault(locale);
+        return ResourceBundle.getBundle("messages", locale);
     }
 
     private static Stage primaryStage;
@@ -53,7 +69,7 @@ public class App extends Application {
             System.err.println("CRITICAL UNCAUGHT EXCEPTION on thread " + thread.getName());
             throwable.printStackTrace();
             Platform.runLater(() -> {
-                com.org.ollamafx.util.Utils.showError("Critical Error", "An error occurred: " + throwable.getMessage());
+                Utils.showError("Critical Error", "An error occurred: " + throwable.getMessage());
             });
         });
 
@@ -61,7 +77,7 @@ public class App extends Application {
         hostServices = getHostServices();
 
         ChatManager.getInstance().loadChats();
-        Application.setUserAgentStylesheet(new atlantafx.base.theme.CupertinoLight().getUserAgentStylesheet());
+        Application.setUserAgentStylesheet(new CupertinoLight().getUserAgentStylesheet());
 
         modelManager = ModelManager.getInstance();
 
@@ -80,7 +96,7 @@ public class App extends Application {
 
         // Icon
         try {
-            stage.getIcons().add(new javafx.scene.image.Image(App.class.getResourceAsStream("/icons/icon.png")));
+            stage.getIcons().add(new Image(App.class.getResourceAsStream("/icons/icon.png")));
         } catch (Exception e) {
             // Ignore
         }
@@ -90,7 +106,7 @@ public class App extends Application {
 
     private void loadSplashScreen() throws IOException {
         FXMLLoader loader = new FXMLLoader(App.class.getResource("/ui/splash_view.fxml"));
-        javafx.scene.Parent root = loader.load();
+        Parent root = loader.load();
 
         Scene scene = new Scene(root);
         scene.getStylesheets().add(App.class.getResource("/css/ollama_active.css").toExternalForm());
@@ -100,11 +116,11 @@ public class App extends Application {
     }
 
     private void loadMainUI() throws IOException {
-        java.util.ResourceBundle.clearCache();
+        ResourceBundle.clearCache();
 
         FXMLLoader loader = new FXMLLoader(App.class.getResource("/ui/main_view.fxml"));
         loader.setResources(getBundle());
-        javafx.scene.Parent root = loader.load();
+        Parent root = loader.load();
         root.getStyleClass().add("light");
 
         Scene scene = new Scene(root);
@@ -120,11 +136,11 @@ public class App extends Application {
 
     public static void reloadUI() {
         try {
-            java.util.ResourceBundle.clearCache();
+            ResourceBundle.clearCache();
 
             FXMLLoader loader = new FXMLLoader(App.class.getResource("/ui/main_view.fxml"));
             loader.setResources(getBundle());
-            javafx.scene.Parent root = loader.load();
+            Parent root = loader.load();
             root.getStyleClass().add("light");
 
             Scene scene = new Scene(root);
@@ -138,10 +154,10 @@ public class App extends Application {
 
             try {
                 primaryStage.getIcons()
-                        .add(new javafx.scene.image.Image(App.class.getResourceAsStream("/icons/icon.png")));
+                        .add(new Image(App.class.getResourceAsStream("/icons/icon.png")));
                 if (System.getProperty("os.name").toLowerCase().contains("mac")) {
-                    java.awt.Taskbar.getTaskbar().setIconImage(
-                            java.awt.Toolkit.getDefaultToolkit().getImage(App.class.getResource("/icons/icon.png")));
+                    Taskbar.getTaskbar().setIconImage(
+                            Toolkit.getDefaultToolkit().getImage(App.class.getResource("/icons/icon.png")));
                 }
             } catch (Exception e) {
             }
@@ -162,18 +178,18 @@ public class App extends Application {
     public static void reloadFromSplash() {
         try {
             // Delete details cache file
-            java.io.File detailsCache = new java.io.File(System.getProperty("user.home"),
+            File detailsCache = new File(System.getProperty("user.home"),
                     ".ollamafx/details_cache.json");
             if (detailsCache.exists()) {
                 detailsCache.delete();
             }
 
             // CRITICAL: Invalidate in-memory cache to force OUTDATED_HARD status
-            com.org.ollamafx.manager.ModelLibraryManager.getInstance().invalidateCache();
+            ModelLibraryManager.getInstance().invalidateCache();
 
             FXMLLoader loader = new FXMLLoader(App.class.getResource("/ui/splash_view.fxml"));
             loader.setResources(getBundle());
-            javafx.scene.Parent root = loader.load();
+            Parent root = loader.load();
 
             Scene scene = new Scene(root);
             scene.getStylesheets().add(App.class.getResource("/css/splash.css").toExternalForm());
@@ -193,7 +209,7 @@ public class App extends Application {
         if (executorService != null) {
             executorService.shutdown();
             try {
-                if (!executorService.awaitTermination(800, java.util.concurrent.TimeUnit.MILLISECONDS)) {
+                if (!executorService.awaitTermination(800, TimeUnit.MILLISECONDS)) {
                     executorService.shutdownNow();
                 }
             } catch (InterruptedException e) {
@@ -201,7 +217,7 @@ public class App extends Application {
             }
         }
 
-        com.org.ollamafx.manager.OllamaServiceManager.getInstance().stopOllama();
+        OllamaServiceManager.getInstance().stopOllama();
         ChatManager.getInstance().saveChats();
         super.stop();
     }

@@ -1,5 +1,10 @@
 package com.org.ollamafx.util;
 
+import javafx.application.Application;
+import javafx.scene.control.Alert;
+import javafx.scene.control.DialogPane;
+
+import java.io.File;
 import java.text.DecimalFormat;
 
 public class Utils {
@@ -47,15 +52,15 @@ public class Utils {
     }
 
     public static void showError(String title, String content) {
-        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
+        Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(content);
 
         // Add style if available
-        javafx.scene.control.DialogPane dialogPane = alert.getDialogPane();
+        DialogPane dialogPane = alert.getDialogPane();
         dialogPane.getStyleClass().add("dialog");
-        String userAgentStylesheet = javafx.application.Application.getUserAgentStylesheet();
+        String userAgentStylesheet = Application.getUserAgentStylesheet();
         if (userAgentStylesheet != null && userAgentStylesheet.toLowerCase().contains("light")) {
             dialogPane.getStyleClass().add("light");
         }
@@ -142,11 +147,11 @@ public class Utils {
     public static String getOllamaExecutable() {
         String os = System.getProperty("os.name").toLowerCase();
         if (os.contains("mac") || os.contains("nix") || os.contains("nux") || os.contains("aix")) {
-            java.io.File homebrewPath = new java.io.File("/opt/homebrew/bin/ollama");
+            File homebrewPath = new File("/opt/homebrew/bin/ollama");
             if (homebrewPath.exists() && homebrewPath.canExecute()) {
                 return homebrewPath.getAbsolutePath();
             }
-            java.io.File usrLocalPath = new java.io.File("/usr/local/bin/ollama");
+            File usrLocalPath = new File("/usr/local/bin/ollama");
             if (usrLocalPath.exists() && usrLocalPath.canExecute()) {
                 return usrLocalPath.getAbsolutePath();
             }

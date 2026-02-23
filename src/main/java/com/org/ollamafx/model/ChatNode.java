@@ -58,10 +58,13 @@ public class ChatNode {
 
     @Override
     public String toString() {
-        if (type == Type.FOLDER) {
-            return folder != null ? folder.getName() : "Root";
-        } else {
-            return chat != null ? chat.getName() : "Unknown Chat";
+        switch (type) {
+            case FOLDER:
+                return folder != null ? folder.getName() : "Root";
+            case SMART_COLLECTION:
+                return smartCollection != null ? smartCollection.getName() : "Smart Collection";
+            default:
+                return chat != null ? chat.getName() : "Unknown Chat";
         }
     }
 }

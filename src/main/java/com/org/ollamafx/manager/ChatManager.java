@@ -43,7 +43,7 @@ public class ChatManager {
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
     }
 
-    public static ChatManager getInstance() {
+    public static synchronized ChatManager getInstance() {
         if (instance == null) {
             instance = new ChatManager();
         }
@@ -76,7 +76,7 @@ public class ChatManager {
 
     public void deleteChat(ChatSession session) {
         // Delegar a TrashManager — no borrar archivo físico aquí
-        com.org.ollamafx.manager.TrashManager.getInstance().trashChat(session);
+        TrashManager.getInstance().trashChat(session);
     }
 
     /**

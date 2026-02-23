@@ -1,5 +1,7 @@
 package com.org.ollamafx.ui;
 
+import com.org.ollamafx.App;
+
 import com.org.ollamafx.model.OllamaModel;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -58,7 +60,7 @@ public class ModelCard extends VBox {
         // INSTALLED BADGE (if model is locally installed)
         if (isInstalled) {
             Label installedBadge = new Label(
-                    "✓ " + com.org.ollamafx.App.getBundle().getString("model.installed.badge"));
+                    "✓ " + App.getBundle().getString("model.installed.badge"));
             installedBadge.getStyleClass().add("model-badge-small");
             installedBadge
                     .setStyle("-fx-background-color: -color-accent-subtle; -fx-text-fill: -color-accent-emphasis;");
@@ -76,15 +78,15 @@ public class ModelCard extends VBox {
 
         switch (status) {
             case RECOMMENDED:
-                statusBadge.setText(com.org.ollamafx.App.getBundle().getString("model.status.recommended"));
+                statusBadge.setText(App.getBundle().getString("model.status.recommended"));
                 statusBadge.setStyle("-fx-background-color: -color-success-subtle; -fx-text-fill: -color-success-fg;");
                 break;
             case CAUTION:
-                statusBadge.setText(com.org.ollamafx.App.getBundle().getString("model.status.standard"));
+                statusBadge.setText(App.getBundle().getString("model.status.standard"));
                 statusBadge.setStyle("-fx-background-color: -color-warning-subtle; -fx-text-fill: -color-warning-fg;");
                 break;
             case INCOMPATIBLE:
-                statusBadge.setText(com.org.ollamafx.App.getBundle().getString("model.status.notRecommended"));
+                statusBadge.setText(App.getBundle().getString("model.status.notRecommended"));
                 statusBadge.setStyle("-fx-background-color: -color-danger-subtle; -fx-text-fill: -color-danger-fg;");
                 break;
         }
@@ -112,11 +114,11 @@ public class ModelCard extends VBox {
         Button actionBtn = new Button();
         actionBtn.setMaxWidth(Double.MAX_VALUE);
         if (isInstalled) {
-            actionBtn.setText(com.org.ollamafx.App.getBundle().getString("model.action.uninstall"));
+            actionBtn.setText(App.getBundle().getString("model.action.uninstall"));
             actionBtn.getStyleClass().addAll("button", "danger", "outlined");
             actionBtn.setOnAction(e -> onDetails.run()); // This is now uninstall action
         } else {
-            actionBtn.setText(com.org.ollamafx.App.getBundle().getString("model.action.get"));
+            actionBtn.setText(App.getBundle().getString("model.action.get"));
             actionBtn.getStyleClass().addAll("button", "accent", "pill");
             actionBtn.setOnAction(e -> onInstall.run());
         }

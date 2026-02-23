@@ -1,12 +1,22 @@
 package com.org.ollamafx.manager;
 
+import com.org.ollamafx.model.LibraryCache;
+import com.org.ollamafx.model.ModelDetailsEntry;
 import com.org.ollamafx.model.OllamaModel;
+import com.org.ollamafx.App;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
+
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ModelManager {
 
@@ -14,7 +24,7 @@ public class ModelManager {
     private final ObservableList<OllamaModel> localModels = FXCollections.observableArrayList();
     private final ObservableList<OllamaModel> availableModels = FXCollections.observableArrayList();
     private final OllamaManager ollamaManager = OllamaManager.getInstance();
-    private final java.util.Set<String> installedModelsCache = new java.util.HashSet<>();
+    private final Set<String> installedModelsCache = new HashSet<>();
 
     private final ObservableList<OllamaModel> popularModels = FXCollections.observableArrayList();
     private final ObservableList<OllamaModel> newModels = FXCollections.observableArrayList();
@@ -23,7 +33,7 @@ public class ModelManager {
 
     private ModelManager() {
         // Keep cache in sync
-        localModels.addListener((javafx.collections.ListChangeListener<OllamaModel>) c -> {
+        localModels.addListener((ListChangeListener<OllamaModel>) c -> {
             while (c.next()) {
                 if (c.wasAdded()) {
                     for (OllamaModel m : c.getAddedSubList()) {
@@ -85,12 +95,12 @@ public class ModelManager {
             @Override
             protected Void call() throws Exception {
                 // Load from ModelLibraryManager cache (updated by SplashScreen)
-                com.org.ollamafx.model.LibraryCache cache = ModelLibraryManager.getInstance().getLibrary();
+                LibraryCache cache = ModelLibraryManager.getInstance().getLibrary();
 
                 if (cache != null && cache.getAllModels() != null && !cache.getAllModels().isEmpty()) {
 
                     // Sort POPULAR by pull count (most downloads first)
-                    List<OllamaModel> sortedPopular = new java.util.ArrayList<>(cache.getAllModels());
+                    List<OllamaModel> sortedPopular = new ArrayList<>(cache.getAllModels());
                     sortedPopular.sort((a, b) -> {
                         long countA = parsePullCountValue(a.getPullCount());
                         long countB = parsePullCountValue(b.getPullCount());
@@ -101,7 +111,7 @@ public class ModelManager {
                             : sortedPopular;
 
                     // Sort NEW by lastUpdated date (newest first)
-                    List<OllamaModel> sortedNew = new java.util.ArrayList<>(cache.getAllModels());
+                    List<OllamaModel> sortedNew = new ArrayList<>(cache.getAllModels());
                     sortedNew.sort((a, b) -> {
                         long dateA = parseRelativeDateValue(a.getLastUpdated());
                         long dateB = parseRelativeDateValue(b.getLastUpdated());
@@ -125,7 +135,7 @@ public class ModelManager {
                 return null;
             }
         };
-        new Thread(task).start();
+        App.getExecutorService().submit(task);
     }
 
     private long parsePullCountValue(String pullCount) {
@@ -150,9 +160,9 @@ public class ModelManager {
         try {
             String lower = relativeDate.toLowerCase().trim();
             long now = System.currentTimeMillis();
-            java.util.regex.Pattern p = java.util.regex.Pattern
+            Pattern p = Pattern
                     .compile("(\\d+)\\s+(second|minute|hour|day|week|month|year)");
-            java.util.regex.Matcher m = p.matcher(lower);
+            Matcher m = p.matcher(lower);
             if (m.find()) {
                 int amount = Integer.parseInt(m.group(1));
                 String unit = m.group(2);
@@ -192,7 +202,7 @@ public class ModelManager {
                 return null;
             }
         };
-        new Thread(loadTask).start();
+        App.getExecutorService().submit(loadTask);
     }
 
     // --- CLASSIFICATION LOGIC ---
@@ -274,8 +284,8 @@ public class ModelManager {
         // Regex to find number followed by 'b' e.g. "8b", "1.5b", "70b"
         // Avoid matching "byte" or words, strictly digits then 'b' at word boundary or
         // end
-        java.util.regex.Pattern p = java.util.regex.Pattern.compile("(\\d+(\\.\\d+)?)(b)");
-        java.util.regex.Matcher m = p.matcher(t);
+        Pattern p = Pattern.compile("(\\d+(\\.\\d+)?)(b)");
+        Matcher m = p.matcher(t);
         if (m.find()) {
             try {
                 return Double.parseDouble(m.group(1));
@@ -293,11 +303,11 @@ public class ModelManager {
         long safeRamLimit = stats.totalRamBytes - osOverhead;
         long vramLimit = stats.isUnifiedMemory ? safeRamLimit : stats.totalVramBytes;
 
-        List<OllamaModel> recs = new java.util.ArrayList<>();
+        List<OllamaModel> recs = new ArrayList<>();
 
         // Pool Source: Popular + Newest
-        java.util.Set<String> seen = new java.util.HashSet<>();
-        List<OllamaModel> pool = new java.util.ArrayList<>();
+        Set<String> seen = new HashSet<>();
+        List<OllamaModel> pool = new ArrayList<>();
         if (popular != null)
             pool.addAll(popular);
         if (newest != null)
@@ -379,7 +389,7 @@ public class ModelManager {
             }
         });
 
-        new Thread(deleteTask).start();
+        App.getExecutorService().submit(deleteTask);
     }
 
     public void refreshLocalModels() {
@@ -405,7 +415,7 @@ public class ModelManager {
             }
         });
 
-        new Thread(refreshTask).start();
+        App.getExecutorService().submit(refreshTask);
     }
 
     public void addLocalModel(OllamaModel model) {
@@ -429,7 +439,7 @@ public class ModelManager {
      */
     public List<OllamaModel> getModelDetails(String modelName) throws Exception {
         // Check Cache ONLY - no expiry check, just presence
-        com.org.ollamafx.model.ModelDetailsEntry entry = ModelDetailsCacheManager.getInstance().getDetails(modelName);
+        ModelDetailsEntry entry = ModelDetailsCacheManager.getInstance().getDetails(modelName);
 
         if (entry != null && entry.getTags() != null && !entry.getTags().isEmpty()) {
             // Return directly - classification is already persisted
@@ -437,7 +447,7 @@ public class ModelManager {
         }
 
         // If not in cache, return basic info (no scraping)
-        List<OllamaModel> basicInfo = new java.util.ArrayList<>();
+        List<OllamaModel> basicInfo = new ArrayList<>();
         OllamaModel basic = new OllamaModel(modelName, "Detalles no disponibles en caché local", "", "latest", "", "");
         basicInfo.add(basic);
         return basicInfo;
