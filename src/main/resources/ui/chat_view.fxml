@@ -14,6 +14,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <StackPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.org.ollamafx.controller.ChatController">
     <children>
@@ -64,19 +65,35 @@
                                   <!-- Bottom Row: Tools & Actions -->
                                   <HBox alignment="CENTER_LEFT" spacing="15.0">
                                       <children>
+                                          <Button fx:id="attachButton" onAction="#onAttachClicked" styleClass="attach-button-icon">
+                                              <graphic>
+                                                  <FontIcon iconLiteral="fth-paperclip" iconSize="16" styleClass="font-icon" />
+                                              </graphic>
+                                              <tooltip>
+                                                  <javafx.scene.control.Tooltip text="%chat.attachTooltip" />
+                                              </tooltip>
+                                          </Button>
+
                                           <Region HBox.hgrow="ALWAYS" />
-                                          
+
                                           <javafx.scene.control.ComboBox fx:id="modelSelector" promptText="%chat.selectModel" styleClass="capsule-combo-box" prefWidth="150.0" />
                                           
                                           <!-- Sidebar Toggle Removed from Here -->
         
                                           <javafx.scene.layout.StackPane alignment="CENTER_RIGHT">
-                                              <Button fx:id="sendButton" onAction="#sendMessage" styleClass="send-button-icon" text="➤">
+                                              <Button fx:id="sendButton" onAction="#sendMessage" styleClass="send-button-icon">
+                                                  <graphic>
+                                                      <FontIcon iconLiteral="fth-send" iconSize="16" styleClass="font-icon" />
+                                                  </graphic>
                                                   <tooltip>
                                                       <javafx.scene.control.Tooltip text="%chat.sendHint" />
                                                   </tooltip>
                                               </Button>
-                                              <Button fx:id="cancelButton" onAction="#onCancelClicked" styleClass="send-button-icon" text="⏹" visible="false" managed="false" style="-fx-text-fill: white; -fx-font-size: 16px; -fx-background-color: #ff4444;" />
+                                              <Button fx:id="cancelButton" onAction="#onCancelClicked" styleClass="send-button-icon" visible="false" managed="false" style="-fx-background-color: #ff4444;">
+                                                  <graphic>
+                                                      <FontIcon iconLiteral="fth-square" iconSize="16" styleClass="font-icon" />
+                                                  </graphic>
+                                              </Button>
                                           </javafx.scene.layout.StackPane>
                                       </children>
                                   </HBox>
