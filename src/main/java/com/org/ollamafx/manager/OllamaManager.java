@@ -444,12 +444,23 @@ public class OllamaManager {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(ConfigManager.getInstance().getOllamaHost() + "/api/chat"))
                 .header("Content-Type", "application/json")
+                .timeout(java.time.Duration.ofSeconds(ConfigManager.getInstance().getApiTimeout()))
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .build();
 
-        // Use send (blocking) but handle interruption gracefully
-        HttpResponse<InputStream> response = httpClient.send(request,
-                HttpResponse.BodyHandlers.ofInputStream());
+        HttpResponse<InputStream> response;
+        try {
+            // Use send (blocking) but handle interruption gracefully
+            response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
+        } catch (java.net.http.HttpTimeoutException e) {
+            System.err.println("[OllamaFX] API Timeout: " + e.getMessage());
+            int timeoutVal = ConfigManager.getInstance().getApiTimeout();
+            String lang = ConfigManager.getInstance().getLanguage();
+            java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("messages",
+                    new java.util.Locale(lang));
+            String errorMsg = bundle.getString("error.timeout").replace("{0}", String.valueOf(timeoutVal));
+            throw new Exception(errorMsg);
+        }
 
         if (response.statusCode() != 200) {
             // Read error body for diagnostics

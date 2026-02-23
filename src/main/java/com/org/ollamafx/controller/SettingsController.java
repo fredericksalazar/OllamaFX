@@ -27,6 +27,9 @@ public class SettingsController {
 
     @FXML
     private TextField hostTextField;
+
+    @FXML
+    private TextField apiTimeoutField;
     @FXML
     private Button themeButton;
     @FXML
@@ -65,6 +68,7 @@ public class SettingsController {
         bundle = App.getBundle();
 
         hostTextField.setText(configManager.getOllamaHost());
+        apiTimeoutField.setText(String.valueOf(configManager.getApiTimeout()));
 
         // Populate Hardware Info
         ramLabel.setText(HardwareManager.getRamDetails());
@@ -127,8 +131,20 @@ public class SettingsController {
     @FXML
     private void saveSettings() {
         String newHost = hostTextField.getText();
+        String newTimeout = apiTimeoutField.getText();
+
         if (newHost != null && !newHost.trim().isEmpty()) {
             configManager.setOllamaHost(newHost.trim());
+
+            try {
+                int parsedTimeout = Integer.parseInt(newTimeout.trim());
+                if (parsedTimeout > 0) {
+                    configManager.setApiTimeout(parsedTimeout);
+                }
+            } catch (NumberFormatException ignored) {
+                // leave as default if invalid
+            }
+
             com.org.ollamafx.manager.OllamaManager.getInstance().updateClient();
             statusLabel.setText("✓ " + bundle.getString("settings.status.saved"));
             statusLabel.setStyle("-fx-text-fill: -color-success-fg;");

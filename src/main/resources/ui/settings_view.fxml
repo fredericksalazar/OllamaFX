@@ -29,6 +29,10 @@
                 <Label styleClass="title-4" text="%settings.section.connection" />
                 <Label text="%settings.hostUrl" textFill="#888888" />
                 <TextField fx:id="hostTextField" promptText="http://localhost:11434" />
+                
+                <Label text="%settings.apiTimeout" textFill="#888888" />
+                <TextField fx:id="apiTimeoutField" promptText="120" />
+                
                 <Button onAction="#saveSettings" styleClass="accent" text="%settings.saveConnection" />
             </VBox>
 

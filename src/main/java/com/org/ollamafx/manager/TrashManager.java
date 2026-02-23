@@ -63,6 +63,17 @@ public class TrashManager {
         return trashItems;
     }
 
+    public boolean isChatInTrash(String chatId) {
+        for (TrashItem item : trashItems) {
+            if (item.getType() == TrashItem.ItemType.CHAT && item.getChat() != null) {
+                if (item.getChat().getId().toString().equals(chatId)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public void addUpdateListener(Runnable listener) {
         updateListeners.add(listener);
     }
