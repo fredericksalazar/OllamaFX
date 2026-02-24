@@ -17,23 +17,18 @@ import javafx.animation.KeyFrame;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Parent;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
+import javafx.scene.control.MenuButton;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
-import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ContextMenu;
 import com.org.ollamafx.ui.FxDialog;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.SVGPath;
@@ -70,6 +65,8 @@ public class MainController implements Initializable {
     private javafx.scene.control.Button btnHome;
     @FXML
     private javafx.scene.control.Button btnTrash;
+    @FXML
+    private javafx.scene.control.Button btnOpenMarkdown;
 
     @FXML
     private HBox ollamaStatusBar;
@@ -398,10 +395,9 @@ public class MainController implements Initializable {
                 });
     }
 
-    @FXML
     public void handleNewChat() {
         // Create a new empty chat in the root (Uncategorized)
-        ChatSession newChat = chatManager.createChat("New Chat");
+        chatManager.createChat("New Chat");
         // Select it immediately
         // Logic to select in tree...
         // We rely on refresh causing the tree to rebuild.
@@ -549,6 +545,53 @@ public class MainController implements Initializable {
         trashView.prefWidthProperty().bind(centerContentPane.widthProperty());
         trashView.prefHeightProperty().bind(centerContentPane.heightProperty());
         centerContentPane.getChildren().setAll(trashView);
+    }
+
+    @FXML
+    public void openExternalMarkdown() {
+        javafx.stage.FileChooser fileChooser = new javafx.stage.FileChooser();
+        fileChooser.setTitle("Open Markdown File");
+        fileChooser.getExtensionFilters()
+                .add(new javafx.stage.FileChooser.ExtensionFilter("Markdown Files", "*.md", "*.markdown"));
+
+        java.io.File file = fileChooser.showOpenDialog(mainBorderPane.getScene().getWindow());
+        if (file != null) {
+            try {
+                String content = new String(java.nio.file.Files.readAllBytes(file.toPath()));
+
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/markdown_viewer.fxml"));
+                Parent view = loader.load();
+                MarkdownViewerController controller = loader.getController();
+
+                // Parse and render
+                controller.loadMarkdown(content, file.getName(), file);
+
+                // Show in a new Window
+                javafx.stage.Stage stage = new javafx.stage.Stage();
+                stage.setTitle("OllamaFX - Markdown Reader: " + file.getName());
+                javafx.scene.Scene scene = new javafx.scene.Scene(view, 900, 700);
+                scene.getStylesheets().add(getClass().getResource("/css/markdown_viewer.css").toExternalForm());
+
+                // Inherit the global theme from ConfigManager
+                String currentTheme = com.org.ollamafx.manager.ConfigManager.getInstance().getTheme();
+                if (currentTheme.contains("Dark")) {
+                    atlantafx.base.theme.PrimerDark primer = new atlantafx.base.theme.PrimerDark();
+                    scene.setUserAgentStylesheet(primer.getUserAgentStylesheet());
+                    scene.getRoot().getStyleClass().add("dark");
+                } else {
+                    atlantafx.base.theme.CupertinoLight light = new atlantafx.base.theme.CupertinoLight();
+                    scene.setUserAgentStylesheet(light.getUserAgentStylesheet());
+                    scene.getRoot().getStyleClass().add("light");
+                }
+
+                stage.setScene(scene);
+                stage.show();
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                com.org.ollamafx.util.Utils.showError("Error", "Could not open Markdown file: " + e.getMessage());
+            }
+        }
     }
 
     @FXML

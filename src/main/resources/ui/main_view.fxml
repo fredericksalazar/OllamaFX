@@ -33,7 +33,7 @@
                             <FontIcon iconLiteral="fth-folder-plus" iconSize="16" styleClass="font-icon"/>
                         </graphic>
                         <tooltip>
-                            <Tooltip text="New Folder" />
+                            <Tooltip text="%sidebar.newFolderTooltip" />
                         </tooltip>
                     </Button>
 
@@ -43,7 +43,17 @@
                             <FontIcon iconLiteral="fth-edit" iconSize="16" styleClass="font-icon"/>
                         </graphic>
                         <tooltip>
-                            <Tooltip text="New Chat" />
+                            <Tooltip text="%sidebar.newChatTooltip" />
+                        </tooltip>
+                    </Button>
+                    
+                    <!-- OPEN MARKDOWN BUTTON -->
+                    <Button fx:id="btnOpenMarkdown" onAction="#openExternalMarkdown" styleClass="button-icon-small">
+                        <graphic>
+                            <FontIcon fx:id="iconOpenMarkdown" iconLiteral="fth-file-text" iconSize="16" styleClass="font-icon"/>
+                        </graphic>
+                        <tooltip>
+                            <Tooltip text="%sidebar.openMarkdownTooltip" />
                         </tooltip>
                     </Button>
                 </HBox>

@@ -1925,3 +1925,31 @@
 .chat-bubble-image {
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.12), 3, 0, 0, 1);
 }
+
+/* --- CHAT HEADER --- */
+.chat-header {
+    -fx-background-color: -color-bg-default;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 0 1px 0;
+}
+
+.chat-header-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+}
+
+.chat-header-icon {
+    -fx-icon-color: -color-accent-fg;
+}
+
+.button-icon-header {
+    -fx-background-color: transparent;
+    -fx-background-radius: 6px;
+    -fx-cursor: hand;
+    -fx-padding: 8px;
+}
+
+.button-icon-header:hover {
+    -fx-background-color: -color-bg-subtle;
+}
