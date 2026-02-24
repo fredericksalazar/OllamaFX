@@ -74,12 +74,20 @@
                                               </tooltip>
                                           </Button>
 
+                                          <Button fx:id="exportMdButton" onAction="#onExportMdClicked" styleClass="attach-button-icon">
+                                              <graphic>
+                                                  <FontIcon iconLiteral="fth-download" iconSize="16" styleClass="font-icon" />
+                                              </graphic>
+                                              <tooltip>
+                                                  <javafx.scene.control.Tooltip text="%chat.exportTooltip" />
+                                              </tooltip>
+                                          </Button>
+
                                           <Region HBox.hgrow="ALWAYS" />
 
                                           <javafx.scene.control.ComboBox fx:id="modelSelector" promptText="%chat.selectModel" styleClass="capsule-combo-box" prefWidth="150.0" />
                                           
                                           <!-- Sidebar Toggle Removed from Here -->
-        
                                           <javafx.scene.layout.StackPane alignment="CENTER_RIGHT">
                                               <Button fx:id="sendButton" onAction="#sendMessage" styleClass="send-button-icon">
                                                   <graphic>

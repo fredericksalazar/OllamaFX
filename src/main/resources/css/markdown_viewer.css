@@ -1,0 +1,52 @@
+.markdown-viewer-root {
+    -fx-background-color: -color-bg-default;
+}
+
+.viewer-header {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-default;
+    -fx-border-width: 0 0 1px 0;
+}
+
+.viewer-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+}
+
+.viewer-title-icon {
+    -fx-icon-color: -color-accent-emphasis;
+}
+
+.viewer-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-fg-default;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-radius: 4px;
+    -fx-padding: 6px 12px;
+    -fx-cursor: hand;
+}
+
+.viewer-btn:hover {
+    -fx-background-color: -color-bg-overlay;
+}
+
+.viewer-btn .font-icon {
+    -fx-icon-color: -color-fg-muted;
+}
+
+.viewer-btn-primary {
+    -fx-background-color: -color-accent-emphasis;
+    -fx-text-fill: white;
+    -fx-background-radius: 4px;
+    -fx-padding: 6px 16px;
+    -fx-cursor: hand;
+}
+
+.viewer-btn-primary:hover {
+    -fx-background-color: -color-accent-muted;
+}
+
+.viewer-btn-primary .font-icon {
+    -fx-icon-color: white;
+}

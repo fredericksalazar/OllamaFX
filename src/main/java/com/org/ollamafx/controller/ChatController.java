@@ -1,5 +1,7 @@
 package com.org.ollamafx.controller;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -28,10 +30,9 @@ import javafx.stage.FileChooser;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.control.TextField;
-import javafx.animation.Timeline;
-import javafx.animation.KeyFrame;
 import javafx.util.Duration;
 import atlantafx.base.controls.ProgressSliderSkin;
+import atlantafx.base.controls.RingProgressIndicator;
 
 import java.io.File;
 import java.util.List;
@@ -48,7 +49,6 @@ import com.org.ollamafx.model.OllamaModel;
 import com.org.ollamafx.ui.ImagePreviewStrip;
 import com.org.ollamafx.ui.MarkdownOutput;
 import com.org.ollamafx.util.ImageUtils;
-import atlantafx.base.controls.RingProgressIndicator;
 
 import io.github.ollama4j.models.generate.OllamaStreamHandler;
 
@@ -69,8 +69,6 @@ public class ChatController {
     @FXML
     private Label statusLabel;
     @FXML
-    private HBox headerBar;
-    @FXML
     private ScrollPane scrollPane;
     @FXML
     private VBox messagesContainer;
@@ -82,6 +80,8 @@ public class ChatController {
     private Button cancelButton;
     @FXML
     private Button attachButton;
+    @FXML
+    private Button exportMdButton;
 
     // Adaptive UI Elements
     @FXML
@@ -978,6 +978,41 @@ public class ChatController {
             // Index 0 = TextArea, Index 1 = bottom HBox toolbar
             inputCapsule.getChildren().add(1, visionWarningLabel);
             inputCapsule.getChildren().add(1, imagePreviewStrip);
+        }
+    }
+
+    @FXML
+    private void onExportMdClicked() {
+        if (currentSession == null || currentSession.getMessages().isEmpty()) {
+            com.org.ollamafx.util.Utils.showError("Export Error", "There are no messages to export.");
+            return;
+        }
+
+        javafx.stage.FileChooser fileChooser = new javafx.stage.FileChooser();
+        fileChooser.setTitle("Export Chat to Markdown");
+        fileChooser.getExtensionFilters().add(new javafx.stage.FileChooser.ExtensionFilter("Markdown Files", "*.md"));
+
+        // Suggest a filename
+        String safeName = currentSession.getName().replaceAll("[\\\\/:*?\"<>|]", "_");
+        fileChooser.setInitialFileName(safeName + ".md");
+
+        File file = fileChooser.showSaveDialog(inputField.getScene().getWindow());
+        if (file != null) {
+            try {
+                com.org.ollamafx.service.MarkdownService.exportChatToMarkdown(currentSession, file);
+
+                // Show info using standard Alert since Utils.showInfo doesn't exist
+                javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
+                        javafx.scene.control.Alert.AlertType.INFORMATION);
+                alert.setTitle("Export Successful");
+                alert.setHeaderText(null);
+                alert.setContentText("Chat exported to " + file.getName());
+                alert.showAndWait();
+
+            } catch (java.io.IOException e) {
+                e.printStackTrace();
+                com.org.ollamafx.util.Utils.showError("Export Error", "Failed to export chat: " + e.getMessage());
+            }
         }
     }
 
