@@ -22,6 +22,7 @@ import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -37,7 +38,15 @@ import atlantafx.base.controls.RingProgressIndicator;
 import java.io.File;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Base64;
+import java.io.ByteArrayInputStream;
+import javafx.beans.binding.Bindings;
+import javafx.scene.control.Alert;
 
 import com.org.ollamafx.App;
 import com.org.ollamafx.manager.ChatManager;
@@ -124,82 +133,80 @@ public class ChatController {
     @FXML
     private TextField seedField;
 
+    private static final Logger LOGGER = Logger.getLogger(ChatController.class.getName());
+
     @FXML
     public void initialize() {
-        // Handle Enter key to send message
+        setupInputField();
+        setupListeners();
+        setupMultimedia();
+
+        updateUIState(true); // Initial state is welcome screen
+    }
+
+    private void setupInputField() {
         inputField.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ENTER) {
                 if (event.isShiftDown()) {
-                    // Allow new line with Shift+Enter
                     return;
                 }
-                event.consume(); // Prevent new line
+                event.consume();
                 sendMessage();
             } else if (event.isShortcutDown() && event.getCode() == KeyCode.V) {
-                // Intercept Paste (Ctrl+V / Cmd+V)
-                Clipboard clipboard = Clipboard.getSystemClipboard();
-                if (clipboard.hasFiles()) {
-                    boolean handledImagePaste = false;
-                    for (File file : clipboard.getFiles()) {
-                        if (ImageUtils.isValidImageFile(file)) {
-                            imagePreviewStrip.addImage(file);
-                            handledImagePaste = true;
-                        }
-                    }
-                    if (handledImagePaste) {
-                        event.consume(); // Only consume if we successfully grabbed images
-                    }
-                }
+                handleClipboardPaste(event);
             }
         });
+    }
 
-        // Auto-scroll to bottom
+    private void handleClipboardPaste(KeyEvent event) {
+        Clipboard clipboard = Clipboard.getSystemClipboard();
+        if (clipboard.hasFiles()) {
+            boolean handledImagePaste = false;
+            for (File file : clipboard.getFiles()) {
+                if (ImageUtils.isValidImageFile(file)) {
+                    imagePreviewStrip.addImage(file);
+                    handledImagePaste = true;
+                }
+            }
+            if (handledImagePaste) {
+                event.consume();
+            }
+        }
+    }
+
+    private void setupListeners() {
         messagesContainer.heightProperty().addListener((observable, oldValue, newValue) -> {
             scrollPane.setVvalue(1.0);
         });
 
-        // Save model selection when changed
         modelSelector.valueProperty().addListener((obs, oldVal, newVal) -> {
             if (currentSession != null && newVal != null) {
-                String modelName = newVal;
-                currentSession.setModelName(modelName);
+                currentSession.setModelName(newVal);
                 ChatManager.getInstance().saveChats();
             }
-            // Update vision warning when model changes
             updateVisionWarning();
         });
 
-        // Creativity (Temperature)
         tempSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
             updateCreativityLabel(newVal.doubleValue());
-            // Save logic if needed directly or on release
-
             if (currentSession != null) {
                 currentSession.setTemperature(newVal.doubleValue());
                 ChatManager.getInstance().saveChats();
             }
         });
 
-        // Initialize color for default
-
-        // System Prompt Listener
         systemPromptField.textProperty().addListener((obs, oldVal, newVal) -> {
             if (currentSession != null) {
                 currentSession.setSystemPrompt(newVal);
-                // We might want to save immediately or distinct logic.
-                // Saving immediately ensures persistence.
                 ChatManager.getInstance().saveChats();
             }
         });
+    }
 
-        // Initialize Advanced Parameters
+    private void setupMultimedia() {
         initializeAdvancedParameters();
-
-        // --- Multimodal: Image Preview Strip ---
         initializeImagePreviewStrip();
         initializeDragAndDrop();
-
-        updateUIState(true); // Initial state is welcome screen
     }
 
     // Helper method for Adaptive UI
@@ -384,12 +391,11 @@ public class ChatController {
 
     @FXML
     private void sendMessage() {
-        // Logic to send message to Ollama
         String text = inputField.getText();
-        if ((text.isEmpty() && !imagePreviewStrip.hasImages()) || currentSession == null)
+        if ((text.isEmpty() && !imagePreviewStrip.hasImages()) || currentSession == null) {
             return;
+        }
 
-        // Transition to Active Chat State immediately on send
         updateUIState(false);
 
         if (isGenerating) {
@@ -400,32 +406,41 @@ public class ChatController {
         String modelName = modelSelector.getValue();
         if (modelName == null) {
             addMessage("Error: " + App.getBundle().getString("chat.selectModel"), false, null);
-            if (statusLabel != null)
+            if (statusLabel != null) {
                 statusLabel.setText(App.getBundle().getString("chat.status.ready"));
+            }
             return;
         }
 
-        // Capture images before clearing
+        // Capture images and prepare session
         List<String> images = imagePreviewStrip.hasImages() ? imagePreviewStrip.getBase64Images() : null;
+        prepareSessionForMessage(text, modelName, images);
 
-        // Add user message with inline thumbnails
-        addMessage(text, true, images);
-        // Capture session and model to ensure thread safety across tab switches
-        final ChatSession targetSession = currentSession;
-        final String targetModel = modelName;
-
-        // Add user message to session synchronously
-        if (targetSession != null) {
-            targetSession.addMessage(new ChatMessage("user", text, images));
-            targetSession.setModelName(targetModel);
-            ChatManager.getInstance().saveChats();
-        }
-
+        // UI Reset for generation
         inputField.clear();
         imagePreviewStrip.clearImages();
         setGeneratingState(true);
+        updateStatusLabelForGeneration(images);
 
-        // Use image-specific status if images were attached
+        activeResponseBuffer.setLength(0);
+
+        // Create Assistant Placeholder
+        ChatMessage assistantMsg = createAssistantPlaceholder();
+
+        // Start Generation Task
+        handleGenerationTask(modelName, text, images, assistantMsg);
+    }
+
+    private void prepareSessionForMessage(String text, String modelName, List<String> images) {
+        addMessage(text, true, images);
+        if (currentSession != null) {
+            currentSession.addMessage(new ChatMessage("user", text, images));
+            currentSession.setModelName(modelName);
+            ChatManager.getInstance().saveChats();
+        }
+    }
+
+    private void updateStatusLabelForGeneration(List<String> images) {
         if (statusLabel != null) {
             if (images != null && !images.isEmpty()) {
                 statusLabel.setText(App.getBundle().getString("chat.status.analyzingImage"));
@@ -433,49 +448,33 @@ public class ChatController {
                 statusLabel.setText(App.getBundle().getString("chat.status.thinking"));
             }
         }
+    }
 
-        activeResponseBuffer.setLength(0);
-
-        // Add Assistant Placeholder message to SESSION Synchronously
+    private ChatMessage createAssistantPlaceholder() {
         ChatMessage assistantMsg = new ChatMessage("assistant", "");
-        if (targetSession != null) {
-            targetSession.addMessage(assistantMsg);
-            ChatManager.getInstance().saveChats(); // Persist placeholder
+        if (currentSession != null) {
+            currentSession.addMessage(assistantMsg);
+            ChatManager.getInstance().saveChats();
         }
-
-        // Add Assistant Placeholder to UI Synchronously
         addMessage("", false, null);
-        if (statusLabel != null)
+        if (statusLabel != null) {
             statusLabel.setText(App.getBundle().getString("chat.status.generating"));
+        }
+        return assistantMsg;
+    }
 
-        // Capture images for closure
-        final List<String> finalImages = images;
+    private void handleGenerationTask(String modelName, String text, List<String> images, ChatMessage assistantMsg) {
+        final ChatSession targetSession = currentSession;
 
         currentGenerationTask = App.getExecutorService().submit(() -> {
             try {
                 StringBuilder responseBuilder = new StringBuilder();
+                Map<String, Object> options = collectGenerationOptions();
 
-                // Collect Options
-                java.util.Map<String, Object> options = new java.util.HashMap<>();
-                options.put("temperature", tempSlider.getValue());
-                options.put("num_ctx", (int) ctxSlider.getValue());
-                options.put("top_k", (int) topKSlider.getValue());
-                options.put("top_p", topPSlider.getValue());
-
-                try {
-                    String seedText = seedField.getText().trim();
-                    if (!seedText.isEmpty()) {
-                        options.put("seed", Integer.parseInt(seedText));
-                    }
-                } catch (NumberFormatException e) {
-                    // Ignore invalid seed
-                }
-
-                // Use the session's prompt or the field's current value (should be synced)
                 String systemPrompt = targetSession != null ? targetSession.getSystemPrompt()
                         : systemPromptField.getText();
 
-                OllamaManager.getInstance().askModelStream(targetModel, text, finalImages, options,
+                OllamaManager.getInstance().askModelStream(modelName, text, images, options,
                         systemPrompt,
                         new OllamaStreamHandler() {
                             @Override
@@ -484,18 +483,15 @@ public class ChatController {
                                     throw new RuntimeException("Cancelled by user");
                                 }
 
-                                // FIX: Ollama4j gives full text accumulator
                                 responseBuilder.setLength(0);
                                 responseBuilder.append(messagePart);
                                 String properFullText = responseBuilder.toString();
 
-                                // Update Session Data (Always safe to do, even if in background)
                                 assistantMsg.setContent(properFullText);
 
                                 long now = System.currentTimeMillis();
                                 if (now - lastUiUpdate > UI_UPDATE_INTERVAL_MS) {
                                     Platform.runLater(() -> {
-                                        // Guard: Only update UI if we are still looking at this session
                                         if (currentSession == targetSession) {
                                             updateLastMessage(properFullText);
                                         }
@@ -507,15 +503,10 @@ public class ChatController {
 
                 Platform.runLater(() -> {
                     String fullResponse = responseBuilder.toString();
-
-                    // Final UI Update (Guarded)
                     if (currentSession == targetSession) {
                         updateLastMessage(fullResponse);
                     }
-
-                    // Final Data Update (Always)
                     assistantMsg.setContent(fullResponse);
-
                     if (targetSession != null) {
                         ChatManager.getInstance().saveChats();
                     }
@@ -523,26 +514,48 @@ public class ChatController {
                 });
 
             } catch (Exception e) {
-                if (e instanceof InterruptedException || Thread.interrupted()
-                        || "Cancelled by user".equals(e.getMessage())) {
-                    Platform.runLater(() -> setGeneratingState(false));
-                    return;
-                }
-                e.printStackTrace();
-                Platform.runLater(() -> {
-                    // Save error to the assistant message so it doesn't stay empty
-                    assistantMsg.setContent("⚡ Error: " + e.getMessage());
-                    if (targetSession != null) {
-                        ChatManager.getInstance().saveChats();
-                    }
-
-                    // Update UI if looking at this session
-                    if (currentSession == targetSession) {
-                        updateLastMessage("⚡ Error: " + e.getMessage());
-                    }
-                    setGeneratingState(false);
-                });
+                handleGenerationError(e, assistantMsg, targetSession);
             }
+        });
+    }
+
+    private Map<String, Object> collectGenerationOptions() {
+        Map<String, Object> options = new HashMap<>();
+        options.put("temperature", tempSlider.getValue());
+        options.put("num_ctx", (int) ctxSlider.getValue());
+        options.put("top_k", (int) topKSlider.getValue());
+        options.put("top_p", topPSlider.getValue());
+
+        try {
+            String seedText = seedField.getText().trim();
+            if (!seedText.isEmpty()) {
+                options.put("seed", Integer.parseInt(seedText));
+            }
+        } catch (NumberFormatException e) {
+            LOGGER.log(Level.WARNING, "Invalid seed format: {0}", seedField.getText());
+        }
+        return options;
+    }
+
+    private void handleGenerationError(Exception e, ChatMessage assistantMsg, ChatSession targetSession) {
+        if (e instanceof InterruptedException || Thread.interrupted()
+                || "Cancelled by user".equals(e.getMessage())) {
+            Platform.runLater(() -> setGeneratingState(false));
+            return;
+        }
+
+        LOGGER.log(Level.SEVERE, "Generation error", e);
+        Platform.runLater(() -> {
+            String errorMsg = "⚡ Error: " + e.getMessage();
+            assistantMsg.setContent(errorMsg);
+            if (targetSession != null) {
+                ChatManager.getInstance().saveChats();
+            }
+
+            if (currentSession == targetSession) {
+                updateLastMessage(errorMsg);
+            }
+            setGeneratingState(false);
         });
     }
 
@@ -764,7 +777,7 @@ public class ChatController {
         // Remove empty assistant message from history if cancelled before any tokens
         // arrived
         if (currentSession != null) {
-            java.util.List<ChatMessage> msgs = currentSession.getMessages();
+            List<ChatMessage> msgs = currentSession.getMessages();
             if (!msgs.isEmpty()) {
                 ChatMessage last = msgs.get(msgs.size() - 1);
                 if ("assistant".equals(last.getRole()) && (last.getContent() == null || last.getContent().isEmpty())) {
@@ -796,93 +809,80 @@ public class ChatController {
 
     private void addMessage(String text, boolean isUser, List<String> images) {
         if (isUser) {
-            VBox userBubbleWrapper = new VBox(4);
-            userBubbleWrapper.setAlignment(Pos.CENTER_RIGHT);
-
-            // Inline image thumbnails (if any)
-            if (images != null && !images.isEmpty()) {
-                HBox thumbnailRow = new HBox(6);
-                thumbnailRow.setAlignment(Pos.CENTER_RIGHT);
-                thumbnailRow.setPadding(new Insets(0, 0, 4, 0));
-                for (String base64 : images) {
-                    try {
-                        byte[] bytes = java.util.Base64.getDecoder().decode(base64);
-                        javafx.scene.image.Image img = new javafx.scene.image.Image(
-                                new java.io.ByteArrayInputStream(bytes), 80, 80, true, true);
-                        ImageView iv = new ImageView(img);
-                        iv.setFitWidth(80);
-                        iv.setFitHeight(80);
-                        iv.setPreserveRatio(true);
-                        Rectangle clip = new Rectangle(80, 80);
-                        clip.setArcWidth(12);
-                        clip.setArcHeight(12);
-                        iv.setClip(clip);
-                        iv.getStyleClass().add("chat-bubble-image");
-                        thumbnailRow.getChildren().add(iv);
-                    } catch (Exception ignored) {
-                        // Skip malformed base64
-                    }
-                }
-                userBubbleWrapper.getChildren().add(thumbnailRow);
-            }
-
-            Label bubble = new Label(text.isEmpty() ? App.getBundle().getString("chat.image.marker") : text);
-            bubble.setWrapText(true);
-            bubble.getStyleClass().add("chat-bubble");
-            bubble.getStyleClass().add("chat-bubble-user");
-
-            // Dynamic Max Width: Min(600, Container Width - Padding)
-            bubble.maxWidthProperty().bind(
-                    javafx.beans.binding.Bindings.min(
-                            600.0,
-                            messagesContainer.widthProperty().subtract(60) // Safety padding
-                    ));
-
-            userBubbleWrapper.getChildren().add(bubble);
-
-            HBox bubbleContainer = new HBox();
-            bubbleContainer.setAlignment(Pos.CENTER_RIGHT);
-            bubbleContainer.getChildren().add(userBubbleWrapper);
-            messagesContainer.getChildren().add(bubbleContainer);
+            addUserMessage(text, images);
         } else {
-            // Assistant Message
-            HBox container = new HBox();
-            container.setAlignment(Pos.CENTER);
-            container.setPadding(new Insets(10, 20, 10, 20));
-
-            // Wrapper for Markdown + Footer actions
-            VBox contentWrapper = new VBox();
-            contentWrapper.setStyle("-fx-background-color: transparent;");
-            HBox.setHgrow(contentWrapper, Priority.ALWAYS);
-
-            // Dynamic Max Width: Min(800, Container Width - Padding)
-            // Container Padding (20+20) + MessageContainer Padding (20+20) = 80. Use 100
-            // for safety.
-            contentWrapper.maxWidthProperty().bind(
-                    javafx.beans.binding.Bindings.min(
-                            800.0,
-                            messagesContainer.widthProperty().subtract(100)));
-
-            try {
-                if (text.isEmpty()) {
-                    // Start in Thinking State with a small ring indicator
-                    RingProgressIndicator ring = new RingProgressIndicator();
-                    ring.setProgress(-1); // Indeterminate
-                    ring.getStyleClass().add("thinking-ring");
-                    contentWrapper.getChildren().add(ring);
-                } else {
-                    setupAssistantContent(contentWrapper, text);
-                }
-
-                container.getChildren().add(contentWrapper);
-            } catch (Throwable t) {
-                t.printStackTrace();
-                Label errorLabel = new Label("Error loading Message Component: " + t.getMessage());
-                errorLabel.setStyle("-fx-text-fill: red;");
-                container.getChildren().add(errorLabel);
-            }
-            messagesContainer.getChildren().add(container);
+            addAssistantMessage(text);
         }
+    }
+
+    private void addUserMessage(String text, List<String> images) {
+        VBox userBubbleWrapper = new VBox(4);
+        userBubbleWrapper.setAlignment(Pos.CENTER_RIGHT);
+
+        if (images != null && !images.isEmpty()) {
+            userBubbleWrapper.getChildren().add(createThumbnailRow(images));
+        }
+
+        Label bubble = new Label(text.isEmpty() ? App.getBundle().getString("chat.image.marker") : text);
+        bubble.setWrapText(true);
+        bubble.getStyleClass().addAll("chat-bubble", "chat-bubble-user");
+        bubble.maxWidthProperty()
+                .bind(Bindings.min(600.0, messagesContainer.widthProperty().subtract(60)));
+
+        userBubbleWrapper.getChildren().add(bubble);
+
+        HBox bubbleContainer = new HBox();
+        bubbleContainer.setAlignment(Pos.CENTER_RIGHT);
+        bubbleContainer.getChildren().add(userBubbleWrapper);
+        messagesContainer.getChildren().add(bubbleContainer);
+    }
+
+    private HBox createThumbnailRow(List<String> images) {
+        HBox thumbnailRow = new HBox(6);
+        thumbnailRow.setAlignment(Pos.CENTER_RIGHT);
+        thumbnailRow.setPadding(new Insets(0, 0, 4, 0));
+        for (String base64 : images) {
+            try {
+                byte[] bytes = Base64.getDecoder().decode(base64);
+                javafx.scene.image.Image img = new javafx.scene.image.Image(new ByteArrayInputStream(bytes), 80,
+                        80, true, true);
+                ImageView iv = new ImageView(img);
+                iv.setFitWidth(80);
+                iv.setFitHeight(80);
+                iv.setPreserveRatio(true);
+                Rectangle clip = new Rectangle(80, 80);
+                clip.setArcWidth(12);
+                clip.setArcHeight(12);
+                iv.setClip(clip);
+                iv.getStyleClass().add("chat-bubble-image");
+                thumbnailRow.getChildren().add(iv);
+            } catch (Exception ignored) {
+            }
+        }
+        return thumbnailRow;
+    }
+
+    private void addAssistantMessage(String text) {
+        HBox container = new HBox();
+        container.setAlignment(Pos.CENTER);
+        container.setPadding(new Insets(10, 20, 10, 20));
+
+        VBox contentWrapper = new VBox();
+        contentWrapper.setStyle("-fx-background-color: transparent;");
+        HBox.setHgrow(contentWrapper, Priority.ALWAYS);
+        contentWrapper.maxWidthProperty()
+                .bind(Bindings.min(800.0, messagesContainer.widthProperty().subtract(100)));
+
+        if (text.isEmpty()) {
+            RingProgressIndicator ring = new RingProgressIndicator();
+            ring.setProgress(-1);
+            contentWrapper.getChildren().add(ring);
+        } else {
+            setupAssistantContent(contentWrapper, text);
+        }
+
+        container.getChildren().add(contentWrapper);
+        messagesContainer.getChildren().add(container);
     }
 
     private void setupAssistantContent(VBox contentWrapper, String text) {
@@ -1001,9 +1001,8 @@ public class ChatController {
             try {
                 com.org.ollamafx.service.MarkdownService.exportChatToMarkdown(currentSession, file);
 
-                // Show info using standard Alert since Utils.showInfo doesn't exist
-                javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
-                        javafx.scene.control.Alert.AlertType.INFORMATION);
+                // Show info using standard Alert
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
                 alert.setTitle("Export Successful");
                 alert.setHeaderText(null);
                 alert.setContentText("Chat exported to " + file.getName());

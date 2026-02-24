@@ -38,6 +38,11 @@ import io.github.ollama4j.models.chat.OllamaChatRequest;
 import io.github.ollama4j.models.chat.OllamaChatRequestBuilder;
 import io.github.ollama4j.models.chat.OllamaChatResult;
 import io.github.ollama4j.models.generate.OllamaStreamHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.ResourceBundle;
+import java.util.Locale;
+import java.net.http.HttpTimeoutException;
 
 public class OllamaManager {
 
@@ -46,6 +51,8 @@ public class OllamaManager {
     private final HttpClient httpClient;
     private final ObjectMapper mapper;
     private volatile InputStream activeStream; // To support forceful cancellation
+
+    private static final Logger LOGGER = Logger.getLogger(OllamaManager.class.getName());
 
     private OllamaManager() {
         this.httpClient = HttpClient.newBuilder()
@@ -88,7 +95,7 @@ public class OllamaManager {
                 localModelsList.add(localModel);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error getting local models", e);
         }
         return localModelsList;
     }
@@ -99,7 +106,7 @@ public class OllamaManager {
             return baseModels.stream().map(libraryModel -> new OllamaModel(libraryModel.getName(), "", "", "", "", ""))
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error getting available base models", e);
             return new ArrayList<>();
         }
     }
@@ -159,7 +166,7 @@ public class OllamaManager {
                 models.add(model);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error scraping library models from " + url, e);
         }
         return models;
     }
@@ -317,6 +324,7 @@ public class OllamaManager {
                         String numStr = line.substring(start + 1, percentIndex).trim();
                         progress = Double.parseDouble(numStr);
                     } catch (Exception e) {
+                        LOGGER.log(Level.WARNING, "Error parsing progress from line: " + line, e);
                         // Ignorar errores de parsing, mantener progreso actual o indeterminado
                     }
                 } else if (line.contains("success")) {
@@ -437,14 +445,14 @@ public class OllamaManager {
         String jsonBody = mapper.writeValueAsString(payload);
         // Debug: log payload (truncate images for readability)
         if (hasImages) {
-            System.out.println("[OllamaFX] Sending multimodal request to model: " + modelName
-                    + ", images count: " + images.size());
+            LOGGER.log(Level.INFO, "[OllamaFX] Sending multimodal request to model: {0}, images count: {1}",
+                    new Object[] { modelName, images.size() });
         }
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(ConfigManager.getInstance().getOllamaHost() + "/api/chat"))
                 .header("Content-Type", "application/json")
-                .timeout(java.time.Duration.ofSeconds(ConfigManager.getInstance().getApiTimeout()))
+                .timeout(Duration.ofSeconds(ConfigManager.getInstance().getApiTimeout()))
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .build();
 
@@ -452,12 +460,12 @@ public class OllamaManager {
         try {
             // Use send (blocking) but handle interruption gracefully
             response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
-        } catch (java.net.http.HttpTimeoutException e) {
+        } catch (HttpTimeoutException e) {
             System.err.println("[OllamaFX] API Timeout: " + e.getMessage());
             int timeoutVal = ConfigManager.getInstance().getApiTimeout();
             String lang = ConfigManager.getInstance().getLanguage();
-            java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("messages",
-                    new java.util.Locale(lang));
+            ResourceBundle bundle = ResourceBundle.getBundle("messages",
+                    new Locale(lang));
             String errorMsg = bundle.getString("error.timeout").replace("{0}", String.valueOf(timeoutVal));
             throw new Exception(errorMsg);
         }
@@ -474,7 +482,7 @@ public class OllamaManager {
             // Try to parse JSON to get a clean error string for the UI
             String displayError = errorBody;
             try {
-                com.fasterxml.jackson.databind.JsonNode node = mapper.readTree(errorBody);
+                JsonNode node = mapper.readTree(errorBody);
                 if (node.has("error")) {
                     displayError = node.get("error").asText();
                 }

@@ -33,15 +33,24 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.SVGPath;
 import javafx.util.Duration;
+import javafx.scene.control.Button;
+import javafx.scene.control.Tooltip;
+import javafx.collections.ListChangeListener;
+import javafx.animation.Animation;
+import java.awt.Desktop;
+import java.net.URI;
+import java.io.File;
+import java.nio.file.Files;
 
 import org.kordamp.ikonli.feather.Feather;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class MainController implements Initializable {
 
@@ -50,23 +59,23 @@ public class MainController implements Initializable {
     @FXML
     private TreeView<ChatNode> chatTreeView;
     @FXML
-    private javafx.scene.layout.StackPane centerContentPane;
+    private StackPane centerContentPane;
 
     // Bottom Tool Buttons
     @FXML
-    private javafx.scene.control.Button btnAvailable;
+    private Button btnAvailable;
     @FXML
-    private javafx.scene.control.Button btnLocal;
+    private Button btnLocal;
     @FXML
-    private javafx.scene.control.Button btnSettings;
+    private Button btnSettings;
     @FXML
-    private javafx.scene.control.Button btnAbout;
+    private Button btnAbout;
     @FXML
-    private javafx.scene.control.Button btnHome;
+    private Button btnHome;
     @FXML
-    private javafx.scene.control.Button btnTrash;
+    private Button btnTrash;
     @FXML
-    private javafx.scene.control.Button btnOpenMarkdown;
+    private Button btnOpenMarkdown;
 
     @FXML
     private HBox ollamaStatusBar;
@@ -90,6 +99,8 @@ public class MainController implements Initializable {
         this.chatManager = ChatManager.getInstance();
         this.collectionManager = ChatCollectionManager.getInstance();
     }
+
+    private static final Logger LOGGER = Logger.getLogger(MainController.class.getName());
 
     public void initModelManager(ModelManager modelManager) {
         this.modelManager = modelManager;
@@ -149,12 +160,12 @@ public class MainController implements Initializable {
 
         // Listen for chat list changes to refresh tree
         // Weak listener or careful management needed? For now straightforward.
-        chatManager.getChatSessions().addListener((javafx.collections.ListChangeListener<ChatSession>) c -> {
+        chatManager.getChatSessions().addListener((ListChangeListener<ChatSession>) c -> {
             refreshChatTree();
         });
 
         // Listen for folder changes (List add/remove)
-        collectionManager.getFolders().addListener((javafx.collections.ListChangeListener<ChatFolder>) c -> {
+        collectionManager.getFolders().addListener((ListChangeListener<ChatFolder>) c -> {
             refreshChatTree();
         });
 
@@ -216,16 +227,19 @@ public class MainController implements Initializable {
     }
 
     public void refreshChatTree() {
-        // Simple approach: Rebuild.
-
-        TreeItem<ChatNode> root = new TreeItem<>(new ChatNode((ChatFolder) null)); // Dummy Root
+        TreeItem<ChatNode> root = new TreeItem<>(new ChatNode((ChatFolder) null));
         root.setExpanded(true);
 
-        // 0. Add Smart Collections
-        for (SmartCollection sc : collectionManager.getSmartCollections()) {
-            javafx.scene.Node scIcon = createSmartCollectionIcon(sc);
+        addSmartCollectionsToTree(root);
+        addFoldersToTree(root);
+        addUncategorizedChatsToTree(root);
 
-            TreeItem<ChatNode> scItem = new TreeItem<>(new ChatNode(sc), scIcon);
+        chatTreeView.setRoot(root);
+    }
+
+    private void addSmartCollectionsToTree(TreeItem<ChatNode> root) {
+        for (SmartCollection sc : collectionManager.getSmartCollections()) {
+            TreeItem<ChatNode> scItem = new TreeItem<>(new ChatNode(sc), createSmartCollectionIcon(sc));
             scItem.setExpanded(sc.isExpanded());
 
             scItem.expandedProperty().addListener((obs, oldVal, newVal) -> {
@@ -233,61 +247,45 @@ public class MainController implements Initializable {
                 collectionManager.updateSmartCollection(sc);
             });
 
-            // Dynamic Filtering
-            List<ChatSession> filteredChats = collectionManager.getChatsForSmartCollection(sc);
-            for (ChatSession chat : filteredChats) {
-                FontIcon chatIcon = new FontIcon(Feather.MESSAGE_SQUARE);
-                chatIcon.getStyleClass().add("chat-icon");
-                // Use a distinct node type or just ChatNode? ChatNode(ChatSession) works,
-                // but we might want to know it belongs to a SmartCollection context?
-                // For now, simple ChatNode.
-                scItem.getChildren().add(new TreeItem<>(new ChatNode(chat), chatIcon));
+            for (ChatSession chat : collectionManager.getChatsForSmartCollection(sc)) {
+                scItem.getChildren().add(createChatTreeItem(chat));
             }
-
-            // Optional: Add count to name? Done by cell factory if we updated toString or
-            // cell renderer.
-            // For now relies on ChatNode.toString().
-
             root.getChildren().add(scItem);
         }
+    }
 
-        // 1. Add Folders
+    private void addFoldersToTree(TreeItem<ChatNode> root) {
         for (ChatFolder folder : collectionManager.getFolders()) {
-            // Create initial icon based on state
-            javafx.scene.Node folderIcon = createFolderIcon(folder);
-
-            TreeItem<ChatNode> folderItem = new TreeItem<>(new ChatNode(folder), folderIcon);
+            TreeItem<ChatNode> folderItem = new TreeItem<>(new ChatNode(folder), createFolderIcon(folder));
             folderItem.setExpanded(folder.isExpanded());
 
-            // Listener for expansion state persistence AND visual update
             folderItem.expandedProperty().addListener((obs, oldVal, newVal) -> {
                 folder.setExpanded(newVal);
-                // Update Icon
                 folderItem.setGraphic(createFolderIcon(folder));
             });
 
-            // Add Chats belonging to this folder
             for (String chatId : folder.getChatIds()) {
                 ChatSession chat = findChatById(chatId);
                 if (chat != null) {
-                    FontIcon chatIcon = new FontIcon(Feather.MESSAGE_SQUARE);
-                    chatIcon.getStyleClass().add("chat-icon");
-                    folderItem.getChildren().add(new TreeItem<>(new ChatNode(chat), chatIcon));
+                    folderItem.getChildren().add(createChatTreeItem(chat));
                 }
             }
             root.getChildren().add(folderItem);
         }
+    }
 
-        // 2. Add Uncategorized Chats
+    private void addUncategorizedChatsToTree(TreeItem<ChatNode> root) {
         for (ChatSession chat : chatManager.getChatSessions()) {
             if (!collectionManager.isChatInFolder(chat)) {
-                FontIcon chatIcon = new FontIcon(Feather.MESSAGE_SQUARE);
-                chatIcon.getStyleClass().add("chat-icon");
-                root.getChildren().add(new TreeItem<>(new ChatNode(chat), chatIcon));
+                root.getChildren().add(createChatTreeItem(chat));
             }
         }
+    }
 
-        chatTreeView.setRoot(root);
+    private TreeItem<ChatNode> createChatTreeItem(ChatSession chat) {
+        FontIcon chatIcon = new FontIcon(Feather.MESSAGE_SQUARE);
+        chatIcon.getStyleClass().add("chat-icon");
+        return new TreeItem<>(new ChatNode(chat), chatIcon);
     }
 
     private javafx.scene.Node createSmartCollectionIcon(SmartCollection sc) {
@@ -421,7 +419,7 @@ public class MainController implements Initializable {
         }
     }
 
-    private void setActiveTool(javafx.scene.control.Button activeButton) {
+    private void setActiveTool(Button activeButton) {
         // Clear active class from all tools
         if (btnAvailable != null)
             btnAvailable.getStyleClass().remove("selected");
@@ -554,10 +552,10 @@ public class MainController implements Initializable {
         fileChooser.getExtensionFilters()
                 .add(new javafx.stage.FileChooser.ExtensionFilter("Markdown Files", "*.md", "*.markdown"));
 
-        java.io.File file = fileChooser.showOpenDialog(mainBorderPane.getScene().getWindow());
+        File file = fileChooser.showOpenDialog(mainBorderPane.getScene().getWindow());
         if (file != null) {
             try {
-                String content = new String(java.nio.file.Files.readAllBytes(file.toPath()));
+                String content = new String(Files.readAllBytes(file.toPath()));
 
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/markdown_viewer.fxml"));
                 Parent view = loader.load();
@@ -596,7 +594,7 @@ public class MainController implements Initializable {
 
     @FXML
     public void createNewChat() {
-        System.out.println("Creating new chat...");
+        LOGGER.log(Level.INFO, "Creating new chat...");
 
         // 1. Capture selection BEFORE creating chat (as creation triggers refresh via
         // listener)
@@ -725,11 +723,11 @@ public class MainController implements Initializable {
             btnControlOllama.setText("Download"); // Assuming button supports text/icon change
             btnControlOllama.setSelected(false);
             btnControlOllama.setDisable(false);
-            btnControlOllama.setTooltip(new javafx.scene.control.Tooltip("Download Ollama from ollama.com"));
+            btnControlOllama.setTooltip(new Tooltip("Download Ollama from ollama.com"));
 
             btnControlOllama.setOnAction(e -> {
                 try {
-                    java.awt.Desktop.getDesktop().browse(new java.net.URI("https://ollama.com"));
+                    Desktop.getDesktop().browse(new URI("https://ollama.com"));
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     // Fallback: copy to clipboard or show alert
@@ -798,8 +796,8 @@ public class MainController implements Initializable {
                 }
             }
             if (pulseEmitter != null) {
-                pulseEmitter.setFill(javafx.scene.paint.Color.rgb(0, 255, 128)); // Neon Green
-                if (pulseAnimation.getStatus() != javafx.animation.Animation.Status.RUNNING) {
+                pulseEmitter.setFill(Color.rgb(0, 255, 128)); // Neon Green
+                if (pulseAnimation.getStatus() != Animation.Status.RUNNING) {
                     pulseAnimation.play();
                 }
             }

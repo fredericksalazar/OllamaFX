@@ -14,6 +14,12 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.collections.transformation.FilteredList;
+import javafx.scene.control.TextField;
+import javafx.scene.control.ListCell;
+import javafx.animation.PauseTransition;
+import javafx.util.Duration;
+import javafx.beans.binding.Bindings;
+import com.org.ollamafx.App;
 
 import java.io.IOException;
 import java.util.List;
@@ -23,7 +29,7 @@ public class AvailableModelsController {
     @FXML
     private ListView<OllamaModel> modelListView;
     @FXML
-    private javafx.scene.control.TextField searchField;
+    private TextField searchField;
     @FXML
     private StackPane detailViewContainer;
     @FXML
@@ -43,7 +49,7 @@ public class AvailableModelsController {
 
     private FilteredList<OllamaModel> filteredModels;
     private ModelManager modelManager;
-    private javafx.animation.PauseTransition selectionDebounce;
+    private PauseTransition selectionDebounce;
 
     public void setModelManager(ModelManager modelManager) {
         this.modelManager = modelManager;
@@ -119,16 +125,16 @@ public class AvailableModelsController {
 
     private void setupEmptyState() {
         Label placeholder = new Label();
-        placeholder.textProperty().bind(javafx.beans.binding.Bindings.createStringBinding(
+        placeholder.textProperty().bind(Bindings.createStringBinding(
                 () -> {
                     String search = searchField.getText();
                     boolean hasAnyFilter = filterRecommended.isSelected() || filterVision.isSelected() ||
                             filterTools.isSelected() || filterCode.isSelected();
 
                     if ((search != null && !search.isEmpty()) || hasAnyFilter) {
-                        return com.org.ollamafx.App.getBundle().getString("available.empty.no_match");
+                        return App.getBundle().getString("available.empty.no_match");
                     }
-                    return com.org.ollamafx.App.getBundle().getString("available.empty.connecting");
+                    return App.getBundle().getString("available.empty.connecting");
                 },
                 searchField.textProperty(),
                 filterRecommended.selectedProperty(),
@@ -141,7 +147,7 @@ public class AvailableModelsController {
 
     // Simple, clean list cell - just the model name
     private void setupSimpleListCell() {
-        modelListView.setCellFactory(param -> new javafx.scene.control.ListCell<>() {
+        modelListView.setCellFactory(param -> new ListCell<>() {
             @Override
             protected void updateItem(OllamaModel item, boolean empty) {
                 super.updateItem(item, empty);
@@ -157,7 +163,7 @@ public class AvailableModelsController {
     }
 
     private void setupSelectionLogic() {
-        selectionDebounce = new javafx.animation.PauseTransition(javafx.util.Duration.millis(100));
+        selectionDebounce = new PauseTransition(Duration.millis(100));
         selectionDebounce.setOnFinished(event -> {
             OllamaModel selected = modelListView.getSelectionModel().getSelectedItem();
             if (selected != null) {

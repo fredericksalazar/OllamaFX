@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.time.LocalDateTime;
 
 public class ChatCollectionManager {
     private static ChatCollectionManager instance;
@@ -240,7 +241,7 @@ public class ChatCollectionManager {
                 // For simplified implementation, let's assume value is "7" for days.
                 try {
                     int days = Integer.parseInt(sc.getValue());
-                    java.time.LocalDateTime cutoff = java.time.LocalDateTime.now().minusDays(days);
+                    LocalDateTime cutoff = LocalDateTime.now().minusDays(days);
                     // ChatSession needs a creation date or last modified date.
                     // Assuming ChatSession has access to file timestamp or similar.
                     // If ChatSession structure doesn't support it, we might need to skip or infer.
