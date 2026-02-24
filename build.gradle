@@ -77,6 +77,11 @@ application {
     applicationDefaultJvmArgs = ['-Xdock:name=OllamaFX', '-Xdock:icon=src/main/resources/icons/icon.png']
 }
 
+tasks.withType(JavaCompile) {
+    options.compilerArgs << "-Xlint:all"
+    options.encoding = 'UTF-8'
+}
+
 tasks.withType(JavaExec) {
     if (System.getProperty('os.name').toLowerCase().contains('mac')) {
         jvmArgs '-Xdock:name=OllamaFX'

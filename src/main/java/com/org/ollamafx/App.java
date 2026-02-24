@@ -17,6 +17,8 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import atlantafx.base.theme.CupertinoDark;
+import atlantafx.base.theme.CupertinoLight;
 
 import java.awt.Taskbar;
 import java.awt.Toolkit;
@@ -79,9 +81,9 @@ public class App extends Application {
         // Apply saved theme
         String savedTheme = ConfigManager.getInstance().getTheme();
         if ("dark".equals(savedTheme)) {
-            Application.setUserAgentStylesheet(new atlantafx.base.theme.CupertinoDark().getUserAgentStylesheet());
+            Application.setUserAgentStylesheet(new CupertinoDark().getUserAgentStylesheet());
         } else {
-            Application.setUserAgentStylesheet(new atlantafx.base.theme.CupertinoLight().getUserAgentStylesheet());
+            Application.setUserAgentStylesheet(new CupertinoLight().getUserAgentStylesheet());
         }
 
         modelManager = ModelManager.getInstance();

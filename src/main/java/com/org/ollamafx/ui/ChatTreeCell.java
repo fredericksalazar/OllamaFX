@@ -5,16 +5,30 @@ import com.org.ollamafx.manager.ChatManager;
 import com.org.ollamafx.model.ChatFolder;
 import com.org.ollamafx.model.ChatNode;
 import com.org.ollamafx.model.ChatSession;
+import com.org.ollamafx.model.SmartCollection;
+import com.org.ollamafx.ui.SmartCollectionDialog;
+import com.org.ollamafx.App;
 import javafx.scene.control.*;
 import javafx.scene.control.MenuItem;
+import javafx.scene.image.WritableImage;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.TransferMode;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.SVGPath;
 import javafx.geometry.Pos;
+import javafx.scene.Cursor;
+import javafx.scene.Node;
 
+import java.text.MessageFormat;
 import java.util.Optional;
+import java.util.ResourceBundle;
 
 public class ChatTreeCell extends TreeCell<ChatNode> {
 
@@ -59,12 +73,12 @@ public class ChatTreeCell extends TreeCell<ChatNode> {
     // Remove renderFolder and renderChat methods as we rely on TreeItem graphics
     // now.
 
-    private ContextMenu createSmartCollectionContextMenu(com.org.ollamafx.model.SmartCollection sc) {
+    private ContextMenu createSmartCollectionContextMenu(SmartCollection sc) {
         ContextMenu menu = new ContextMenu();
         // Localize later
         MenuItem editItem = new MenuItem("Edit Smart Collection");
         editItem.setOnAction(e -> {
-            Optional<com.org.ollamafx.model.SmartCollection> result = com.org.ollamafx.ui.SmartCollectionDialog
+            Optional<SmartCollection> result = SmartCollectionDialog
                     .show(sc);
 
             result.ifPresent(updated -> {
@@ -97,7 +111,7 @@ public class ChatTreeCell extends TreeCell<ChatNode> {
 
     private ContextMenu createFolderContextMenu(ChatFolder folder) {
         ContextMenu menu = new ContextMenu();
-        java.util.ResourceBundle bundle = com.org.ollamafx.App.getBundle();
+        ResourceBundle bundle = App.getBundle();
 
         MenuItem newChatHereItem = new MenuItem(bundle.getString("context.folder.newChat"));
         newChatHereItem.setGraphic(icon("M12 5v14M5 12h14", 14)); // Plus
@@ -138,12 +152,12 @@ public class ChatTreeCell extends TreeCell<ChatNode> {
             dot.setOnMouseEntered(ev -> {
                 dot.setScaleX(1.2);
                 dot.setScaleY(1.2);
-                dot.setCursor(javafx.scene.Cursor.HAND);
+                dot.setCursor(Cursor.HAND);
             });
             dot.setOnMouseExited(ev -> {
                 dot.setScaleX(1.0);
                 dot.setScaleY(1.0);
-                dot.setCursor(javafx.scene.Cursor.DEFAULT);
+                dot.setCursor(Cursor.DEFAULT);
             });
             dot.setOnMouseClicked(ev -> {
                 collectionManager.setFolderColor(folder, colorHex);
@@ -160,7 +174,7 @@ public class ChatTreeCell extends TreeCell<ChatNode> {
         deleteItem.setOnAction(e -> {
             boolean ok = FxDialog.showConfirmDialog(
                     getTreeView().getScene().getWindow(),
-                    java.text.MessageFormat.format(bundle.getString("dialog.folder.delete.header"), folder.getName()),
+                    MessageFormat.format(bundle.getString("dialog.folder.delete.header"), folder.getName()),
                     bundle.getString("dialog.folder.delete.content"),
                     bundle.getString("dialog.delete.confirm"),
                     bundle.getString("button.cancel"));
@@ -175,7 +189,7 @@ public class ChatTreeCell extends TreeCell<ChatNode> {
 
     private ContextMenu createChatContextMenu(ChatSession chat) {
         ContextMenu menu = new ContextMenu();
-        java.util.ResourceBundle bundle = com.org.ollamafx.App.getBundle();
+        ResourceBundle bundle = App.getBundle();
 
         MenuItem renameItem = new MenuItem(bundle.getString("context.chat.rename"));
         renameItem.setGraphic(icon(
@@ -220,8 +234,8 @@ public class ChatTreeCell extends TreeCell<ChatNode> {
         deleteItem.setOnAction(e -> {
             boolean ok = FxDialog.showConfirmDialog(
                     getTreeView().getScene().getWindow(),
-                    java.text.MessageFormat.format(bundle.getString("dialog.chat.delete.header"), chat.getName()),
-                    bundle.getString("dialog.chat.delete.content"),
+                    MessageFormat.format(bundle.getString("dialog.chat.delete.header"), chat.getName()),
+                    bundle.getString("dialog.folder.delete.content"),
                     bundle.getString("dialog.delete.confirm"),
                     bundle.getString("button.cancel"));
             if (ok) {
@@ -238,7 +252,7 @@ public class ChatTreeCell extends TreeCell<ChatNode> {
      * Crea un icono SVG minimalista (estilo Lucide/Feather) para los menu items.
      * El path SVG debe ser de un viewBox 24x24.
      */
-    private javafx.scene.Node icon(String svgPath, double size) {
+    private Node icon(String svgPath, double size) {
         SVGPath path = new SVGPath();
         path.setContent(svgPath);
         path.setStyle("-fx-fill: transparent; -fx-stroke: -color-fg-muted; -fx-stroke-width: 1.5;");
@@ -247,7 +261,7 @@ public class ChatTreeCell extends TreeCell<ChatNode> {
         path.setScaleX(scale);
         path.setScaleY(scale);
         // Contenedor para centrar correctamente
-        javafx.scene.layout.StackPane container = new javafx.scene.layout.StackPane(path);
+        StackPane container = new StackPane(path);
         container.setPrefSize(size, size);
         container.setMinSize(size, size);
         container.setMaxSize(size, size);
@@ -258,7 +272,7 @@ public class ChatTreeCell extends TreeCell<ChatNode> {
 
     private void setupDragAndDrop() {
         // MOUSE CLICK (Toggle Folder Expansion)
-        setOnMouseClicked((javafx.scene.input.MouseEvent event) -> {
+        setOnMouseClicked((MouseEvent event) -> {
             if (getItem() != null && getItem().getType() == ChatNode.Type.FOLDER) {
                 if (event.getClickCount() == 1) { // Single click
                     TreeItem<ChatNode> treeItem = getTreeItem();
@@ -276,14 +290,14 @@ public class ChatTreeCell extends TreeCell<ChatNode> {
                 return;
             }
 
-            javafx.scene.input.Dragboard db = startDragAndDrop(javafx.scene.input.TransferMode.MOVE);
-            javafx.scene.input.ClipboardContent content = new javafx.scene.input.ClipboardContent();
+            Dragboard db = startDragAndDrop(TransferMode.MOVE);
+            ClipboardContent content = new ClipboardContent();
             // We store the Chat ID as string
             content.putString(getItem().getChat().getId().toString());
             db.setContent(content);
 
             // Set Drag View
-            javafx.scene.image.WritableImage snapshot = this.snapshot(new javafx.scene.SnapshotParameters(), null);
+            WritableImage snapshot = this.snapshot(new SnapshotParameters(), null);
             db.setDragView(snapshot);
 
             event.consume();
@@ -302,7 +316,7 @@ public class ChatTreeCell extends TreeCell<ChatNode> {
                 boolean isEmpty = item == null;
 
                 if (isFolder || isEmpty) {
-                    event.acceptTransferModes(javafx.scene.input.TransferMode.MOVE);
+                    event.acceptTransferModes(TransferMode.MOVE);
                     if (!getStyleClass().contains("drag-over")) {
                         getStyleClass().add("drag-over");
                     }
@@ -319,7 +333,7 @@ public class ChatTreeCell extends TreeCell<ChatNode> {
 
         // DRAG DROPPED
         setOnDragDropped(event -> {
-            javafx.scene.input.Dragboard db = event.getDragboard();
+            Dragboard db = event.getDragboard();
             boolean success = false;
             if (db.hasString()) {
                 String chatId = db.getString();
