@@ -13,7 +13,7 @@
 <?import javafx.scene.text.Text?>
 
 <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" 
-            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" 
+            xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" 
             fx:controller="com.org.ollamafx.controller.SettingsController">
     <content>
         <VBox alignment="TOP_CENTER" spacing="20.0">
@@ -29,6 +29,10 @@
                 <Label styleClass="title-4" text="%settings.section.connection" />
                 <Label text="%settings.hostUrl" textFill="#888888" />
                 <TextField fx:id="hostTextField" promptText="http://localhost:11434" />
+                
+                <Label text="%settings.apiTimeout" textFill="#888888" />
+                <TextField fx:id="apiTimeoutField" promptText="120" />
+                
                 <Button onAction="#saveSettings" styleClass="accent" text="%settings.saveConnection" />
             </VBox>
 

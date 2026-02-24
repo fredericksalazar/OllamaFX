@@ -9,8 +9,6 @@ import com.org.ollamafx.manager.ModelManager;
 import com.org.ollamafx.manager.OllamaServiceManager;
 import com.org.ollamafx.util.Utils;
 
-import atlantafx.base.theme.CupertinoLight;
-
 import javafx.application.Application;
 import javafx.application.HostServices;
 import javafx.application.Platform;
@@ -77,7 +75,14 @@ public class App extends Application {
         hostServices = getHostServices();
 
         ChatManager.getInstance().loadChats();
-        Application.setUserAgentStylesheet(new CupertinoLight().getUserAgentStylesheet());
+
+        // Apply saved theme
+        String savedTheme = ConfigManager.getInstance().getTheme();
+        if ("dark".equals(savedTheme)) {
+            Application.setUserAgentStylesheet(new atlantafx.base.theme.CupertinoDark().getUserAgentStylesheet());
+        } else {
+            Application.setUserAgentStylesheet(new atlantafx.base.theme.CupertinoLight().getUserAgentStylesheet());
+        }
 
         modelManager = ModelManager.getInstance();
 
@@ -121,7 +126,9 @@ public class App extends Application {
         FXMLLoader loader = new FXMLLoader(App.class.getResource("/ui/main_view.fxml"));
         loader.setResources(getBundle());
         Parent root = loader.load();
-        root.getStyleClass().add("light");
+
+        String savedTheme = ConfigManager.getInstance().getTheme();
+        root.getStyleClass().add(savedTheme);
 
         Scene scene = new Scene(root);
         scene.getStylesheets().add(App.class.getResource("/css/ollama_active.css").toExternalForm());

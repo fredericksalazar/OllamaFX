@@ -14,7 +14,7 @@
 <?import javafx.scene.text.Font?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<StackPane stylesheets="@../css/home.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.org.ollamafx.controller.HomeController">
+<StackPane stylesheets="@../css/home.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.org.ollamafx.controller.HomeController">
    <children>
       <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="edge-to-edge-scroll-pane" vbarPolicy="AS_NEEDED">
          <content>
@@ -54,38 +54,56 @@
                               </VBox>
                            </left>
                            <right>
-                              <!-- Donation Section exactly matching hero-button styles but smaller -->
-                              <VBox alignment="TOP_LEFT" pickOnBounds="false" spacing="8.0" maxWidth="500.0" BorderPane.alignment="TOP_RIGHT">
+                              <!-- Right Side Controls (Donations + Theme Toggle) -->
+                              <VBox alignment="TOP_RIGHT" pickOnBounds="false" spacing="40.0" maxWidth="500.0" BorderPane.alignment="TOP_RIGHT">
                                  <children>
-                                    <HBox alignment="CENTER_LEFT" pickOnBounds="false" spacing="10.0">
+                                    <!-- Quick Theme Toggle -->
+                                    <HBox alignment="TOP_RIGHT" pickOnBounds="false">
                                        <children>
-                                          <Button mnemonicParsing="false" onAction="#openPayPal" styleClass="button, accent, hero-button" style="-fx-padding: 6px 16px; -fx-font-size: 13px;" text="PayPal">
+                                          <Button fx:id="themeToggleButton" mnemonicParsing="false" onAction="#toggleTheme" styleClass="button-icon-small" style="-fx-border-color: transparent; -fx-background-color: transparent; -fx-cursor: hand;">
                                              <graphic>
-                                                <FontIcon iconLiteral="fab-paypal" iconSize="15" styleClass="font-icon" style="-fx-font-family: 'Font Awesome 5 Brands Regular'; -fx-icon-color: white;" />
+                                                <FontIcon fx:id="themeToggleIcon" iconLiteral="fas-moon" iconSize="20" styleClass="font-icon" style="-fx-font-family: 'Font Awesome 5 Free Solid'; -fx-icon-color: -color-fg-muted;" />
                                              </graphic>
                                              <tooltip>
-                                                <javafx.scene.control.Tooltip text="Apoyar el proyecto" />
-                                             </tooltip>
-                                          </Button>
-                                          <Button mnemonicParsing="false" onAction="#openBuyMeACoffee" styleClass="button, hero-button" style="-fx-padding: 6px 16px; -fx-font-size: 13px; -fx-background-color: #FFDD00; -fx-text-fill: black;" text="Buy Me a Coffee">
-                                             <graphic>
-                                                <FontIcon iconLiteral="fas-coffee" iconSize="15" styleClass="font-icon" style="-fx-font-family: 'Font Awesome 5 Free Solid'; -fx-icon-color: black;" />
-                                             </graphic>
-                                             <tooltip>
-                                                <javafx.scene.control.Tooltip text="Apoyar el proyecto" />
+                                                <javafx.scene.control.Tooltip text="Alternar Tema" />
                                              </tooltip>
                                           </Button>
                                        </children>
                                     </HBox>
-                                    <HBox alignment="TOP_LEFT" pickOnBounds="false" spacing="6.0">
+                                    
+                                    <VBox alignment="BOTTOM_RIGHT" pickOnBounds="false" spacing="8.0" VBox.vgrow="ALWAYS">
                                        <children>
-                                          <FontIcon iconLiteral="fas-heart" iconSize="14" styleClass="font-icon" style="-fx-font-family: 'Font Awesome 5 Free Solid'; -fx-icon-color: #ff3b30;" />
-                                          <Label styleClass="text-muted, font-small" text="Apoya el proyecto y&#10;ayúdanos a seguir mejorando" textAlignment="LEFT" lineSpacing="2" />
+                                          <HBox alignment="CENTER_RIGHT" pickOnBounds="false" spacing="10.0">
+                                             <children>
+                                                <Button mnemonicParsing="false" onAction="#openPayPal" styleClass="button, accent, hero-button" style="-fx-padding: 6px 16px; -fx-font-size: 13px;" text="PayPal">
+                                                   <graphic>
+                                                      <FontIcon iconLiteral="fab-paypal" iconSize="15" styleClass="font-icon" style="-fx-font-family: 'Font Awesome 5 Brands Regular'; -fx-icon-color: white;" />
+                                                   </graphic>
+                                                   <tooltip>
+                                                      <javafx.scene.control.Tooltip text="Apoyar el proyecto" />
+                                                   </tooltip>
+                                                </Button>
+                                                <Button mnemonicParsing="false" onAction="#openBuyMeACoffee" styleClass="button, hero-button" style="-fx-padding: 6px 16px; -fx-font-size: 13px; -fx-background-color: #FFDD00; -fx-text-fill: black;" text="Buy Me a Coffee">
+                                                   <graphic>
+                                                      <FontIcon iconLiteral="fas-coffee" iconSize="15" styleClass="font-icon" style="-fx-font-family: 'Font Awesome 5 Free Solid'; -fx-icon-color: black;" />
+                                                   </graphic>
+                                                   <tooltip>
+                                                      <javafx.scene.control.Tooltip text="Apoyar el proyecto" />
+                                                   </tooltip>
+                                                </Button>
+                                             </children>
+                                          </HBox>
+                                          <HBox alignment="CENTER_RIGHT" pickOnBounds="false" spacing="6.0">
+                                             <children>
+                                                <Label styleClass="text-muted, font-small" text="Apoya el proyecto y ayúdanos a seguir mejorando" textAlignment="RIGHT" lineSpacing="2" />
+                                                <FontIcon iconLiteral="fas-heart" iconSize="14" styleClass="font-icon" style="-fx-font-family: 'Font Awesome 5 Free Solid'; -fx-icon-color: #ff3b30;" />
+                                             </children>
+                                             <VBox.margin>
+                                                <javafx.geometry.Insets right="2.0" top="2.0" />
+                                             </VBox.margin>
+                                          </HBox>
                                        </children>
-                                       <VBox.margin>
-                                          <Insets left="2.0" top="2.0" />
-                                       </VBox.margin>
-                                    </HBox>
+                                    </VBox>
                                  </children>
                               </VBox>
                            </right>

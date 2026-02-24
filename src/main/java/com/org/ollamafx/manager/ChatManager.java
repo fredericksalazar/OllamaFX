@@ -138,8 +138,11 @@ public class ChatManager {
             for (File file : files) {
                 try {
                     ChatSession session = objectMapper.readValue(file, ChatSession.class);
-                    setupSessionListeners(session);
-                    chatSessions.add(session);
+                    // Filter out any chats that have been moved to the trash
+                    if (!TrashManager.getInstance().isChatInTrash(session.getId().toString())) {
+                        setupSessionListeners(session);
+                        chatSessions.add(session);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                     System.err.println("Failed to load chat: " + file.getName());

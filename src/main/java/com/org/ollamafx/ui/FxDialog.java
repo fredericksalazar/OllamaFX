@@ -1,7 +1,5 @@
 package com.org.ollamafx.ui;
 
-import atlantafx.base.theme.CupertinoLight;
-import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -85,7 +83,15 @@ public class FxDialog {
         });
 
         Scene scene = new Scene(content);
-        Application.setUserAgentStylesheet(new CupertinoLight().getUserAgentStylesheet());
+        scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
+        dialog.initStyle(StageStyle.TRANSPARENT);
+
+        String currentTheme = com.org.ollamafx.manager.ConfigManager.getInstance().getTheme();
+        if ("dark".equalsIgnoreCase(currentTheme)) {
+            content.getStyleClass().add("dark");
+        } else {
+            content.getStyleClass().add("light");
+        }
         scene.getStylesheets().add(
                 FxDialog.class.getResource("/css/ollama_active.css").toExternalForm());
 
@@ -169,7 +175,15 @@ public class FxDialog {
         });
 
         Scene scene = new Scene(content);
-        Application.setUserAgentStylesheet(new CupertinoLight().getUserAgentStylesheet());
+        scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
+        dialog.initStyle(StageStyle.TRANSPARENT);
+
+        String currentTheme = com.org.ollamafx.manager.ConfigManager.getInstance().getTheme();
+        if ("dark".equalsIgnoreCase(currentTheme)) {
+            content.getStyleClass().add("dark");
+        } else {
+            content.getStyleClass().add("light");
+        }
         scene.getStylesheets().add(
                 FxDialog.class.getResource("/css/ollama_active.css").toExternalForm());
 

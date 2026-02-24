@@ -35,6 +35,21 @@ public class ConfigManager {
         return prefs.get(KEY_THEME, DEFAULT_THEME);
     }
 
+    public void setTheme(String theme) {
+        prefs.put(KEY_THEME, theme);
+    }
+
+    private static final String KEY_API_TIMEOUT = "api_timeout_seconds";
+    private static final int DEFAULT_API_TIMEOUT = 120; // Default 120 seconds (useful for slow multimodal models)
+
+    public int getApiTimeout() {
+        return prefs.getInt(KEY_API_TIMEOUT, DEFAULT_API_TIMEOUT);
+    }
+
+    public void setApiTimeout(int seconds) {
+        prefs.putInt(KEY_API_TIMEOUT, seconds);
+    }
+
     private static final String KEY_LANGUAGE = "app_language";
     private static final String DEFAULT_LANGUAGE = "es"; // Default to Spanish as requested
 

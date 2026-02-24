@@ -371,6 +371,11 @@ public class ChatController {
             // Restore System Prompt
             systemPromptField.setText(session.getSystemPrompt() != null ? session.getSystemPrompt() : "");
 
+            // Cleanup any empty assistant messages (from errors or cancellations) before
+            // rendering
+            session.getMessages().removeIf(msg -> "assistant".equals(msg.getRole())
+                    && (msg.getContent() == null || msg.getContent().isEmpty()));
+
             for (ChatMessage msg : session.getMessages()) {
                 addMessage(msg.getContent(), "user".equals(msg.getRole()), msg.hasImages() ? msg.getImages() : null);
             }
@@ -525,9 +530,15 @@ public class ChatController {
                 }
                 e.printStackTrace();
                 Platform.runLater(() -> {
-                    // Only show error if active
+                    // Save error to the assistant message so it doesn't stay empty
+                    assistantMsg.setContent("⚡ Error: " + e.getMessage());
+                    if (targetSession != null) {
+                        ChatManager.getInstance().saveChats();
+                    }
+
+                    // Update UI if looking at this session
                     if (currentSession == targetSession) {
-                        addMessage("Error: " + e.getMessage(), false, null);
+                        updateLastMessage("⚡ Error: " + e.getMessage());
                     }
                     setGeneratingState(false);
                 });
@@ -749,6 +760,19 @@ public class ChatController {
 
         // Remove thinking indicator if it's still there
         Platform.runLater(this::cleanupThinkingIndicator);
+
+        // Remove empty assistant message from history if cancelled before any tokens
+        // arrived
+        if (currentSession != null) {
+            java.util.List<ChatMessage> msgs = currentSession.getMessages();
+            if (!msgs.isEmpty()) {
+                ChatMessage last = msgs.get(msgs.size() - 1);
+                if ("assistant".equals(last.getRole()) && (last.getContent() == null || last.getContent().isEmpty())) {
+                    msgs.remove(msgs.size() - 1);
+                    ChatManager.getInstance().saveChats();
+                }
+            }
+        }
 
         setGeneratingState(false);
     }

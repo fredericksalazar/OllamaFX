@@ -380,6 +380,52 @@
 
 .root.dark .sidebar .list-cell:selected {
     -fx-background-color: rgba(255, 255, 255, 0.1) !important;
+    -fx-text-fill: #0A84FF !important;
+    /* Brighter iOS Blue for dark mode */
+}
+
+.root.dark .sidebar .list-cell:selected .label {
+    -fx-text-fill: #0A84FF !important;
+}
+
+/* TreeView overrides for dark mode */
+.root.dark .chat-tree-view .tree-cell:filled:selected {
+    -fx-background-color: rgba(255, 255, 255, 0.1) !important;
+    -fx-text-fill: #0A84FF !important;
+}
+
+.root.dark .chat-tree-view .tree-cell:filled:selected .text,
+.root.dark .chat-tree-view .tree-cell:filled:selected .label {
+    -fx-fill: #0A84FF !important;
+    -fx-text-fill: #0A84FF !important;
+}
+
+.root.dark .chat-tree-view .tree-cell:filled:selected .ikonli-font-icon {
+    -fx-icon-color: #0A84FF !important;
+}
+
+.root.dark .chat-tree-view .tree-cell:filled:selected .tree-disclosure-node .arrow {
+    -fx-background-color: #0A84FF !important;
+}
+
+/* Unselected items in Dark Mode need to be light explicitly because we don't switch the userAgentStylesheet globally anymore */
+.root.dark .chat-tree-view .tree-cell,
+.root.dark .chat-tree-view .tree-cell .text,
+.root.dark .chat-tree-view .tree-cell .label {
+    -fx-text-fill: #EBEBF5 !important;
+    -fx-fill: #EBEBF5 !important;
+}
+
+.root.dark .chat-tree-view .tree-cell:filled:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.root.dark .chat-tree-view .tree-cell .ikonli-font-icon {
+    -fx-icon-color: #A1A1A6 !important;
+}
+
+.root.dark .chat-tree-view .tree-cell .tree-disclosure-node .arrow {
+    -fx-background-color: #A1A1A6 !important;
 }
 
 /* Typography Enhancements */

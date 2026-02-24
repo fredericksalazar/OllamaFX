@@ -18,7 +18,7 @@
 <?import javafx.scene.control.MenuItem?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<BorderPane fx:id="mainBorderPane" prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.org.ollamafx.controller.MainController">
+<BorderPane fx:id="mainBorderPane" prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.org.ollamafx.controller.MainController">
     <left>
 
         <VBox fx:id="sidebarVBox" prefWidth="300.0" spacing="0.0" styleClass="sidebar" BorderPane.alignment="CENTER">

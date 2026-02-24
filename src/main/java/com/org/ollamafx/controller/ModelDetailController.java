@@ -63,6 +63,20 @@ public class ModelDetailController {
     @FXML
     public void initialize() {
         // Setup default placeholder or properties if needed.
+        // Bind Text wrapping width to force it to act like a wrapped label
+        // Since the Text is in a ScrollPane content, we wait for layout or bind
+        // indirectly.
+        // Easiest is to bind to the VBox width (minus padding). It will cause wrap
+        // instead of scroll.
+        javafx.application.Platform.runLater(() -> {
+            if (modelDescriptionText.getParent() instanceof javafx.scene.control.ScrollPane) {
+                javafx.scene.control.ScrollPane sp = (javafx.scene.control.ScrollPane) modelDescriptionText.getParent();
+                modelDescriptionText.wrappingWidthProperty().bind(sp.widthProperty().subtract(20));
+            } else if (modelDescriptionText.getParent() instanceof javafx.scene.layout.Region) {
+                javafx.scene.layout.Region parent = (javafx.scene.layout.Region) modelDescriptionText.getParent();
+                modelDescriptionText.wrappingWidthProperty().bind(parent.widthProperty().subtract(20));
+            }
+        });
     }
 
     private void showDownloadPopup(OllamaModel model) {
