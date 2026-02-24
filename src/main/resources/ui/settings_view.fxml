@@ -13,7 +13,7 @@
 <?import javafx.scene.text.Text?>
 
 <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" 
-            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" 
+            xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" 
             fx:controller="com.org.ollamafx.controller.SettingsController">
     <content>
         <VBox alignment="TOP_CENTER" spacing="20.0">

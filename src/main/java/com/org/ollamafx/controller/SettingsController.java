@@ -208,6 +208,7 @@ public class SettingsController {
                 themeButton.getScene().getRoot().getStyleClass().remove("dark");
                 themeButton.getScene().getRoot().getStyleClass().add("light");
             }
+            ConfigManager.getInstance().setTheme("light");
         } else {
             Application
                     .setUserAgentStylesheet(new atlantafx.base.theme.CupertinoDark().getUserAgentStylesheet());
@@ -215,6 +216,7 @@ public class SettingsController {
                 themeButton.getScene().getRoot().getStyleClass().remove("light");
                 themeButton.getScene().getRoot().getStyleClass().add("dark");
             }
+            ConfigManager.getInstance().setTheme("dark");
         }
     }
 }

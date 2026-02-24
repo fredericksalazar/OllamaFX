@@ -11,7 +11,7 @@
 <?import javafx.scene.shape.SVGPath?>
 <?import javafx.scene.text.Font?>
 
-<VBox fx:id="rootPane" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="420.0" spacing="25.0" styleClass="apple-dialog" stylesheets="@../css/ollama_active.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.org.ollamafx.controller.DownloadPopupController">
+<VBox fx:id="rootPane" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="420.0" spacing="25.0" styleClass="apple-dialog" stylesheets="@../css/ollama_active.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.org.ollamafx.controller.DownloadPopupController">
    <children>
       <Label fx:id="titleLabel" text="%download.title.default" styleClass="apple-dialog-title" wrapText="true" textAlignment="CENTER"/>
       

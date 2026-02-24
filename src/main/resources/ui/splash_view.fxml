@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<StackPane prefHeight="550.0" prefWidth="750.0" styleClass="root" stylesheets="@../css/splash.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.org.ollamafx.controller.SplashController">
+<StackPane prefHeight="550.0" prefWidth="750.0" styleClass="root" stylesheets="@../css/splash.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.org.ollamafx.controller.SplashController">
    <children>
       <VBox alignment="CENTER" spacing="0">
          <children>

@@ -645,7 +645,7 @@ public class MainController implements Initializable {
     }
 
     @FXML
-    private void toggleTheme() {
+    public void toggleTheme() {
         if (Application.getUserAgentStylesheet()
                 .equals(new atlantafx.base.theme.CupertinoDark().getUserAgentStylesheet())) {
             // Switch to Light
@@ -654,6 +654,7 @@ public class MainController implements Initializable {
                 mainBorderPane.getScene().getRoot().getStyleClass().remove("dark");
                 mainBorderPane.getScene().getRoot().getStyleClass().add("light");
             }
+            com.org.ollamafx.manager.ConfigManager.getInstance().setTheme("light");
         } else {
             // Switch to Dark
             Application.setUserAgentStylesheet(new atlantafx.base.theme.CupertinoDark().getUserAgentStylesheet());
@@ -661,6 +662,7 @@ public class MainController implements Initializable {
                 mainBorderPane.getScene().getRoot().getStyleClass().remove("light");
                 mainBorderPane.getScene().getRoot().getStyleClass().add("dark");
             }
+            com.org.ollamafx.manager.ConfigManager.getInstance().setTheme("dark");
         }
     }
 

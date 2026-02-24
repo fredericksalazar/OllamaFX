@@ -12,6 +12,8 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.HBox;
 import java.net.URL;
 import java.util.ResourceBundle;
+import org.kordamp.ikonli.javafx.FontIcon;
+import com.org.ollamafx.manager.ConfigManager;
 
 public class HomeController implements Initializable {
 
@@ -23,6 +25,12 @@ public class HomeController implements Initializable {
     private HBox newContainer;
     @FXML
     private Button btnExplore;
+    @FXML
+    private Button themeToggleButton;
+    @FXML
+    private FontIcon themeToggleIcon;
+
+    private MainController mainController;
 
     private ModelManager modelManager;
 
@@ -48,6 +56,26 @@ public class HomeController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Initial setup if needed
+        applyCurrentThemeIcon();
+    }
+
+    private void applyCurrentThemeIcon() {
+        if (themeToggleIcon != null) {
+            String currentTheme = ConfigManager.getInstance().getTheme();
+            if ("light".equals(currentTheme)) {
+                themeToggleIcon.setIconLiteral("fas-moon");
+            } else {
+                themeToggleIcon.setIconLiteral("fas-sun");
+            }
+        }
+    }
+
+    @FXML
+    private void toggleTheme() {
+        if (mainController != null) {
+            mainController.toggleTheme();
+            applyCurrentThemeIcon();
+        }
     }
 
     private void setupListeners() {
@@ -310,8 +338,6 @@ public class HomeController implements Initializable {
             }
         }
     }
-
-    private MainController mainController;
 
     public void setMainController(MainController mainController) {
         this.mainController = mainController;

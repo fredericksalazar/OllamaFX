@@ -15,7 +15,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<ScrollPane fitToWidth="true" style="-fx-background-color: transparent;" stylesheets="@../css/about.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.org.ollamafx.controller.AboutController">
+<ScrollPane fitToWidth="true" style="-fx-background-color: transparent;" stylesheets="@../css/about.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.org.ollamafx.controller.AboutController">
 
     <VBox alignment="TOP_CENTER" spacing="0" style="-fx-background-color: transparent;">
         <padding>
