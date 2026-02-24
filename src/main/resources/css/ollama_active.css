@@ -1643,10 +1643,10 @@
 }
 
 .search-field {
-    -fx-background-radius: 8px;
-    -fx-border-radius: 8px;
-    -fx-padding: 8 12;
-    -fx-font-size: 13px;
+    -fx-background-radius: 25px;
+    -fx-border-radius: 25px;
+    -fx-padding: 10 16;
+    -fx-font-size: 14px;
 }
 
 /* Model List styling */

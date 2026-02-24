@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!-- Filters redesign Phase 2 -->
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.MenuButton?>
@@ -11,46 +12,52 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" 
       fx:controller="com.org.ollamafx.controller.AvailableModelsController"
       spacing="0" style="-fx-background-color: -color-bg-default;">
     
     <!-- TOP TOOLBAR: Search + Filters (scrollable) -->
-    <ScrollPane fitToHeight="true" hbarPolicy="NEVER" vbarPolicy="NEVER" styleClass="toolbar-scroll">
+    <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="NEVER" styleClass="toolbar-scroll">
         <HBox alignment="CENTER_LEFT" spacing="10" styleClass="model-toolbar">
+            <fx:define>
+                <javafx.scene.control.ToggleGroup fx:id="filterGroup" />
+            </fx:define>
+            
             <!-- Search Field -->
             <javafx.scene.control.TextField fx:id="searchField" promptText="%available.search" 
-                prefWidth="180" styleClass="search-field" />
-            
-            <Separator orientation="VERTICAL" />
-            
-            <!-- Compatibility Filters -->
-            <Label text="Estado:" styleClass="filter-label" />
-            <ToggleButton fx:id="filterRecommended" text="🟢 Recom." styleClass="filter-chip" />
-            <ToggleButton fx:id="filterStandard" text="🟠 Estándar" styleClass="filter-chip" />
-            <ToggleButton fx:id="filterNotRecommended" text="🔴 No Rec." styleClass="filter-chip" />
-            
-            <Separator orientation="VERTICAL" />
-            
-            <!-- Size Filters -->
-            <Label text="Tamaño:" styleClass="filter-label" />
-            <ToggleButton fx:id="filterSmall" text="≤3B" styleClass="filter-chip" />
-            <ToggleButton fx:id="filterMedium" text="7B" styleClass="filter-chip" />
-            <ToggleButton fx:id="filterLarge" text="13B+" styleClass="filter-chip" />
-            <ToggleButton fx:id="filterXLarge" text="70B+" styleClass="filter-chip" />
-            
-            <Separator orientation="VERTICAL" />
-            
-            <!-- Capability Filters -->
-            <Label text="Capacidad:" styleClass="filter-label" />
-            <ToggleButton fx:id="filterVision" text="👁 Vision" styleClass="filter-chip" />
-            <ToggleButton fx:id="filterTools" text="🛠 Tools" styleClass="filter-chip" />
-            <ToggleButton fx:id="filterCode" text="💻 Code" styleClass="filter-chip" />
+                prefWidth="420" styleClass="search-field" />
             
             <Region HBox.hgrow="ALWAYS" />
             
-            <!-- Sort Menu -->
+            <!-- Filters grouped in a segmented layout - Centered & Single Selection -->
+            <HBox styleClass="segmented-button">
+                <ToggleButton fx:id="filterRecommended" text="Recomendados" styleClass="left-pill" toggleGroup="$filterGroup">
+                    <graphic>
+                        <FontIcon iconLiteral="fth-check-circle" iconSize="14" styleClass="font-icon" />
+                    </graphic>
+                </ToggleButton>
+                <ToggleButton fx:id="filterVision" text="Vision" styleClass="center-pill" toggleGroup="$filterGroup">
+                    <graphic>
+                        <FontIcon iconLiteral="fth-eye" iconSize="14" styleClass="font-icon" />
+                    </graphic>
+                </ToggleButton>
+                <ToggleButton fx:id="filterTools" text="Tools" styleClass="center-pill" toggleGroup="$filterGroup">
+                    <graphic>
+                        <FontIcon iconLiteral="fth-tool" iconSize="14" styleClass="font-icon" />
+                    </graphic>
+                </ToggleButton>
+                <ToggleButton fx:id="filterCode" text="Code" styleClass="right-pill" toggleGroup="$filterGroup">
+                    <graphic>
+                        <FontIcon iconLiteral="fth-code" iconSize="14" styleClass="font-icon" />
+                    </graphic>
+                </ToggleButton>
+            </HBox>
+            
+            <Region HBox.hgrow="ALWAYS" />
+            
+            <!-- Sort Menu - Far Right -->
             <MenuButton text="%available.sort" styleClass="flat" mnemonicParsing="false">
                 <items>
                     <MenuItem text="%available.sort.az" onAction="#sortByNameAsc" />
