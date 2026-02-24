@@ -17,8 +17,6 @@ import javafx.collections.transformation.FilteredList;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class AvailableModelsController {
 
@@ -34,20 +32,6 @@ public class AvailableModelsController {
     // Compatibility filters
     @FXML
     private ToggleButton filterRecommended;
-    @FXML
-    private ToggleButton filterStandard;
-    @FXML
-    private ToggleButton filterNotRecommended;
-
-    // Size filters
-    @FXML
-    private ToggleButton filterSmall;
-    @FXML
-    private ToggleButton filterMedium;
-    @FXML
-    private ToggleButton filterLarge;
-    @FXML
-    private ToggleButton filterXLarge;
 
     // Capability filters
     @FXML
@@ -60,8 +44,6 @@ public class AvailableModelsController {
     private FilteredList<OllamaModel> filteredModels;
     private ModelManager modelManager;
     private javafx.animation.PauseTransition selectionDebounce;
-
-    private static final Pattern SIZE_PATTERN = Pattern.compile("(\\d+\\.?\\d*)b", Pattern.CASE_INSENSITIVE);
 
     public void setModelManager(ModelManager modelManager) {
         this.modelManager = modelManager;
@@ -82,16 +64,8 @@ public class AvailableModelsController {
         // Search filter
         searchField.textProperty().addListener((obs, old, newVal) -> applyFilters());
 
-        // All toggle filters use OR logic within category, AND between categories
+        // Toggle filters
         filterRecommended.selectedProperty().addListener((obs, old, sel) -> applyFilters());
-        filterStandard.selectedProperty().addListener((obs, old, sel) -> applyFilters());
-        filterNotRecommended.selectedProperty().addListener((obs, old, sel) -> applyFilters());
-
-        filterSmall.selectedProperty().addListener((obs, old, sel) -> applyFilters());
-        filterMedium.selectedProperty().addListener((obs, old, sel) -> applyFilters());
-        filterLarge.selectedProperty().addListener((obs, old, sel) -> applyFilters());
-        filterXLarge.selectedProperty().addListener((obs, old, sel) -> applyFilters());
-
         filterVision.selectedProperty().addListener((obs, old, sel) -> applyFilters());
         filterTools.selectedProperty().addListener((obs, old, sel) -> applyFilters());
         filterCode.selectedProperty().addListener((obs, old, sel) -> applyFilters());
@@ -100,11 +74,7 @@ public class AvailableModelsController {
     private void applyFilters() {
         String searchText = searchField.getText() == null ? "" : searchField.getText().toLowerCase().trim();
 
-        // Check which categories have active filters
-        boolean hasCompatFilter = filterRecommended.isSelected() || filterStandard.isSelected()
-                || filterNotRecommended.isSelected();
-        boolean hasSizeFilter = filterSmall.isSelected() || filterMedium.isSelected() || filterLarge.isSelected()
-                || filterXLarge.isSelected();
+        boolean hasRecommendedFilter = filterRecommended.isSelected();
         boolean hasCapabilityFilter = filterVision.isSelected() || filterTools.isSelected() || filterCode.isSelected();
 
         filteredModels.setPredicate(model -> {
@@ -113,44 +83,12 @@ public class AvailableModelsController {
                 return false;
             }
 
-            // Compatibility filter (OR within category)
-            if (hasCompatFilter) {
+            // Recommended filter
+            if (hasRecommendedFilter) {
                 modelManager.classifyModel(model);
-                OllamaModel.CompatibilityStatus status = model.getCompatibilityStatus();
-                boolean matchesCompat = false;
-                if (filterRecommended.isSelected() && status == OllamaModel.CompatibilityStatus.RECOMMENDED)
-                    matchesCompat = true;
-                if (filterStandard.isSelected() && status == OllamaModel.CompatibilityStatus.CAUTION)
-                    matchesCompat = true;
-                if (filterNotRecommended.isSelected() && status == OllamaModel.CompatibilityStatus.INCOMPATIBLE)
-                    matchesCompat = true;
-                if (!matchesCompat)
+                if (model.getCompatibilityStatus() != OllamaModel.CompatibilityStatus.RECOMMENDED) {
                     return false;
-            }
-
-            // Size filter (OR within category)
-            if (hasSizeFilter) {
-                Double size = extractModelSize(model.getName());
-                boolean matchesSize = false;
-
-                // If size can't be detected, include in ≤3B (most are small models/embeddings)
-                // Also include in all size categories if user selected multiple
-                if (size == null) {
-                    // Assume models without size indicator are small (embeddings, etc.)
-                    if (filterSmall.isSelected())
-                        matchesSize = true;
-                } else {
-                    if (filterSmall.isSelected() && size <= 3)
-                        matchesSize = true;
-                    if (filterMedium.isSelected() && size > 3 && size <= 10)
-                        matchesSize = true;
-                    if (filterLarge.isSelected() && size > 10 && size < 70)
-                        matchesSize = true;
-                    if (filterXLarge.isSelected() && size >= 70)
-                        matchesSize = true;
                 }
-                if (!matchesSize)
-                    return false;
             }
 
             // Capability filter (OR within category)
@@ -174,18 +112,6 @@ public class AvailableModelsController {
         });
     }
 
-    private Double extractModelSize(String modelName) {
-        Matcher matcher = SIZE_PATTERN.matcher(modelName.toLowerCase());
-        if (matcher.find()) {
-            try {
-                return Double.parseDouble(matcher.group(1));
-            } catch (NumberFormatException e) {
-                return null;
-            }
-        }
-        return null;
-    }
-
     private void updateResultsLabel() {
         int count = filteredModels.size();
         resultsLabel.setText(count + " " + (count == 1 ? "modelo" : "modelos"));
@@ -196,10 +122,7 @@ public class AvailableModelsController {
         placeholder.textProperty().bind(javafx.beans.binding.Bindings.createStringBinding(
                 () -> {
                     String search = searchField.getText();
-                    boolean hasAnyFilter = filterRecommended.isSelected() || filterStandard.isSelected() ||
-                            filterNotRecommended.isSelected() || filterSmall.isSelected() || filterMedium.isSelected()
-                            ||
-                            filterLarge.isSelected() || filterXLarge.isSelected() || filterVision.isSelected() ||
+                    boolean hasAnyFilter = filterRecommended.isSelected() || filterVision.isSelected() ||
                             filterTools.isSelected() || filterCode.isSelected();
 
                     if ((search != null && !search.isEmpty()) || hasAnyFilter) {
@@ -209,12 +132,6 @@ public class AvailableModelsController {
                 },
                 searchField.textProperty(),
                 filterRecommended.selectedProperty(),
-                filterStandard.selectedProperty(),
-                filterNotRecommended.selectedProperty(),
-                filterSmall.selectedProperty(),
-                filterMedium.selectedProperty(),
-                filterLarge.selectedProperty(),
-                filterXLarge.selectedProperty(),
                 filterVision.selectedProperty(),
                 filterTools.selectedProperty(),
                 filterCode.selectedProperty()));

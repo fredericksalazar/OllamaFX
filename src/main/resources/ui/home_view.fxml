@@ -80,7 +80,7 @@
                                                       <FontIcon iconLiteral="fab-paypal" iconSize="15" styleClass="font-icon" style="-fx-font-family: 'Font Awesome 5 Brands Regular'; -fx-icon-color: white;" />
                                                    </graphic>
                                                    <tooltip>
-                                                      <javafx.scene.control.Tooltip text="Apoyar el proyecto" />
+                                                      <javafx.scene.control.Tooltip text="%home.support.tooltip" />
                                                    </tooltip>
                                                 </Button>
                                                 <Button mnemonicParsing="false" onAction="#openBuyMeACoffee" styleClass="button, hero-button" style="-fx-padding: 6px 16px; -fx-font-size: 13px; -fx-background-color: #FFDD00; -fx-text-fill: black;" text="Buy Me a Coffee">
@@ -88,14 +88,14 @@
                                                       <FontIcon iconLiteral="fas-coffee" iconSize="15" styleClass="font-icon" style="-fx-font-family: 'Font Awesome 5 Free Solid'; -fx-icon-color: black;" />
                                                    </graphic>
                                                    <tooltip>
-                                                      <javafx.scene.control.Tooltip text="Apoyar el proyecto" />
+                                                      <javafx.scene.control.Tooltip text="%home.support.tooltip" />
                                                    </tooltip>
                                                 </Button>
                                              </children>
                                           </HBox>
                                           <HBox alignment="CENTER_RIGHT" pickOnBounds="false" spacing="6.0">
                                              <children>
-                                                <Label styleClass="text-muted, font-small" text="Apoya el proyecto y ayúdanos a seguir mejorando" textAlignment="RIGHT" lineSpacing="2" />
+                                                <Label styleClass="text-muted, font-small" text="%home.support.message" textAlignment="RIGHT" lineSpacing="2" />
                                                 <FontIcon iconLiteral="fas-heart" iconSize="14" styleClass="font-icon" style="-fx-font-family: 'Font Awesome 5 Free Solid'; -fx-icon-color: #ff3b30;" />
                                              </children>
                                              <VBox.margin>
