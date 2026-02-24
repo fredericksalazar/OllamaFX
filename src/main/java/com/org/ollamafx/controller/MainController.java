@@ -415,12 +415,13 @@ public class MainController implements Initializable {
 
     public void openChat(ChatSession session) {
         if (session != null) {
-            // Find TreeItem for this session
-            // Complex traversal needed or just logic?
-            // For now, let's just create a temporary selection logic if needed
-            // But usually openChat is called from Home or creation.
-            // We need to expand folder if needed.
-            // ... (Simple implementation: just focus if found)
+            setActiveTool(null);
+
+            // Re-select in tree (findAndSelect expanding folders if needed)
+            selectChatInTree(session);
+
+            // Load the actual chat view in the center pane
+            loadChatView(session);
         }
     }
 
@@ -619,8 +620,11 @@ public class MainController implements Initializable {
         }
 
         for (TreeItem<ChatNode> child : item.getChildren()) {
-            if (findAndSelect(child, session))
+            if (findAndSelect(child, session)) {
+                // Ensure parent is expanded so the item is visible
+                item.setExpanded(true);
                 return true;
+            }
         }
         return false;
     }
