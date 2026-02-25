@@ -16,6 +16,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ModelLibraryManager {
 
@@ -237,9 +239,9 @@ public class ModelLibraryManager {
             String lower = relativeDate.toLowerCase().trim();
             long now = System.currentTimeMillis();
 
-            java.util.regex.Pattern p = java.util.regex.Pattern
+            Pattern p = Pattern
                     .compile("(\\d+)\\s+(second|minute|hour|day|week|month|year)");
-            java.util.regex.Matcher m = p.matcher(lower);
+            Matcher m = p.matcher(lower);
 
             if (m.find()) {
                 int amount = Integer.parseInt(m.group(1));

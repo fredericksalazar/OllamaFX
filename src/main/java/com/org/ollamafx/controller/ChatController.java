@@ -41,12 +41,17 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.io.IOException;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Base64;
 import java.io.ByteArrayInputStream;
 import javafx.beans.binding.Bindings;
 import javafx.scene.control.Alert;
+import javafx.scene.image.Image;
+import javafx.animation.PauseTransition;
+import com.org.ollamafx.util.Utils;
+import com.org.ollamafx.service.MarkdownService;
 
 import com.org.ollamafx.App;
 import com.org.ollamafx.manager.ChatManager;
@@ -844,7 +849,7 @@ public class ChatController {
         for (String base64 : images) {
             try {
                 byte[] bytes = Base64.getDecoder().decode(base64);
-                javafx.scene.image.Image img = new javafx.scene.image.Image(new ByteArrayInputStream(bytes), 80,
+                Image img = new Image(new ByteArrayInputStream(bytes), 80,
                         80, true, true);
                 ImageView iv = new ImageView(img);
                 iv.setFitWidth(80);
@@ -914,7 +919,7 @@ public class ChatController {
 
             // Visual Feedback (Green Tick)
             copyIcon.setStyle("-fx-fill: -color-success-fg; -fx-scale-x: 0.9; -fx-scale-y: 0.9;");
-            javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(
+            PauseTransition pause = new PauseTransition(
                     Duration.seconds(1));
             pause.setOnFinished(
                     ev -> copyIcon.setStyle("-fx-fill: -color-fg-muted; -fx-scale-x: 0.9; -fx-scale-y: 0.9;"));
@@ -984,13 +989,13 @@ public class ChatController {
     @FXML
     private void onExportMdClicked() {
         if (currentSession == null || currentSession.getMessages().isEmpty()) {
-            com.org.ollamafx.util.Utils.showError("Export Error", "There are no messages to export.");
+            Utils.showError("Export Error", "There are no messages to export.");
             return;
         }
 
-        javafx.stage.FileChooser fileChooser = new javafx.stage.FileChooser();
+        FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Export Chat to Markdown");
-        fileChooser.getExtensionFilters().add(new javafx.stage.FileChooser.ExtensionFilter("Markdown Files", "*.md"));
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Markdown Files", "*.md"));
 
         // Suggest a filename
         String safeName = currentSession.getName().replaceAll("[\\\\/:*?\"<>|]", "_");
@@ -999,7 +1004,7 @@ public class ChatController {
         File file = fileChooser.showSaveDialog(inputField.getScene().getWindow());
         if (file != null) {
             try {
-                com.org.ollamafx.service.MarkdownService.exportChatToMarkdown(currentSession, file);
+                MarkdownService.exportChatToMarkdown(currentSession, file);
 
                 // Show info using standard Alert
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -1008,9 +1013,9 @@ public class ChatController {
                 alert.setContentText("Chat exported to " + file.getName());
                 alert.showAndWait();
 
-            } catch (java.io.IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
-                com.org.ollamafx.util.Utils.showError("Export Error", "Failed to export chat: " + e.getMessage());
+                Utils.showError("Export Error", "Failed to export chat: " + e.getMessage());
             }
         }
     }
@@ -1052,7 +1057,7 @@ public class ChatController {
                         String msg = App.getBundle().getString(error);
                         statusLabel.setText(msg);
                         // Reset after 3 seconds
-                        javafx.animation.PauseTransition reset = new javafx.animation.PauseTransition(
+                        PauseTransition reset = new PauseTransition(
                                 Duration.seconds(3));
                         reset.setOnFinished(ev -> statusLabel.setText(App.getBundle().getString("chat.status.ready")));
                         reset.play();

@@ -13,6 +13,8 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
+import javafx.scene.paint.Color;
+import com.org.ollamafx.manager.ConfigManager;
 
 import java.util.Optional;
 
@@ -82,10 +84,10 @@ public class FxDialog {
         });
 
         Scene scene = new Scene(content);
-        scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
+        scene.setFill(Color.TRANSPARENT);
         dialog.initStyle(StageStyle.TRANSPARENT);
 
-        String currentTheme = com.org.ollamafx.manager.ConfigManager.getInstance().getTheme();
+        String currentTheme = ConfigManager.getInstance().getTheme();
         if ("dark".equalsIgnoreCase(currentTheme)) {
             content.getStyleClass().add("dark");
         } else {
@@ -174,10 +176,10 @@ public class FxDialog {
         });
 
         Scene scene = new Scene(content);
-        scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
+        scene.setFill(Color.TRANSPARENT);
         dialog.initStyle(StageStyle.TRANSPARENT);
 
-        String currentTheme = com.org.ollamafx.manager.ConfigManager.getInstance().getTheme();
+        String currentTheme = ConfigManager.getInstance().getTheme();
         if ("dark".equalsIgnoreCase(currentTheme)) {
             content.getStyleClass().add("dark");
         } else {
