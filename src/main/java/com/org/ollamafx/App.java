@@ -226,6 +226,7 @@ public class App extends Application {
             }
         }
 
+        com.org.ollamafx.manager.RagManager.getInstance().shutdown();
         OllamaServiceManager.getInstance().stopOllama();
         ChatManager.getInstance().saveChats();
         super.stop();

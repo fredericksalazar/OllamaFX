@@ -30,6 +30,14 @@ dependencies {
 
     implementation 'org.kordamp.ikonli:ikonli-fontawesome5-pack:12.3.1'
 
+    // LangChain4j RAG Stack
+    def langchain4jVersion = '1.9.1'
+    def langchain4jCommunityVersion = '1.9.1-beta17'
+    implementation "dev.langchain4j:langchain4j:${langchain4jVersion}"
+    implementation "dev.langchain4j:langchain4j-ollama:${langchain4jVersion}"
+    implementation "dev.langchain4j:langchain4j-community-lucene:${langchain4jCommunityVersion}"
+    implementation "dev.langchain4j:langchain4j-document-parser-apache-pdfbox:${langchain4jCommunityVersion}"
+
     // Cross-platform natives for Shadow JAR
     runtimeOnly "org.openjfx:javafx-graphics:17.0.6:linux"
     runtimeOnly "org.openjfx:javafx-graphics:17.0.6:win"

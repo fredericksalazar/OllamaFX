@@ -76,6 +76,9 @@
         </VBox>
         
         <!-- Right: Detail Panel -->
-        <StackPane fx:id="detailViewContainer" HBox.hgrow="ALWAYS" style="-fx-background-color: -color-bg-subtle;" />
+        <ScrollPane fx:id="detailScrollPane" HBox.hgrow="ALWAYS" fitToWidth="true" hbarPolicy="NEVER"
+                    style="-fx-background-color: -color-bg-subtle; -fx-background: -color-bg-subtle; -fx-border-color: transparent;">
+            <StackPane fx:id="detailViewContainer" style="-fx-background-color: -color-bg-subtle;" />
+        </ScrollPane>
     </HBox>
 </VBox>

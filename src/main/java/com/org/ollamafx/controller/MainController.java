@@ -67,6 +67,8 @@ public class MainController implements Initializable {
     @FXML
     private Button btnLocal;
     @FXML
+    private Button btnKnowledgeBase;
+    @FXML
     private Button btnSettings;
     @FXML
     private Button btnAbout;
@@ -179,6 +181,9 @@ public class MainController implements Initializable {
         btnAvailable.setGraphic(sidebarIcon("M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z", 16));
         btnLocal.setGraphic(sidebarIcon(
                 "M21 16.5c0 .38-.21.71-.53.88l-7.9 4.44c-.16.12-.36.18-.57.18-.21 0-.41-.06-.57-.18l-7.9-4.44A.991.991 0 0 1 3 16.5v-9c0-.38.21-.71.53-.88l7.9-4.44c.16-.12.36-.18.57-.18.21 0 .41.06.57.18l7.9 4.44c.32.17.53.5.53.88v9zM12 4.15L6.04 7.5 12 10.85l5.96-3.35L12 4.15zM5 15.91l6 3.38v-6.71L5 9.21v6.7zM13 19.29l6-3.38v-6.7l-6 3.38v6.7z",
+                16));
+        btnKnowledgeBase.setGraphic(sidebarIcon(
+                "M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 6.5 22H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15z",
                 16));
         btnSettings.setGraphic(sidebarIcon(
                 "M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z",
@@ -425,6 +430,8 @@ public class MainController implements Initializable {
             btnAvailable.getStyleClass().remove("selected");
         if (btnLocal != null)
             btnLocal.getStyleClass().remove("selected");
+        if (btnKnowledgeBase != null)
+            btnKnowledgeBase.getStyleClass().remove("selected");
         if (btnSettings != null)
             btnSettings.getStyleClass().remove("selected");
         if (btnAbout != null)
@@ -446,6 +453,8 @@ public class MainController implements Initializable {
             btnAvailable.getStyleClass().remove("selected");
         if (btnLocal != null)
             btnLocal.getStyleClass().remove("selected");
+        if (btnKnowledgeBase != null)
+            btnKnowledgeBase.getStyleClass().remove("selected");
         if (btnSettings != null)
             btnSettings.getStyleClass().remove("selected");
         if (btnAbout != null)
@@ -531,6 +540,19 @@ public class MainController implements Initializable {
             loader.setResources(com.org.ollamafx.App.getBundle());
             Parent view = loader.load();
             centerContentPane.getChildren().setAll(view); // Update StackPane content
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    public void showKnowledgeBase() {
+        setActiveTool(btnKnowledgeBase);
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/rag_library_view.fxml"));
+            loader.setResources(com.org.ollamafx.App.getBundle());
+            Parent view = loader.load();
+            centerContentPane.getChildren().setAll(view);
         } catch (IOException e) {
             e.printStackTrace();
         }

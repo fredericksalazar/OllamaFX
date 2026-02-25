@@ -36,7 +36,9 @@ import atlantafx.base.controls.ProgressSliderSkin;
 import atlantafx.base.controls.RingProgressIndicator;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,14 +59,24 @@ import com.org.ollamafx.App;
 import com.org.ollamafx.manager.ChatManager;
 import com.org.ollamafx.manager.ModelManager;
 import com.org.ollamafx.manager.OllamaManager;
+import com.org.ollamafx.manager.RagManager;
 import com.org.ollamafx.model.ChatMessage;
 import com.org.ollamafx.model.ChatSession;
 import com.org.ollamafx.model.OllamaModel;
+import com.org.ollamafx.model.RagCollection;
+import com.org.ollamafx.model.RagResult;
 import com.org.ollamafx.ui.ImagePreviewStrip;
 import com.org.ollamafx.ui.MarkdownOutput;
 import com.org.ollamafx.util.ImageUtils;
 
 import io.github.ollama4j.models.generate.OllamaStreamHandler;
+import javafx.scene.control.ToggleButton;
+import org.kordamp.ikonli.javafx.FontIcon;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.CustomMenuItem;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.SeparatorMenuItem;
 
 public class ChatController {
 
@@ -73,6 +85,11 @@ public class ChatController {
     private final StringBuilder activeResponseBuffer = new StringBuilder();
     private long lastUiUpdate = 0;
     private static final long UI_UPDATE_INTERVAL_MS = 30; // ~30fps for text updates
+
+    // RAG collection selection
+    private final Set<String> selectedRagCollections = new HashSet<>();
+    @FXML
+    private HBox ragChipsBar;
 
     // Multimodal: Image preview strip
     private ImagePreviewStrip imagePreviewStrip;
@@ -104,6 +121,8 @@ public class ChatController {
     private VBox bottomInputContainer;
     @FXML
     private VBox inputCapsule;
+    @FXML
+    private ToggleButton ragToggle;
     @FXML
     private Label welcomeLabel;
 
@@ -145,6 +164,7 @@ public class ChatController {
         setupInputField();
         setupListeners();
         setupMultimedia();
+        setupRagToggle();
 
         updateUIState(true); // Initial state is welcome screen
     }
@@ -161,6 +181,136 @@ public class ChatController {
                 handleClipboardPaste(event);
             }
         });
+    }
+
+    private void setupRagToggle() {
+        if (ragToggle == null) return;
+
+        ragToggle.setOnAction(e -> {
+            if (ragToggle.isSelected()) {
+                showAddCollectionMenu(ragToggle, RagManager.getInstance().getCollections());
+            }
+        });
+
+        ragToggle.selectedProperty().addListener((obs, wasSelected, isSelected) -> {
+            if (ragChipsBar != null) {
+                ragChipsBar.setVisible(isSelected);
+                ragChipsBar.setManaged(isSelected);
+                if (isSelected) {
+                    buildRagChipsBar();
+                }
+            }
+        });
+    }
+
+    private HBox internalChipsContainer;
+    private Button internalAddBtn;
+
+    private void buildRagChipsBar() {
+        if (ragChipsBar == null) return;
+        
+        RagManager ragManager = RagManager.getInstance();
+        ragManager.initialize();
+        var allCollections = ragManager.getCollections();
+        
+        if (internalChipsContainer == null) {
+            ragChipsBar.getChildren().clear();
+            
+            Label prefixLabel = new Label(App.getBundle().getString("chat.ragContextLabel"));
+            prefixLabel.getStyleClass().add("rag-chip-label");
+            prefixLabel.setStyle("-fx-font-weight: bold;");
+            
+            internalChipsContainer = new HBox(4);
+            internalChipsContainer.setAlignment(Pos.CENTER_LEFT);
+            
+            internalAddBtn = new Button();
+            internalAddBtn.getStyleClass().add("rag-chip-add");
+            internalAddBtn.setGraphic(new FontIcon("fth-plus"));
+            internalAddBtn.setTooltip(new Tooltip(App.getBundle().getString("chat.ragAddCollection")));
+            internalAddBtn.setOnAction(e -> showAddCollectionMenu(internalAddBtn, RagManager.getInstance().getCollections()));
+            
+            ragChipsBar.getChildren().addAll(prefixLabel, internalChipsContainer, internalAddBtn);
+        }
+        
+        internalChipsContainer.getChildren().clear();
+        
+        // Filter valid selected collections
+        List<RagCollection> activeCollections = allCollections.stream()
+                .filter(c -> selectedRagCollections.contains(c.getId()))
+                .collect(Collectors.toList());
+                
+        if (activeCollections.isEmpty() || activeCollections.size() == allCollections.size()) {
+            // Implicitly "All Collections"
+            Label allLabel = new Label(App.getBundle().getString("rag.allCollections"));
+            allLabel.getStyleClass().addAll("rag-chip-label", "rag-chip");
+            internalChipsContainer.getChildren().add(allLabel);
+        } else {
+            // Add individual chips
+            for (RagCollection col : activeCollections) {
+                HBox chip = new HBox(4);
+                chip.setAlignment(Pos.CENTER_LEFT);
+                chip.getStyleClass().add("rag-chip");
+                
+                Label nameLabel = new Label(col.getName());
+                nameLabel.getStyleClass().add("rag-chip-label");
+                
+                Button removeBtn = new Button();
+                removeBtn.getStyleClass().add("rag-chip-remove");
+                removeBtn.setGraphic(new FontIcon("fth-x"));
+                removeBtn.setOnAction(e -> {
+                    selectedRagCollections.remove(col.getId());
+                    buildRagChipsBar();
+                });
+                
+                chip.getChildren().addAll(nameLabel, removeBtn);
+                internalChipsContainer.getChildren().add(chip);
+            }
+        }
+    }
+
+    private void showAddCollectionMenu(Node owner, ObservableList<RagCollection> collections) {
+        ContextMenu menu = new ContextMenu();
+        
+        MenuItem header = new MenuItem(App.getBundle().getString("rag.selectCollections"));
+        header.setDisable(true);
+        header.setStyle("-fx-opacity: 1; -fx-font-weight: bold;");
+        menu.getItems().add(header);
+        
+        menu.getItems().add(new SeparatorMenuItem());
+        
+        Map<String, CheckBox> cbMap = new HashMap<>();
+        
+        for (RagCollection col : collections) {
+            CheckBox cb = new CheckBox(col.getName());
+            CustomMenuItem item = new CustomMenuItem(cb);
+            item.setHideOnClick(false);
+            menu.getItems().add(item);
+            cbMap.put(col.getId(), cb);
+        }
+
+        Runnable syncUi = () -> {
+            for (RagCollection col : collections) {
+                cbMap.get(col.getId()).setSelected(selectedRagCollections.contains(col.getId()));
+            }
+        };
+
+        syncUi.run();
+
+        for (RagCollection col : collections) {
+            CheckBox cb = cbMap.get(col.getId());
+            cb.setOnAction(e -> {
+                if (cb.isSelected()) {
+                    selectedRagCollections.add(col.getId());
+                } else {
+                    selectedRagCollections.remove(col.getId());
+                }
+                
+                syncUi.run();
+                buildRagChipsBar();
+            });
+        }
+        
+        menu.show(owner, javafx.geometry.Side.TOP, 0, -4);
     }
 
     private void handleClipboardPaste(KeyEvent event) {
@@ -470,16 +620,41 @@ public class ChatController {
 
     private void handleGenerationTask(String modelName, String text, List<String> images, ChatMessage assistantMsg) {
         final ChatSession targetSession = currentSession;
+        final boolean ragEnabled = ragToggle != null && ragToggle.isSelected();
+        final Set<String> ragCollections = ragEnabled ? new HashSet<>(selectedRagCollections) : null;
 
         currentGenerationTask = App.getExecutorService().submit(() -> {
             try {
+                // RAG context retrieval (if enabled)
+                List<RagResult> ragResults = null;
+                if (ragEnabled && (images == null || images.isEmpty())) {
+                    Platform.runLater(() -> {
+                        if (statusLabel != null) {
+                            statusLabel.setText(App.getBundle().getString("chat.status.searchingDocs"));
+                        }
+                    });
+                    RagManager ragManager = RagManager.getInstance();
+                    ragManager.initialize();
+                    ragResults = ragManager.queryContext(text, 5, ragCollections);
+                }
+
                 StringBuilder responseBuilder = new StringBuilder();
                 Map<String, Object> options = collectGenerationOptions();
 
                 String systemPrompt = targetSession != null ? targetSession.getSystemPrompt()
                         : systemPromptField.getText();
 
-                OllamaManager.getInstance().askModelStream(modelName, text, images, options,
+                // If RAG returned results, build augmented prompt
+                final String effectivePrompt;
+                if (ragResults != null && !ragResults.isEmpty()) {
+                    effectivePrompt = RagManager.getInstance().buildAugmentedPrompt(text, ragResults);
+                } else {
+                    effectivePrompt = text;
+                }
+
+                final List<RagResult> finalRagResults = ragResults;
+
+                OllamaManager.getInstance().askModelStream(modelName, effectivePrompt, images, options,
                         systemPrompt,
                         new OllamaStreamHandler() {
                             @Override
@@ -510,6 +685,10 @@ public class ChatController {
                     String fullResponse = responseBuilder.toString();
                     if (currentSession == targetSession) {
                         updateLastMessage(fullResponse);
+                        // Add source citations if RAG was used
+                        if (finalRagResults != null && !finalRagResults.isEmpty()) {
+                            addSourceCitations(finalRagResults);
+                        }
                     }
                     assistantMsg.setContent(fullResponse);
                     if (targetSession != null) {
@@ -928,6 +1107,50 @@ public class ChatController {
 
         footer.getChildren().add(copyBtn);
         contentWrapper.getChildren().addAll(markdownOutput, footer);
+    }
+
+    /**
+     * Add clickable source citation pills below the last assistant message.
+     */
+    private void addSourceCitations(List<RagResult> results) {
+        if (results == null || results.isEmpty()) return;
+
+        HBox sourcesRow = new HBox(6);
+        sourcesRow.setAlignment(Pos.CENTER_LEFT);
+        sourcesRow.setPadding(new Insets(5, 20, 5, 20));
+
+        Label sourcesLabel = new Label(App.getBundle().getString("chat.rag.sources"));
+        sourcesLabel.getStyleClass().add("rag-doc-status");
+        sourcesRow.getChildren().add(sourcesLabel);
+
+        // Deduplicate by file name
+        results.stream()
+                .map(RagResult::getFileName)
+                .distinct()
+                .forEach(fileName -> {
+                    Label pill = new Label(fileName);
+                    pill.getStyleClass().add("rag-source-pill");
+                    pill.setOnMouseClicked(e -> {
+                        try {
+                            // Try to find the file path from RagManager's documents
+                            RagManager.getInstance().getDocuments().stream()
+                                    .filter(d -> d.getFileName().equals(fileName))
+                                    .findFirst()
+                                    .ifPresent(doc -> {
+                                        try {
+                                            java.awt.Desktop.getDesktop().open(new File(doc.getFilePath()));
+                                        } catch (Exception ex) {
+                                            LOGGER.warning("Could not open file: " + ex.getMessage());
+                                        }
+                                    });
+                        } catch (Exception ex) {
+                            LOGGER.warning("Could not open source file: " + ex.getMessage());
+                        }
+                    });
+                    sourcesRow.getChildren().add(pill);
+                });
+
+        messagesContainer.getChildren().add(sourcesRow);
     }
 
     @FXML

@@ -21,13 +21,13 @@
         <BorderPane>
            <center>
               <!-- VBox wrapper to stack Chat Area (Top) and Input Area (Bottom) in the Center Column -->
-              <VBox spacing="0"> 
+              <VBox spacing="0" minHeight="0.0"> 
                   <children>
-                      <javafx.scene.layout.StackPane VBox.vgrow="ALWAYS" styleClass="stack-pane-content">
+                      <javafx.scene.layout.StackPane VBox.vgrow="ALWAYS" styleClass="stack-pane-content" minHeight="0.0">
                          <children>
-                             <ScrollPane fx:id="scrollPane" fitToWidth="true" hbarPolicy="NEVER" styleClass="chat-scroll-pane">
+                             <ScrollPane fx:id="scrollPane" fitToWidth="true" hbarPolicy="NEVER" styleClass="chat-scroll-pane" minHeight="0.0">
                                  <content>
-                                    <VBox fx:id="messagesContainer" spacing="15.0" styleClass="chat-area">
+                                    <VBox fx:id="messagesContainer" spacing="15.0" styleClass="chat-area" minHeight="0.0">
                                        <padding>
                                           <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
                                        </padding>
@@ -51,74 +51,91 @@
                              </VBox>
                          </children>
                       </javafx.scene.layout.StackPane>
-        
-                      <!-- Input Container (Formerly in Bottom) -->
-                      <VBox fx:id="bottomInputContainer" styleClass="input-container-wrapper" alignment="BOTTOM_CENTER">
-                         <children>
-                            <!-- Floating Input Card (Big VBox) -->
-                            <VBox fx:id="inputCapsule" styleClass="input-card" maxWidth="800.0" spacing="10.0">
-                               <children>
-                                  <!-- Top Row: Input Text -->
-                                  <TextArea fx:id="inputField" maxHeight="200.0" minHeight="50.0" prefHeight="50.0" prefRowCount="2" 
-                                            promptText="%chat.inputPrompt" wrapText="true" VBox.vgrow="ALWAYS" styleClass="transparent-area"/>
+                      
+                      <!-- Input Container (Fixed in the Center Column) -->
+                      <VBox fx:id="bottomInputContainer" styleClass="input-container-wrapper" alignment="BOTTOM_CENTER" VBox.vgrow="NEVER">
+                 <children>
+                    <!-- Floating Input Card (Big VBox) -->
+                    <VBox fx:id="inputCapsule" styleClass="input-card" maxWidth="800.0" spacing="10.0">
+                       <children>
+                          <!-- RAG Chips Bar (Hidden by default) -->
+                          <HBox fx:id="ragChipsBar" alignment="CENTER_LEFT" spacing="8.0" visible="false" managed="false" styleClass="rag-chips-bar">
+                              <padding>
+                                  <Insets bottom="0.0" left="0.0" right="0.0" top="0.0"/>
+                              </padding>
+                              <!-- Chips will be added dynamically by the controller -->
+                          </HBox>
+                       
+                          <!-- Top Row: Input Text -->
+                          <TextArea fx:id="inputField" maxHeight="200.0" minHeight="50.0" prefHeight="50.0" prefRowCount="2" 
+                                    promptText="%chat.inputPrompt" wrapText="true" VBox.vgrow="ALWAYS" styleClass="transparent-area"/>
+                          
+                          <!-- Bottom Row: Tools & Actions -->
+                          <HBox alignment="CENTER_LEFT" spacing="15.0">
+                              <children>
+                                  <Button fx:id="attachButton" onAction="#onAttachClicked" styleClass="attach-button-icon">
+                                      <graphic>
+                                          <FontIcon iconLiteral="fth-paperclip" iconSize="16" styleClass="font-icon" />
+                                      </graphic>
+                                      <tooltip>
+                                          <javafx.scene.control.Tooltip text="%chat.attachTooltip" />
+                                      </tooltip>
+                                  </Button>
+
+                                  <Button fx:id="exportMdButton" onAction="#onExportMdClicked" styleClass="attach-button-icon">
+                                      <graphic>
+                                          <FontIcon iconLiteral="fth-download" iconSize="16" styleClass="font-icon" />
+                                      </graphic>
+                                      <tooltip>
+                                          <javafx.scene.control.Tooltip text="%chat.exportTooltip" />
+                                      </tooltip>
+                                  </Button>
+
+                                  <javafx.scene.control.ToggleButton fx:id="ragToggle" styleClass="attach-button-icon">
+                                      <graphic>
+                                          <FontIcon iconLiteral="fth-book-open" iconSize="16" styleClass="font-icon" />
+                                      </graphic>
+                                      <tooltip>
+                                          <javafx.scene.control.Tooltip text="%chat.ragToggleTooltip" />
+                                      </tooltip>
+                                  </javafx.scene.control.ToggleButton>
+
+                                  <Region HBox.hgrow="ALWAYS" />
+
+                                  <javafx.scene.control.ComboBox fx:id="modelSelector" promptText="%chat.selectModel" styleClass="capsule-combo-box" prefWidth="150.0" />
                                   
-                                  <!-- Bottom Row: Tools & Actions -->
-                                  <HBox alignment="CENTER_LEFT" spacing="15.0">
-                                      <children>
-                                          <Button fx:id="attachButton" onAction="#onAttachClicked" styleClass="attach-button-icon">
-                                              <graphic>
-                                                  <FontIcon iconLiteral="fth-paperclip" iconSize="16" styleClass="font-icon" />
-                                              </graphic>
-                                              <tooltip>
-                                                  <javafx.scene.control.Tooltip text="%chat.attachTooltip" />
-                                              </tooltip>
-                                          </Button>
-
-                                          <Button fx:id="exportMdButton" onAction="#onExportMdClicked" styleClass="attach-button-icon">
-                                              <graphic>
-                                                  <FontIcon iconLiteral="fth-download" iconSize="16" styleClass="font-icon" />
-                                              </graphic>
-                                              <tooltip>
-                                                  <javafx.scene.control.Tooltip text="%chat.exportTooltip" />
-                                              </tooltip>
-                                          </Button>
-
-                                          <Region HBox.hgrow="ALWAYS" />
-
-                                          <javafx.scene.control.ComboBox fx:id="modelSelector" promptText="%chat.selectModel" styleClass="capsule-combo-box" prefWidth="150.0" />
-                                          
-                                          <!-- Sidebar Toggle Removed from Here -->
-                                          <javafx.scene.layout.StackPane alignment="CENTER_RIGHT">
-                                              <Button fx:id="sendButton" onAction="#sendMessage" styleClass="send-button-icon">
-                                                  <graphic>
-                                                      <FontIcon iconLiteral="fth-send" iconSize="16" styleClass="font-icon" />
-                                                  </graphic>
-                                                  <tooltip>
-                                                      <javafx.scene.control.Tooltip text="%chat.sendHint" />
-                                                  </tooltip>
-                                              </Button>
-                                              <Button fx:id="cancelButton" onAction="#onCancelClicked" styleClass="send-button-icon" visible="false" managed="false" style="-fx-background-color: #ff4444;">
-                                                  <graphic>
-                                                      <FontIcon iconLiteral="fth-square" iconSize="16" styleClass="font-icon" />
-                                                  </graphic>
-                                              </Button>
-                                          </javafx.scene.layout.StackPane>
-                                      </children>
-                                  </HBox>
-                               </children>
-                               <padding>
-                                  <Insets bottom="15.0" left="20.0" right="15.0" top="15.0" />
-                               </padding>
-                            </VBox>
-                         </children>
-                         <padding>
-                            <Insets bottom="20.0" left="20.0" right="20.0" top="10.0" />
-                         </padding>
-                      </VBox>
-                  </children>
+                                  <!-- Sidebar Toggle Removed from Here -->
+                                  <javafx.scene.layout.StackPane alignment="CENTER_RIGHT">
+                                      <Button fx:id="sendButton" onAction="#sendMessage" styleClass="send-button-icon">
+                                          <graphic>
+                                              <FontIcon iconLiteral="fth-send" iconSize="16" styleClass="font-icon" />
+                                          </graphic>
+                                          <tooltip>
+                                              <javafx.scene.control.Tooltip text="%chat.sendHint" />
+                                          </tooltip>
+                                      </Button>
+                                      <Button fx:id="cancelButton" onAction="#onCancelClicked" styleClass="send-button-icon" visible="false" managed="false" style="-fx-background-color: #ff4444;">
+                                          <graphic>
+                                              <FontIcon iconLiteral="fth-square" iconSize="16" styleClass="font-icon" />
+                                          </graphic>
+                                      </Button>
+                                  </javafx.scene.layout.StackPane>
+                              </children>
+                          </HBox>
+                       </children>
+                       <padding>
+                          <Insets bottom="15.0" left="20.0" right="15.0" top="15.0" />
+                       </padding>
+                    </VBox>
+                 </children>
+                 <padding>
+                    <Insets bottom="20.0" left="20.0" right="20.0" top="10.0" />
+                 </padding>
               </VBox>
-           </center>
-           <right>
+          </children>
+       </VBox>
+    </center>
+    <right>
                 <VBox fx:id="rightSidebar" prefWidth="280.0" styleClass="chat-sidebar-right" BorderPane.alignment="CENTER">
                     <children>
 

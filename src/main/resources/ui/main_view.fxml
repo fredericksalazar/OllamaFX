@@ -77,6 +77,14 @@
                             <Insets left="20.0" top="10.0" bottom="10.0"/>
                         </padding>
                     </Button>
+                    <Button fx:id="btnKnowledgeBase" alignment="BASELINE_LEFT" contentDisplay="LEFT" graphicTextGap="10" maxWidth="Infinity" mnemonicParsing="false" onAction="#showKnowledgeBase" styleClass="button" text="%sidebar.knowledgeBase">
+                        <tooltip>
+                            <javafx.scene.control.Tooltip text="%sidebar.knowledgeBase" />
+                        </tooltip>
+                        <padding>
+                            <Insets left="20.0" top="10.0" bottom="10.0"/>
+                        </padding>
+                    </Button>
                     
                     <Button fx:id="btnAvailable" alignment="BASELINE_LEFT" contentDisplay="LEFT" graphicTextGap="10" maxWidth="Infinity" mnemonicParsing="false" onAction="#showAvailableModels" styleClass="button" text="%sidebar.availableModels">
                         <tooltip>
