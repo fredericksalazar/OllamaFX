@@ -2,18 +2,19 @@ package com.org.ollamafx.ui;
 
 import com.org.ollamafx.manager.TrashManager;
 import com.org.ollamafx.model.TrashItem;
-import com.org.ollamafx.ui.FxDialog;
 import javafx.collections.ListChangeListener;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ResourceBundle;
+import com.org.ollamafx.App;
+import javafx.scene.Node;
 
 /**
  * Vista de la Papelera de Reciclaje.
@@ -27,7 +28,7 @@ public class TrashView extends VBox {
     private ResourceBundle bundle;
 
     public TrashView() {
-        bundle = com.org.ollamafx.App.getBundle();
+        bundle = App.getBundle();
         buildUI();
         bindData();
     }
@@ -197,7 +198,7 @@ public class TrashView extends VBox {
             // Formatear fecha y días restantes
             try {
                 LocalDateTime deletedDate = LocalDateTime.parse(item.getDeletedAt());
-                long daysInTrash = java.time.temporal.ChronoUnit.DAYS.between(deletedDate, LocalDateTime.now());
+                long daysInTrash = ChronoUnit.DAYS.between(deletedDate, LocalDateTime.now());
                 long daysLeft = 30 - daysInTrash;
 
                 String dateText = deletedDate.format(DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm"));
@@ -225,7 +226,7 @@ public class TrashView extends VBox {
             setGraphic(root);
         }
 
-        private javafx.scene.Node svgIcon(String path, double size, String color) {
+        private Node svgIcon(String path, double size, String color) {
             SVGPath svg = new SVGPath();
             svg.setContent(path);
             svg.setStyle("-fx-fill: " + color + "; -fx-stroke: transparent;");
