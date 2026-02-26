@@ -1,15 +1,17 @@
 package com.org.ollamafx.model;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import java.time.LocalDateTime;
-import java.util.UUID;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.ArrayList;
-import java.util.List;
 
 public class ChatSession {
     private UUID id; // Not final for Jackson
@@ -128,6 +130,7 @@ public class ChatSession {
     private int numCtx = 4096;
     private int topK = 40;
     private double topP = 0.9;
+    private List<String> ragCollectionIds = new ArrayList<>();
 
     @JsonProperty("seed")
     public int getSeed() {
@@ -163,6 +166,15 @@ public class ChatSession {
 
     public void setTopP(double topP) {
         this.topP = topP;
+    }
+
+    @JsonProperty("ragCollectionIds")
+    public List<String> getRagCollectionIds() {
+        return ragCollectionIds;
+    }
+
+    public void setRagCollectionIds(List<String> ragCollectionIds) {
+        this.ragCollectionIds = ragCollectionIds != null ? ragCollectionIds : new ArrayList<>();
     }
 
     @Override

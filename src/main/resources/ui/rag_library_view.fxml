@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.org.ollamafx.controller.RagLibraryController"
+      spacing="0" styleClass="rag-container">
+
+    <!-- WARNING BANNER (Hidden by default) -->
+    <HBox fx:id="warningBanner" alignment="CENTER_LEFT" spacing="10" styleClass="rag-warning-banner"
+          visible="false" managed="false">
+        <padding>
+            <Insets top="10" right="20" bottom="10" left="20"/>
+        </padding>
+        <FontIcon iconLiteral="fth-alert-triangle" iconSize="14" styleClass="font-icon"/>
+        <Label fx:id="warningLabel" text="%rag.embedding.missing" wrapText="true"
+               styleClass="rag-warning-text" HBox.hgrow="ALWAYS"/>
+    </HBox>
+
+    <!-- MAIN CONTENT: Collections Sidebar + Documents -->
+    <HBox VBox.vgrow="ALWAYS" spacing="0">
+
+        <!-- Collections Sidebar -->
+        <VBox prefWidth="200" minWidth="180" maxWidth="220" styleClass="rag-collections-sidebar">
+            <HBox alignment="CENTER_LEFT" spacing="8" styleClass="rag-collections-header">
+                <padding>
+                    <Insets top="10" right="12" bottom="10" left="16"/>
+                </padding>
+                <Label text="%rag.collections" styleClass="rag-collections-title"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button fx:id="newCollectionButton" onAction="#onNewCollection" styleClass="button-icon-small">
+                    <graphic>
+                        <FontIcon iconLiteral="fth-plus" iconSize="14" styleClass="font-icon"/>
+                    </graphic>
+                    <tooltip>
+                        <javafx.scene.control.Tooltip text="%rag.newCollection"/>
+                    </tooltip>
+                </Button>
+            </HBox>
+            <ListView fx:id="collectionListView" VBox.vgrow="ALWAYS" styleClass="rag-collection-list"/>
+        </VBox>
+
+        <!-- Documents Panel -->
+        <VBox HBox.hgrow="ALWAYS" spacing="0" styleClass="rag-documents-panel">
+            <!-- Doc Panel Header -->
+            <HBox alignment="CENTER_LEFT" spacing="10" styleClass="rag-doc-panel-header">
+                <padding>
+                    <Insets top="10" right="16" bottom="10" left="16"/>
+                </padding>
+                <Label fx:id="collectionNameLabel" text="" styleClass="rag-collection-name-label"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="statsLabel" text="" styleClass="rag-footer-label"/>
+                <Button fx:id="addFilesButton" onAction="#onAddFiles" styleClass="button-icon-small">
+                    <graphic>
+                        <FontIcon iconLiteral="fth-plus" iconSize="14" styleClass="font-icon"/>
+                    </graphic>
+                    <tooltip>
+                        <javafx.scene.control.Tooltip text="%rag.addFiles"/>
+                    </tooltip>
+                </Button>
+            </HBox>
+
+            <!-- Drop Zone / Document List -->
+            <StackPane VBox.vgrow="ALWAYS">
+                <!-- Empty State / Drop Zone (clickable) -->
+                <VBox fx:id="dropZone" alignment="CENTER" spacing="15" styleClass="rag-drop-zone"
+                      onMouseClicked="#onDropZoneClicked">
+                    <FontIcon iconLiteral="fth-upload-cloud" iconSize="40" styleClass="rag-drop-icon"/>
+                    <Label text="%rag.dropHint" styleClass="rag-drop-label"/>
+                    <Label text="%rag.dropClickHint" styleClass="rag-drop-sublabel"/>
+                </VBox>
+
+                <!-- Document List -->
+                <ListView fx:id="documentListView" styleClass="rag-doc-list"/>
+            </StackPane>
+        </VBox>
+    </HBox>
+</VBox>
