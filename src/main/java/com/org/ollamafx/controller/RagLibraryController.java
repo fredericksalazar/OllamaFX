@@ -351,7 +351,6 @@ public class RagLibraryController {
         DocumentCell() {
             container = new HBox(10);
             container.setAlignment(Pos.CENTER_LEFT);
-            container.setPadding(new Insets(8, 12, 8, 12));
             container.getStyleClass().add("rag-doc-cell");
 
             fileIcon = new FontIcon();

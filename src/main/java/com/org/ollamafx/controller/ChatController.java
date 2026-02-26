@@ -70,7 +70,10 @@ import com.org.ollamafx.ui.MarkdownOutput;
 import com.org.ollamafx.util.ImageUtils;
 
 import io.github.ollama4j.models.generate.OllamaStreamHandler;
-import javafx.scene.control.ToggleButton;
+import com.org.ollamafx.manager.ChatCollectionManager;
+import com.org.ollamafx.model.ChatFolder;
+import com.org.ollamafx.model.RagDocumentItem;
+import java.util.ArrayList;
 import org.kordamp.ikonli.javafx.FontIcon;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
@@ -89,7 +92,7 @@ public class ChatController {
     // RAG collection selection
     private final Set<String> selectedRagCollections = new HashSet<>();
     @FXML
-    private HBox ragChipsBar;
+    private HBox ragChipsContainer;
 
     // Multimodal: Image preview strip
     private ImagePreviewStrip imagePreviewStrip;
@@ -121,8 +124,7 @@ public class ChatController {
     private VBox bottomInputContainer;
     @FXML
     private VBox inputCapsule;
-    @FXML
-    private ToggleButton ragToggle;
+
     @FXML
     private Label welcomeLabel;
 
@@ -164,7 +166,7 @@ public class ChatController {
         setupInputField();
         setupListeners();
         setupMultimedia();
-        setupRagToggle();
+        buildRagChips();
 
         updateUIState(true); // Initial state is welcome screen
     }
@@ -183,89 +185,67 @@ public class ChatController {
         });
     }
 
-    private void setupRagToggle() {
-        if (ragToggle == null) return;
-
-        ragToggle.setOnAction(e -> {
-            if (ragToggle.isSelected()) {
-                showAddCollectionMenu(ragToggle, RagManager.getInstance().getCollections());
-            }
-        });
-
-        ragToggle.selectedProperty().addListener((obs, wasSelected, isSelected) -> {
-            if (ragChipsBar != null) {
-                ragChipsBar.setVisible(isSelected);
-                ragChipsBar.setManaged(isSelected);
-                if (isSelected) {
-                    buildRagChipsBar();
-                }
-            }
-        });
+    /** Persist selected RAG collections to the current session. */
+    private void saveRagStateToSession() {
+        if (currentSession != null) {
+            currentSession.setRagCollectionIds(new ArrayList<>(selectedRagCollections));
+        }
     }
 
-    private HBox internalChipsContainer;
-    private Button internalAddBtn;
+    private void buildRagChips() {
+        if (ragChipsContainer == null) return;
 
-    private void buildRagChipsBar() {
-        if (ragChipsBar == null) return;
-        
+        ragChipsContainer.getChildren().clear();
+        ragChipsContainer.setVisible(true);
+        ragChipsContainer.setManaged(true);
+
         RagManager ragManager = RagManager.getInstance();
         ragManager.initialize();
         var allCollections = ragManager.getCollections();
-        
-        if (internalChipsContainer == null) {
-            ragChipsBar.getChildren().clear();
-            
-            Label prefixLabel = new Label(App.getBundle().getString("chat.ragContextLabel"));
-            prefixLabel.getStyleClass().add("rag-chip-label");
-            prefixLabel.setStyle("-fx-font-weight: bold;");
-            
-            internalChipsContainer = new HBox(4);
-            internalChipsContainer.setAlignment(Pos.CENTER_LEFT);
-            
-            internalAddBtn = new Button();
-            internalAddBtn.getStyleClass().add("rag-chip-add");
-            internalAddBtn.setGraphic(new FontIcon("fth-plus"));
-            internalAddBtn.setTooltip(new Tooltip(App.getBundle().getString("chat.ragAddCollection")));
-            internalAddBtn.setOnAction(e -> showAddCollectionMenu(internalAddBtn, RagManager.getInstance().getCollections()));
-            
-            ragChipsBar.getChildren().addAll(prefixLabel, internalChipsContainer, internalAddBtn);
-        }
-        
-        internalChipsContainer.getChildren().clear();
-        
+
+        // Always show book icon prefix (indicates knowledge base)
+        FontIcon prefixIcon = new FontIcon("fth-book-open");
+        prefixIcon.setIconSize(13);
+        prefixIcon.getStyleClass().add("rag-chip-prefix");
+        ragChipsContainer.getChildren().add(prefixIcon);
+
         // Filter valid selected collections
         List<RagCollection> activeCollections = allCollections.stream()
                 .filter(c -> selectedRagCollections.contains(c.getId()))
                 .collect(Collectors.toList());
-                
-        if (activeCollections.isEmpty() || activeCollections.size() == allCollections.size()) {
-            // Implicitly "All Collections"
-            Label allLabel = new Label(App.getBundle().getString("rag.allCollections"));
-            allLabel.getStyleClass().addAll("rag-chip-label", "rag-chip");
-            internalChipsContainer.getChildren().add(allLabel);
-        } else {
-            // Add individual chips
+
+        if (!activeCollections.isEmpty()) {
             for (RagCollection col : activeCollections) {
-                HBox chip = new HBox(4);
+                HBox chip = new HBox(3);
                 chip.setAlignment(Pos.CENTER_LEFT);
-                chip.getStyleClass().add("rag-chip");
-                
+                chip.getStyleClass().add("rag-chip-inline");
+
                 Label nameLabel = new Label(col.getName());
                 nameLabel.getStyleClass().add("rag-chip-label");
-                
+
                 Button removeBtn = new Button();
                 removeBtn.getStyleClass().add("rag-chip-remove");
                 removeBtn.setGraphic(new FontIcon("fth-x"));
                 removeBtn.setOnAction(e -> {
                     selectedRagCollections.remove(col.getId());
-                    buildRagChipsBar();
+                    saveRagStateToSession();
+                    buildRagChips();
                 });
-                
+
                 chip.getChildren().addAll(nameLabel, removeBtn);
-                internalChipsContainer.getChildren().add(chip);
+                ragChipsContainer.getChildren().add(chip);
             }
         }
+
+        // "+" button is ALWAYS visible so users can add RAG collections from any chat
+        Button addBtn = new Button();
+        addBtn.getStyleClass().add("rag-chip-add");
+        FontIcon plusIcon = new FontIcon("fth-plus");
+        plusIcon.setIconSize(12);
+        addBtn.setGraphic(plusIcon);
+        addBtn.setTooltip(new Tooltip(App.getBundle().getString("chat.ragAddCollection")));
+        addBtn.setOnAction(e -> showAddCollectionMenu(addBtn, RagManager.getInstance().getCollections()));
+        ragChipsContainer.getChildren().add(addBtn);
     }
 
     private void showAddCollectionMenu(Node owner, ObservableList<RagCollection> collections) {
@@ -304,9 +284,9 @@ public class ChatController {
                 } else {
                     selectedRagCollections.remove(col.getId());
                 }
-                
+                saveRagStateToSession();
                 syncUi.run();
-                buildRagChipsBar();
+                buildRagChips();
             });
         }
         
@@ -391,7 +371,7 @@ public class ChatController {
                     && !welcomeContainer.getChildren().contains(inputCapsule)) {
                 if (bottomInputContainer != null)
                     bottomInputContainer.getChildren().remove(inputCapsule);
-                welcomeContainer.getChildren().add(inputCapsule); // Add to end
+                welcomeContainer.getChildren().add(inputCapsule);
             }
 
             if (inputCapsule != null) {
@@ -533,6 +513,13 @@ public class ChatController {
             // Restore System Prompt
             systemPromptField.setText(session.getSystemPrompt() != null ? session.getSystemPrompt() : "");
 
+            // Restore RAG collections
+            selectedRagCollections.clear();
+            if (session.getRagCollectionIds() != null) {
+                selectedRagCollections.addAll(session.getRagCollectionIds());
+            }
+            buildRagChips();
+
             // Cleanup any empty assistant messages (from errors or cancellations) before
             // rendering
             session.getMessages().removeIf(msg -> "assistant".equals(msg.getRole())
@@ -620,7 +607,7 @@ public class ChatController {
 
     private void handleGenerationTask(String modelName, String text, List<String> images, ChatMessage assistantMsg) {
         final ChatSession targetSession = currentSession;
-        final boolean ragEnabled = ragToggle != null && ragToggle.isSelected();
+        final boolean ragEnabled = !selectedRagCollections.isEmpty();
         final Set<String> ragCollections = ragEnabled ? new HashSet<>(selectedRagCollections) : null;
 
         currentGenerationTask = App.getExecutorService().submit(() -> {
@@ -1299,21 +1286,65 @@ public class ChatController {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle(App.getBundle().getString("chat.attachTitle"));
 
-        // Add filters for valid image types
-        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg",
-                "*.jpeg", "*.webp");
-        fileChooser.getExtensionFilters().add(extFilter);
+        // Add filters: images + documents
+        FileChooser.ExtensionFilter allFilter = new FileChooser.ExtensionFilter(
+                "All Supported", "*.png", "*.jpg", "*.jpeg", "*.webp", "*.pdf", "*.txt", "*.md");
+        FileChooser.ExtensionFilter imgFilter = new FileChooser.ExtensionFilter(
+                "Image Files", "*.png", "*.jpg", "*.jpeg", "*.webp");
+        FileChooser.ExtensionFilter docFilter = new FileChooser.ExtensionFilter(
+                "Documents", "*.pdf", "*.txt", "*.md");
+        fileChooser.getExtensionFilters().addAll(allFilter, imgFilter, docFilter);
 
-        // Allow multiple file selection
         List<File> selectedFiles = fileChooser.showOpenMultipleDialog(attachButton.getScene().getWindow());
 
         if (selectedFiles != null && !selectedFiles.isEmpty()) {
             for (File file : selectedFiles) {
+                String name = file.getName().toLowerCase();
                 if (ImageUtils.isValidImageFile(file)) {
                     imagePreviewStrip.addImage(file);
+                } else if (name.endsWith(".pdf") || name.endsWith(".txt") || name.endsWith(".md")) {
+                    indexDocumentToRag(file);
                 }
             }
         }
+    }
+
+    /**
+     * Index a document file into the RAG collection mapped to the chat's folder.
+     * If the chat is inside a folder, use/create a RAG collection named after that folder.
+     * If the chat is at root level, use/create a "General" collection.
+     */
+    private void indexDocumentToRag(File file) {
+        if (currentSession == null) return;
+
+        // Determine target collection name from chat's folder
+        String collectionName = "General";
+        ChatCollectionManager ccm = ChatCollectionManager.getInstance();
+        ChatFolder folder = ccm.getFolderForChat(currentSession);
+        if (folder != null && folder.getName() != null && !folder.getName().isBlank()) {
+            collectionName = folder.getName();
+        }
+
+        // Find or create RAG collection
+        RagManager ragManager = RagManager.getInstance();
+        ragManager.initialize();
+        final String targetName = collectionName;
+        RagCollection collection = ragManager.getCollections().stream()
+                .filter(c -> c.getName().equalsIgnoreCase(targetName))
+                .findFirst()
+                .orElseGet(() -> ragManager.createCollection(targetName));
+
+        // Create document item and index
+        RagDocumentItem docItem = new RagDocumentItem(file.getName(), file.getAbsolutePath(), collection.getId());
+        ragManager.getDocuments().add(docItem); // <-- ADDED: Also add to the UI list
+        ragManager.indexDocument(file, docItem);
+
+        // Add to selected collections and update UI
+        selectedRagCollections.add(collection.getId());
+        saveRagStateToSession();
+        buildRagChips();
+
+        LOGGER.info("Attached document '" + file.getName() + "' to RAG collection '" + targetName + "'");
     }
 
     private void updateVisionWarning() {

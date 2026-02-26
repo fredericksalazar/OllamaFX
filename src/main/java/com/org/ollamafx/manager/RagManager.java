@@ -110,7 +110,6 @@ public class RagManager {
             embeddingStore = LuceneEmbeddingStore.builder()
                     .directory(org.apache.lucene.store.FSDirectory.open(vectorPath))
                     .build();
-
             // Load previously indexed documents from metadata
             loadExistingDocuments();
 
@@ -292,6 +291,8 @@ public class RagManager {
 
     /**
      * Build the augmented prompt using retrieved context and the RAG template.
+     * The prompt is locale-aware: it instructs the model to respond in the
+     * application's configured language.
      */
     public String buildAugmentedPrompt(String userMessage, List<RagResult> results) {
         if (results.isEmpty()) {
@@ -308,9 +309,15 @@ public class RagManager {
             context.append(r.getContent()).append("\n\n");
         }
 
-        String augmentedPrompt = "Answer the following question using ONLY the context provided below.\n" +
-                "If the context is in a different language than the question, translate your answer " +
-                "to match the question's language.\n\n" +
+        // Detect app language for explicit response-language directive
+        String lang = ConfigManager.getInstance().getLanguage();
+        String langName = "es".equals(lang) ? "español" : "English";
+
+        String augmentedPrompt =
+                "You MUST respond entirely in " + langName + ".\n" +
+                "Use ONLY the provided context to answer.\n" +
+                "If the context does not contain relevant information, say so clearly.\n" +
+                "Do NOT use information outside the context.\n\n" +
                 "CONTEXT:\n" + context.toString().trim() + "\n\n" +
                 "QUESTION: " + userMessage;
 

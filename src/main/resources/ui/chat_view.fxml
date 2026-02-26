@@ -51,22 +51,20 @@
                              </VBox>
                          </children>
                       </javafx.scene.layout.StackPane>
-                      
-                      <!-- Input Container (Fixed in the Center Column) -->
-                      <VBox fx:id="bottomInputContainer" styleClass="input-container-wrapper" alignment="BOTTOM_CENTER" VBox.vgrow="NEVER">
+                                            <!-- Input Container (Fixed in the Center Column) -->
+                       <VBox fx:id="bottomInputContainer" styleClass="input-container-wrapper" alignment="BOTTOM_CENTER" VBox.vgrow="NEVER">
                  <children>
-                    <!-- Floating Input Card (Big VBox) -->
+
+                    <!-- Floating Input Card (Big VBox) — RAG chips are INSIDE -->
                     <VBox fx:id="inputCapsule" styleClass="input-card" maxWidth="800.0" spacing="10.0">
                        <children>
-                          <!-- RAG Chips Bar (Hidden by default) -->
-                          <HBox fx:id="ragChipsBar" alignment="CENTER_LEFT" spacing="8.0" visible="false" managed="false" styleClass="rag-chips-bar">
-                              <padding>
-                                  <Insets bottom="0.0" left="0.0" right="0.0" top="0.0"/>
-                              </padding>
-                              <!-- Chips will be added dynamically by the controller -->
-                          </HBox>
-                       
-                          <!-- Top Row: Input Text -->
+                       <!-- RAG Chips (always part of the input card) -->
+                       <HBox fx:id="ragChipsContainer" alignment="CENTER" spacing="6.0" visible="true" managed="true" styleClass="rag-chips-floating" maxWidth="800.0">
+                           <padding>
+                               <Insets bottom="2.0" left="4.0" right="4.0" top="4.0"/>
+                           </padding>
+                       </HBox>
+                       <!-- Top Row: Input Text -->
                           <TextArea fx:id="inputField" maxHeight="200.0" minHeight="50.0" prefHeight="50.0" prefRowCount="2" 
                                     promptText="%chat.inputPrompt" wrapText="true" VBox.vgrow="ALWAYS" styleClass="transparent-area"/>
                           
@@ -91,14 +89,7 @@
                                       </tooltip>
                                   </Button>
 
-                                  <javafx.scene.control.ToggleButton fx:id="ragToggle" styleClass="attach-button-icon">
-                                      <graphic>
-                                          <FontIcon iconLiteral="fth-book-open" iconSize="16" styleClass="font-icon" />
-                                      </graphic>
-                                      <tooltip>
-                                          <javafx.scene.control.Tooltip text="%chat.ragToggleTooltip" />
-                                      </tooltip>
-                                  </javafx.scene.control.ToggleButton>
+
 
                                   <Region HBox.hgrow="ALWAYS" />
 

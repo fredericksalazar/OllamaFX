@@ -1998,8 +1998,9 @@
     -fx-background-color: -color-bg-subtle;
     -fx-background-radius: 8px;
     -fx-padding: 10px 14px;
-    -fx-border-color: transparent;
+    -fx-border-color: derive(-color-border-muted, 20%);
     -fx-border-radius: 8px;
+    -fx-border-width: 0.5px;
 }
 
 .rag-doc-cell:hover {
@@ -2110,7 +2111,7 @@
 
 .rag-collection-list .list-cell {
     -fx-background-color: transparent;
-    -fx-padding: 0;
+    -fx-padding: 1px 0;
 }
 
 .rag-collection-list .list-cell:selected .rag-collection-cell {
@@ -2195,45 +2196,60 @@
 .rag-doc-list {
     -fx-background-color: transparent;
     -fx-background-insets: 0;
-    -fx-padding: 4px 8px;
+    -fx-padding: 8px 12px;
 }
 
 .rag-doc-list .list-cell {
     -fx-background-color: transparent;
-    -fx-padding: 4px 4px;
+    -fx-padding: 3px 4px;
 }
 
-/* RAG Chat Chips Bar */
-.rag-chips-bar {
-    -fx-padding: 4px 10px;
-    -fx-background-color: -color-bg-subtle;
-    -fx-background-radius: 6px;
-    -fx-border-color: -color-border-default;
-    -fx-border-radius: 6px;
-    -fx-border-width: 1px;
+.rag-doc-list .list-cell:empty {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-pref-height: 0;
+    -fx-min-height: 0;
+    -fx-max-height: 0;
 }
 
-.rag-chip {
-    -fx-background-color: -color-bg-inset;
-    -fx-background-radius: 4px;
-    -fx-padding: 4px 8px;
-    -fx-border-color: -color-border-subtle;
-    -fx-border-radius: 4px;
+/* RAG Floating Chips (between chat and input card) */
+.rag-chips-floating {
+    -fx-padding: 0 4px 4px 4px;
+    -fx-spacing: 6;
+    -fx-alignment: center;
+}
+
+.rag-chip-inline {
+    -fx-background-color: #f3e8ff;
+    -fx-background-radius: 12px;
+    -fx-padding: 2px 8px;
+    -fx-border-color: #d8b4fe;
+    -fx-border-radius: 12px;
+    -fx-border-width: 0.5px;
+    -fx-cursor: hand;
+}
+
+.rag-chip-inline:hover {
+    -fx-background-color: #e9d5ff;
 }
 
 .rag-chip-label {
-    -fx-font-size: 11px;
-    -fx-text-fill: -color-fg-default;
+    -fx-font-size: 10.5px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #6b21a8;
 }
 
 .rag-chip-remove {
-    -fx-padding: 0 0 0 4px;
+    -fx-padding: 0 0 0 2px;
     -fx-background-color: transparent;
     -fx-cursor: hand;
+    -fx-min-width: 12px;
+    -fx-min-height: 12px;
 }
 
 .rag-chip-remove .font-icon {
     -fx-icon-color: -color-fg-muted;
+    -fx-icon-size: 9;
 }
 
 .rag-chip-remove:hover .font-icon {
@@ -2242,14 +2258,27 @@
 
 .rag-chip-add {
     -fx-background-color: transparent;
+    -fx-background-radius: 12px;
     -fx-padding: 2px 6px;
+    -fx-border-color: #d8b4fe;
+    -fx-border-radius: 12px;
+    -fx-border-width: 0.5px;
+    -fx-border-style: dashed;
     -fx-cursor: hand;
-    -fx-text-fill: -color-accent-fg;
+}
+
+.rag-chip-add .font-icon {
+    -fx-icon-color: #7c3aed;
+    -fx-icon-size: 11;
 }
 
 .rag-chip-add:hover {
-    -fx-background-color: -color-bg-inset;
-    -fx-background-radius: 4px;
+    -fx-background-color: #f3e8ff;
+}
+
+.rag-chip-prefix {
+    -fx-icon-color: #7c3aed;
+    -fx-icon-size: 12;
 }
 
 /* File-type icon colors */

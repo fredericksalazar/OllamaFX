@@ -53,7 +53,7 @@
             <!-- Doc Panel Header -->
             <HBox alignment="CENTER_LEFT" spacing="10" styleClass="rag-doc-panel-header">
                 <padding>
-                    <Insets top="8" right="16" bottom="8" left="16"/>
+                    <Insets top="10" right="16" bottom="10" left="16"/>
                 </padding>
                 <Label fx:id="collectionNameLabel" text="" styleClass="rag-collection-name-label"/>
                 <Region HBox.hgrow="ALWAYS"/>
