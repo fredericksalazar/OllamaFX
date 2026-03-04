@@ -117,7 +117,7 @@ task packageDistribution(type: Sync) {
     dependsOn shadowJar
     dependsOn startShadowScripts
     
-    def targetDir = file("${project.rootDir}/releases/OllamaFX-${version}-Dist")
+    def targetDir = file("${project.rootDir}/releases/OllamaFX")
     into targetDir
 
     // 1. Put the JAR in lib/
@@ -171,9 +171,24 @@ task packageDistribution(type: Sync) {
         rename { "OllamaFX.command" }
         into "."
     }
+    
+    // 6. Inject the auto-update and rollback scripts
+    from("${project.projectDir}/src/main/resources/update_scripts") {
+        into "update"
+    }
 
     doLast {
         println "Release created at ${targetDir}"
+    }
+}
+
+task zipDistribution(type: Zip) {
+    dependsOn packageDistribution
+    archiveFileName = "${project.name}-${project.version}.zip"
+    destinationDirectory = file("${project.projectDir}/releases")
+    from "${project.projectDir}/releases/OllamaFX"
+    doLast {
+        println "Zip release created at ${destinationDirectory.get().getAsFile().getAbsolutePath()}/${archiveFileName.get()}"
     }
 }
 tasks.named('startScripts') {
