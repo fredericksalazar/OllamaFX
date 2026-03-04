@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'com.org.ollamafx'
-version = '0.4.0'
+version = '0.5.0'
 
 repositories {
     mavenCentral()
@@ -98,6 +98,7 @@ tasks.withType(JavaExec) {
 }
 
 processResources {
+    inputs.property "version", project.version
     filesMatching('**/*.properties') {
         expand(project.properties)
     }
@@ -112,11 +113,12 @@ shadowJar {
     }
 }
 
-task packageDistribution(type: Zip) {
+task packageDistribution(type: Sync) {
     dependsOn shadowJar
     dependsOn startShadowScripts
-    archiveFileName = "OllamaFX-${version}-Dist.zip"
-    destinationDirectory = file("$buildDir/distributions")
+    
+    def targetDir = file("${project.rootDir}/releases/OllamaFX")
+    into targetDir
 
     // 1. Put the JAR in lib/
     from(shadowJar.archiveFile) {
@@ -124,7 +126,6 @@ task packageDistribution(type: Zip) {
     }
     
     // 2. Prepare scripts: Patch them to work from root (remove 'cd ..' logic)
-    // We use a temporary directory to patch files before zipping to avoid modifying original build artifacts repeatedly
     def patchedScriptsDir = file("$buildDir/scriptsPatched")
     
     doFirst {
@@ -135,13 +136,9 @@ task packageDistribution(type: Zip) {
             from "$buildDir/scriptsShadow"
             into patchedScriptsDir
             filter { line ->
-                // The generated script does `cd "dirname \"$PRG\"`/.." to find APP_HOME
-                // We want APP_HOME to be the script's directory, so we remove the `cd ..` part
-                // Standard line: cd "`dirname \"$PRG\"`/.." >/dev/null
                 if (line.contains('cd "`dirname \\"$PRG\\"`/.."')) {
                     return 'cd "`dirname \\"$PRG\\"`" >/dev/null' 
                 }
-                // Windows batch: pushd %DIRNAME%..
                 if (line.contains('pushd %DIRNAME%..')) {
                     return 'pushd %DIRNAME%'
                 }
@@ -174,40 +171,24 @@ task packageDistribution(type: Zip) {
         rename { "OllamaFX.command" }
         into "."
     }
+    
+    // 6. Inject the auto-update and rollback scripts
+    from("${project.projectDir}/src/main/resources/update_scripts") {
+        into "update"
+    }
 
     doLast {
-        copy {
-            from destinationDirectory
-            into "${project.rootDir}/releases"
-            include archiveFileName.get()
-        }
-        println "Release copied to ${project.rootDir}/releases/${archiveFileName.get()}"
+        println "Release created at ${targetDir}"
     }
 }
 
-// Custom jpackage task for Mac
-task createInstaller(type: Exec) {
-    dependsOn shadowJar
-    workingDir project.rootDir
-    
-    // Command to key inputs:
-    // --input build/libs containing the shadow jar
-    // --main-jar the shadow jar name
-    // --icon the generated icns
-    
-    commandLine 'jpackage', 
-        '--input', 'build/libs',
-        '--name', 'OllamaFX',
-        '--main-jar', "OllamaFX.jar",
-        '--main-class', 'com.org.ollamafx.Main',
-        '--type', 'dmg',
-        '--icon', 'src/main/resources/icons/icon.icns',
-        '--dest', 'releases',
-        '--java-options', '--enable-preview' 
-        
-    doFirst {
-        mkdir 'releases'
-        println "Creating Installer with icon..."
+task zipDistribution(type: Zip) {
+    dependsOn packageDistribution
+    archiveFileName = "${project.name}-${project.version}.zip"
+    destinationDirectory = file("${project.projectDir}/releases")
+    from "${project.projectDir}/releases/OllamaFX"
+    doLast {
+        println "Zip release created at ${destinationDirectory.get().getAsFile().getAbsolutePath()}/${archiveFileName.get()}"
     }
 }
 tasks.named('startScripts') {
