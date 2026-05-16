@@ -628,8 +628,29 @@ public class ChatController {
                 StringBuilder responseBuilder = new StringBuilder();
                 Map<String, Object> options = collectGenerationOptions();
 
-                String systemPrompt = targetSession != null ? targetSession.getSystemPrompt()
+                String userSystemPrompt = targetSession != null ? targetSession.getSystemPrompt()
                         : systemPromptField.getText();
+
+                // Markdown formatting hint appended to the user's system prompt.
+                // Designed to be lightweight: short greetings stay short, structured answers
+                // get full Markdown (headings, bold, lists, tables, code). The model decides.
+                final String MARKDOWN_DIRECTIVE =
+                        "When your answer has structure (multiple sections, comparisons, lists, " +
+                        "definitions, code, tables), format it with GitHub-Flavored Markdown: " +
+                        "use # / ## / ### for section titles, **bold** for key terms, *italics* " +
+                        "for emphasis, - or 1. for lists, > for quotes, | col | rows for tables, " +
+                        "and triple-backtick fenced blocks with a language tag for code. " +
+                        "For short conversational replies (greetings, brief acknowledgments, " +
+                        "single-sentence answers), reply in plain prose without headings, bullets " +
+                        "or meta-commentary about formatting. Never describe the formatting you " +
+                        "are about to use — just produce the answer. Match the user's language.";
+
+                String systemPrompt;
+                if (userSystemPrompt == null || userSystemPrompt.isBlank()) {
+                    systemPrompt = MARKDOWN_DIRECTIVE;
+                } else {
+                    systemPrompt = userSystemPrompt.trim() + "\n\n" + MARKDOWN_DIRECTIVE;
+                }
 
                 // If RAG returned results, build augmented prompt
                 final String effectivePrompt;

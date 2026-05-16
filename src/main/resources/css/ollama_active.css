@@ -2309,3 +2309,233 @@
     -fx-font-size: 11px;
     -fx-text-fill: -color-fg-muted;
 }
+
+/* =====================================================
+   NATIVE MARKDOWN RENDERER (flexmark → JavaFX nodes)
+   Style classes: .md-* for content, .code-* for code blocks.
+   All colors reference AtlantaFX variables so theme switching works.
+   ===================================================== */
+
+.markdown-area {
+    -fx-background-color: transparent;
+    -fx-padding: 4 12 4 12;
+}
+
+.markdown-area .md-text {
+    -fx-fill: -color-fg-default;
+    -fx-font-family: "System";
+    -fx-font-size: 14.5px;
+    -fx-font-smoothing-type: lcd;
+}
+
+.md-paragraph {
+    -fx-line-spacing: 4px;
+    -fx-padding: 2 0 2 0;
+}
+
+/* Inline emphasis applied via additive style classes (set by InlineRenderer) */
+.md-text.md-bold   { -fx-font-weight: bold; }
+.md-text.md-italic { -fx-font-style: italic; }
+.md-text.md-strike { -fx-strikethrough: true; }
+.md-text.md-link   { -fx-cursor: hand; }
+
+/* Headings — jerarquía estilo ChatGPT/Claude */
+.md-heading-block {
+    -fx-padding: 6 0 2 0;
+}
+
+.md-heading .md-text {
+    -fx-font-weight: bold;
+    -fx-fill: -color-fg-default;
+}
+
+.md-h1 .md-text { -fx-font-size: 30px; -fx-font-weight: bold; }
+.md-h2 .md-text { -fx-font-size: 24px; -fx-font-weight: bold; }
+.md-h3 .md-text { -fx-font-size: 20px; -fx-font-weight: bold; }
+.md-h4 .md-text { -fx-font-size: 17px; -fx-font-weight: bold; }
+.md-h5 .md-text { -fx-font-size: 15px; -fx-font-weight: bold; }
+.md-h6 .md-text { -fx-font-size: 14px; -fx-font-weight: bold; -fx-fill: -color-fg-muted; }
+
+.md-h1 { -fx-padding: 14 0 6 0; -fx-border-color: transparent transparent -color-border-subtle transparent; -fx-border-width: 0 0 1 0; }
+.md-h2 { -fx-padding: 10 0 4 0; }
+.md-h3 { -fx-padding: 8 0 4 0; }
+
+/* Links */
+.md-link.md-text {
+    -fx-fill: -color-accent-fg;
+    -fx-underline: true;
+}
+.md-link.md-text:hover {
+    -fx-fill: -color-accent-emphasis;
+}
+
+/* Inline code */
+.md-inline-code {
+    -fx-fill: -color-danger-fg;
+    -fx-font-family: "JetBrains Mono", "Menlo", "Consolas", "Monospaced";
+    -fx-font-size: 13px;
+}
+
+/* Lists */
+.md-bullet-list, .md-ordered-list {
+    -fx-padding: 2 0 2 10;
+}
+.md-list-item {
+    -fx-padding: 1 0 1 0;
+}
+.md-list-marker {
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-size: 14px;
+    -fx-min-width: 18px;
+    -fx-alignment: top-left;
+    -fx-padding: 0 0 0 2;
+}
+
+.md-task-checkbox {
+    -fx-padding: 2 0 0 0;
+    -fx-opacity: 1.0;
+}
+.md-task-checkbox:disabled {
+    -fx-opacity: 1.0;
+}
+
+/* Blockquote — barra lateral estilo ChatGPT */
+.md-blockquote {
+    -fx-padding: 4 0 4 0;
+}
+.md-blockquote-bar {
+    -fx-background-color: -color-accent-emphasis;
+    -fx-background-radius: 2;
+}
+.md-blockquote-content .md-text {
+    -fx-fill: -color-fg-muted;
+    -fx-font-style: italic;
+}
+
+/* Horizontal rule */
+.md-hr {
+    -fx-padding: 6 0 6 0;
+    -fx-background-color: transparent;
+}
+.md-hr .line {
+    -fx-border-color: -color-border-subtle transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+}
+
+/* Tables — estilo limpio con bordes sutiles */
+.md-table-wrapper {
+    -fx-padding: 6 0 6 0;
+}
+.md-table {
+    -fx-background-color: -color-bg-default;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1px;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-hgap: 0;
+    -fx-vgap: 0;
+}
+.md-table-header {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: transparent transparent -color-border-subtle transparent;
+    -fx-border-width: 0 0 1 0;
+}
+.md-table-header-cell {
+    -fx-font-weight: bold;
+}
+.md-table-header-cell .md-text {
+    -fx-font-weight: bold;
+    -fx-fill: -color-fg-default;
+}
+.md-table-body-cell {
+    -fx-border-color: -color-border-subtle transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+}
+.md-table-cell .md-text, .md-table-header-cell .md-text {
+    -fx-fill: -color-fg-default;
+}
+
+/* =====================================================
+   CODE BLOCK CARD (RichTextFX CodeArea + syntax highlight)
+   ===================================================== */
+
+.code-block-card {
+    -fx-background-color: -color-bg-subtle;
+    -fx-background-radius: 8px;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-radius: 8px;
+    -fx-border-width: 1px;
+    -fx-padding: 0;
+}
+
+.code-block-header {
+    -fx-background-color: -color-bg-default;
+    -fx-background-radius: 8 8 0 0;
+    -fx-border-color: transparent transparent -color-border-subtle transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.code-block-language {
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-family: "System";
+    -fx-font-weight: bold;
+}
+
+.code-block-copy-btn {
+    -fx-background-color: transparent;
+    -fx-padding: 4 8 4 8;
+    -fx-cursor: hand;
+    -fx-background-radius: 4px;
+}
+.code-block-copy-btn:hover {
+    -fx-background-color: -color-bg-subtle;
+}
+.code-block-copy-icon {
+    -fx-fill: -color-fg-muted;
+    -fx-scale-x: 0.7;
+    -fx-scale-y: 0.7;
+}
+.code-block-copy-icon-success {
+    -fx-fill: -color-success-fg;
+}
+
+.code-block-scroll {
+    -fx-background-color: transparent;
+    -fx-background-radius: 0 0 8 8;
+}
+
+/* RichTextFX CodeArea base */
+.code-block-content {
+    -fx-background-color: -color-bg-subtle;
+    -fx-font-family: "JetBrains Mono", "Menlo", "Consolas", "Monospaced";
+    -fx-font-size: 13px;
+    -fx-padding: 10 14 10 14;
+    -fx-background-radius: 0 0 8 8;
+}
+.code-block-content .text {
+    -fx-fill: -color-fg-default;
+}
+.code-block-content .caret {
+    -fx-stroke: transparent;
+}
+
+/* Syntax highlight token colors — claras y oscuras vía variables */
+.code-block-content .code-keyword {
+    -fx-fill: -color-accent-fg;
+    -fx-font-weight: bold;
+}
+.code-block-content .code-string {
+    -fx-fill: -color-success-fg;
+}
+.code-block-content .code-comment {
+    -fx-fill: -color-fg-muted;
+    -fx-font-style: italic;
+}
+.code-block-content .code-number {
+    -fx-fill: -color-warning-fg;
+}
+.code-block-content .code-annotation {
+    -fx-fill: -color-danger-fg;
+    -fx-font-weight: bold;
+}

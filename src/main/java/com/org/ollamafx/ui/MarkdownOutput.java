@@ -1,28 +1,42 @@
 package com.org.ollamafx.ui;
 
-import atlantafx.base.util.BBCodeParser;
-import javafx.scene.Node;
+import com.org.ollamafx.ui.markdown.MarkdownRenderer;
+import com.vladsch.flexmark.ast.FencedCodeBlock;
+import com.vladsch.flexmark.ast.IndentedCodeBlock;
+import com.vladsch.flexmark.ext.gfm.strikethrough.StrikethroughExtension;
+import com.vladsch.flexmark.ext.gfm.tasklist.TaskListExtension;
+import com.vladsch.flexmark.ext.tables.TablesExtension;
+import com.vladsch.flexmark.parser.Parser;
+import com.vladsch.flexmark.util.ast.Document;
+import com.vladsch.flexmark.util.ast.Node;
+import com.vladsch.flexmark.util.data.MutableDataSet;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import org.commonmark.node.FencedCodeBlock;
-import org.commonmark.node.IndentedCodeBlock;
-import org.commonmark.parser.Parser;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MarkdownOutput extends VBox {
 
+    private static final String SIG_KEY = "md-block-signature";
+
     private final Parser parser;
+    private String originalMarkdown;
 
     public MarkdownOutput() {
-        this.parser = Parser.builder().build();
-        this.getStyleClass().add("markdown-area");
-        this.setFillWidth(true);
-        this.setSpacing(10);
-    }
+        MutableDataSet options = new MutableDataSet();
+        options.set(Parser.EXTENSIONS, Arrays.asList(
+                TablesExtension.create(),
+                TaskListExtension.create(),
+                StrikethroughExtension.create()
+        ));
+        this.parser = Parser.builder(options).build();
 
-    private String originalMarkdown;
+        getStyleClass().add("markdown-area");
+        setFillWidth(true);
+        setSpacing(8);
+    }
 
     public void updateContent(String markdown) {
         setMarkdown(markdown);
@@ -33,155 +47,111 @@ public class MarkdownOutput extends VBox {
     }
 
     public void setMarkdown(String markdown) {
-        if (markdown == null)
+        if (markdown == null) {
             markdown = "";
-
+        }
         this.originalMarkdown = markdown;
 
-        // 1. Parse into abstract "Block" list to allow diffing
-        List<BlockData> newBlocks = parseToBlocks(markdown);
-
-        // 2. Sync with children
-        syncChildren(newBlocks);
+        List<BlockEntry> blocks = parseToBlocks(markdown);
+        syncChildren(blocks);
     }
 
-    private void syncChildren(List<BlockData> newBlocks) {
-        var children = this.getChildren();
+    private void syncChildren(List<BlockEntry> blocks) {
+        var children = getChildren();
 
-        // Remove excess children
-        if (children.size() > newBlocks.size()) {
-            children.remove(newBlocks.size(), children.size());
+        if (children.size() > blocks.size()) {
+            children.remove(blocks.size(), children.size());
         }
 
-        for (int i = 0; i < newBlocks.size(); i++) {
-            BlockData block = newBlocks.get(i);
+        for (int i = 0; i < blocks.size(); i++) {
+            BlockEntry entry = blocks.get(i);
 
             if (i < children.size()) {
-                Node child = children.get(i);
+                javafx.scene.Node existing = children.get(i);
+                String oldSig = (String) existing.getProperties().get(SIG_KEY);
 
-                if (block.type == BlockType.CODE && child instanceof CodeBlockCard) {
-                    // Update Code in-place (Efficient)
-                    ((CodeBlockCard) child).updateCode(block.content);
-                } else if (block.type == BlockType.PROSE && child instanceof Region
-                        && !(child instanceof CodeBlockCard)) {
-                    // Check if Prose content changed
-                    String oldContent = (String) child.getProperties().get("bbcode");
-                    if (oldContent == null || !oldContent.equals(block.content)) {
-                        // Content changed, replace node
-                        children.set(i, createNode(block));
+                if (entry.kind == BlockKind.CODE && existing instanceof CodeBlockCard) {
+                    CodeBlockCard card = (CodeBlockCard) existing;
+                    if (!entry.signature.equals(oldSig)) {
+                        card.updateCode(entry.codeContent, entry.codeLanguage);
+                        existing.getProperties().put(SIG_KEY, entry.signature);
                     }
-                    // Else: content identical, do nothing (No jump!)
+                } else if (entry.kind == BlockKind.NODE
+                        && !(existing instanceof CodeBlockCard)
+                        && entry.signature.equals(oldSig)) {
+                    // identical block — keep
                 } else {
-                    // Type mismatch (e.g. Prose -> Code), replace
-                    children.set(i, createNode(block));
+                    children.set(i, createNode(entry));
                 }
             } else {
-                // Append new node
-                children.add(createNode(block));
+                children.add(createNode(entry));
             }
         }
     }
 
-    // Revised Sync Logic with Prose Replacement
-
-    private Node createNode(BlockData block) {
-        if (block.type == BlockType.CODE) {
-            return new CodeBlockCard(block.content, block.info);
-        } else {
-            try {
-                // Use createLayout to handle block elements
-                // Note: AtlantaFX BBCodeParser might be strict or limited.
-                // If it fails, we fall back to raw text, which explains the [h2] visible.
-                Node bbCodeNode = BBCodeParser.createFormattedText(block.content); // Try createFormattedText instead of
-                                                                                   // createLayout? Or debug.
-
-                // createLayout is usually for full blocks. createFormattedText for inline.
-                // Let's stick to createLayout but debug the failure.
-                // Actually, let's look at the imports. atlantafx.base.util.BBCodeParser
-
-                bbCodeNode = BBCodeParser.createLayout(block.content);
-
-                // Fix Text Wrapping
-                if (bbCodeNode instanceof Region) {
-                    Region region = (Region) bbCodeNode;
-                    region.setMinWidth(0);
-                    region.prefWidthProperty().bind(this.widthProperty().subtract(40));
-                    region.maxWidthProperty().bind(this.widthProperty().subtract(40));
-                }
-                bbCodeNode.getProperties().put("bbcode", block.content);
-                return bbCodeNode;
-            } catch (Exception e) {
-                // Formatting failed, likely due to unsupported tags.
-                System.err.println("BBCode Parsing Failed for content: " + block.content);
-                e.printStackTrace();
-
-                // Fallback: Strip tags for cleaner failure? Or return TextFlow with basic text.
-                return new javafx.scene.control.Label(block.content);
-            }
+    private javafx.scene.Node createNode(BlockEntry entry) {
+        if (entry.kind == BlockKind.CODE) {
+            CodeBlockCard card = new CodeBlockCard(entry.codeContent, entry.codeLanguage);
+            card.getProperties().put(SIG_KEY, entry.signature);
+            return card;
         }
-    }
-
-    // --- Parsing Logic ---
-
-    private enum BlockType {
-        PROSE, CODE
-    }
-
-    private static class BlockData {
-        BlockType type;
-        String content;
-        String info; // for code
-
-        BlockData(BlockType type, String content, String info) {
-            this.type = type;
-            this.content = content;
-            this.info = info;
+        javafx.scene.Node rendered = MarkdownRenderer.render(entry.astNode);
+        rendered.getProperties().put(SIG_KEY, entry.signature);
+        if (rendered instanceof Region) {
+            Region region = (Region) rendered;
+            region.setMinWidth(0);
         }
+        return rendered;
     }
 
-    private List<BlockData> parseToBlocks(String markdown) {
-        List<BlockData> blocks = new ArrayList<>();
-        org.commonmark.node.Node document = parser.parse(markdown);
+    private List<BlockEntry> parseToBlocks(String markdown) {
+        List<BlockEntry> blocks = new ArrayList<>();
+        Document document = parser.parse(markdown);
 
-        MarkdownToBBCodeVisitor visitor = new MarkdownToBBCodeVisitor();
-
-        org.commonmark.node.Node node = document.getFirstChild();
+        Node node = document.getFirstChild();
         while (node != null) {
-            boolean isCode = (node instanceof FencedCodeBlock) || (node instanceof IndentedCodeBlock);
-
-            if (isCode) {
-                // Flush Prose
-                String prose = visitor.getBBCode();
-                if (!prose.isEmpty()) {
-                    blocks.add(new BlockData(BlockType.PROSE, prose, null));
-                    visitor.clear();
-                }
-
-                String code = "";
-                String info = "";
-
-                if (node instanceof FencedCodeBlock) {
-                    FencedCodeBlock f = (FencedCodeBlock) node;
-                    code = f.getLiteral();
-                    info = f.getInfo();
-                } else {
-                    code = ((IndentedCodeBlock) node).getLiteral();
-                }
-
-                blocks.add(new BlockData(BlockType.CODE, code, info));
-
+            if (node instanceof FencedCodeBlock) {
+                FencedCodeBlock f = (FencedCodeBlock) node;
+                String code = f.getContentChars().toString();
+                String info = f.getInfo().toString();
+                blocks.add(BlockEntry.code(code, info));
+            } else if (node instanceof IndentedCodeBlock) {
+                IndentedCodeBlock i = (IndentedCodeBlock) node;
+                blocks.add(BlockEntry.code(i.getContentChars().toString(), ""));
             } else {
-                node.accept(visitor);
+                String source = node.getChars().toString();
+                blocks.add(BlockEntry.astNode(node, source));
             }
             node = node.getNext();
         }
+        return blocks;
+    }
 
-        // Final flush
-        String prose = visitor.getBBCode();
-        if (!prose.isEmpty()) {
-            blocks.add(new BlockData(BlockType.PROSE, prose, null));
+    private enum BlockKind { CODE, NODE }
+
+    private static final class BlockEntry {
+        final BlockKind kind;
+        final Node astNode;
+        final String codeContent;
+        final String codeLanguage;
+        final String signature;
+
+        private BlockEntry(BlockKind kind, Node astNode, String code, String lang, String signature) {
+            this.kind = kind;
+            this.astNode = astNode;
+            this.codeContent = code;
+            this.codeLanguage = lang;
+            this.signature = signature;
         }
 
-        return blocks;
+        static BlockEntry code(String content, String language) {
+            String lang = language == null ? "" : language;
+            return new BlockEntry(BlockKind.CODE, null, content, lang, "code|" + lang + "|" + content);
+        }
+
+        static BlockEntry astNode(Node node, String source) {
+            return new BlockEntry(BlockKind.NODE, node, null, null,
+                    node.getClass().getSimpleName() + "|" + source);
+        }
     }
 }
